@@ -150,51 +150,21 @@ serve(async (req) => {
     const currentDate = now.toISOString().split('T')[0];
     const currentTime = now.toTimeString().split(' ')[0];
 
-    // Define tools - always include helper tools
-    const tools: any[] = [
-      {
-        type: "function",
-        function: {
-          name: "parse_relative_date",
-          description: "Convert relative date expressions (like 'tomorrow', 'next week', 'this weekend') to ISO date format",
-          parameters: {
-            type: "object",
-            properties: {
-              dateExpression: { type: "string", description: "The relative date expression to parse" },
-            },
-            required: ["dateExpression"],
-          },
-        },
-      },
-      {
-        type: "function",
-        function: {
-          name: "standardize_city_name",
-          description: "Standardize city names and handle misspellings to get the correct format",
-          parameters: {
-            type: "object",
-            properties: {
-              cityInput: { type: "string", description: "The city name that may contain typos or variations" },
-            },
-            required: ["cityInput"],
-          },
-        },
-      },
-    ];
+    // Define single search tool based on mode
+    const tools: any[] = [];
 
     if (searchMode === "internet") {
       tools.push({
         type: "function",
         function: {
           name: "search_internet_events",
-          description: "Search the internet for live music events in a specific city and date range. Returns real event data from various sources.",
+          description: "Search the internet for live music events. Parse dates like 'tomorrow', 'this weekend' to ISO format yourself. Standardize city names yourself.",
           parameters: {
             type: "object",
             properties: {
-              city: { type: "string", description: "Standardized city name" },
+              city: { type: "string", description: "City name (standardized)" },
               startDate: { type: "string", description: "Start date in ISO format (YYYY-MM-DD)" },
               endDate: { type: "string", description: "End date in ISO format (YYYY-MM-DD)" },
-              genre: { type: "string", description: "Music genre filter (optional)" },
             },
             required: ["city", "startDate", "endDate"],
           },
@@ -205,15 +175,15 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "query_database_events",
-          description: "Query the laiive database for live music events. You can filter by city or by proximity to coordinates.",
+          description: "Query the laiive database for live music events. Parse dates like 'tomorrow', 'this weekend' to ISO format yourself. Standardize city names yourself. Use city filter if user specifies a city, otherwise use lat/long.",
           parameters: {
             type: "object",
             properties: {
-              latitude: { type: "number", description: "User latitude (required if city is not provided)" },
-              longitude: { type: "number", description: "User longitude (required if city is not provided)" },
-              startDate: { type: "string", description: "ISO date (YYYY-MM-DD) start" },
-              endDate: { type: "string", description: "ISO date (YYYY-MM-DD) end" },
-              city: { type: "string", description: "Optional city filter. When provided, search by city name instead of coordinates." },
+              latitude: { type: "number", description: "User latitude for proximity search" },
+              longitude: { type: "number", description: "User longitude for proximity search" },
+              startDate: { type: "string", description: "Start date ISO format (YYYY-MM-DD)" },
+              endDate: { type: "string", description: "End date ISO format (YYYY-MM-DD)" },
+              city: { type: "string", description: "City name filter (optional, use instead of lat/long if specified)" },
             },
             required: ["startDate", "endDate"],
           },
@@ -221,39 +191,32 @@ serve(async (req) => {
       });
     }
 
-    const locationInfo = location ? `User's current location: ${location.city || 'Unknown city'} (${location.latitude}, ${location.longitude})` : "User location not available";
+    const locationInfo = location ? `User location: ${location.city || 'Unknown'} (${location.latitude}, ${location.longitude})` : "No location";
 
-    const systemPrompt = `You are an AI assistant helping users find live music events.
+    const systemPrompt = `You help users find live music events. Today is ${currentDate}. ${locationInfo}.
 
-Current date: ${currentDate}
-Current time: ${currentTime}
-${locationInfo}
+${searchMode === "database" ? "Use query_database_events to search the laiive database." : "Use search_internet_events to search the web."}
 
-${searchMode === "database" ? "You have access to the laiive database of events." : "You can search the internet for events from various ticketing platforms and venues."}
+WORKFLOW:
+1. Greet user and understand their request
+2. Extract date (convert "tomorrow", "this weekend" etc. to YYYY-MM-DD) and place (use user's location if not specified)
+3. Call the search tool immediately with extracted parameters
+4. Display results with this format:
+   🎵 **Artist** at Venue, City
+   📝 Description (short)
+   📅 Date & Time
+   💰 Price
+   🎫 [Tickets] | 📍 [Map]
+5. If user changes date/place, call search tool again with new parameters
 
-CRITICAL WORKFLOW:
-1. When users mention relative dates (tomorrow, this weekend, next week), use parse_relative_date tool to convert them silently
-2. When users mention cities, use standardize_city_name tool to correct them silently
-3. After parsing dates and cities, immediately call the search tool (${searchMode === "database" ? "query_database_events" : "search_internet_events"})
-4. Present results conversationally with clear formatting
-5. If users request different parameters, repeat the process with new parameters
+Parse dates yourself:
+- "tomorrow" → ${new Date(new Date(currentDate).getTime() + 86400000).toISOString().split('T')[0]}
+- "today" → ${currentDate}
+- "this weekend" → next Saturday to Sunday
 
-HELPER TOOLS (use silently, don't announce):
-- parse_relative_date: converts "tomorrow", "next week" etc. to ISO dates
-- standardize_city_name: fixes typos and standardizes city names
+Standardize cities: Bergamo, Milan, Rome, etc. (capitalize first letter).
 
-IMPORTANT:
-- Use user's current location as default if not specified
-- Always call helper tools before the main search tool
-- Don't show intermediate parsing steps to users
-- Present results in a friendly, conversational way
-
-Format each event as:
-🎵 **Artist/Event Name** at Venue
-📝 Brief description
-📅 Date & Time
-💰 Price
-🎫 [Ticket Link if available] | 📍 [Google Maps Location]`;
+Use user's location (${location?.city || location?.latitude + ',' + location?.longitude}) as default if not specified.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -305,12 +268,6 @@ Format each event as:
         const decoder = new TextDecoder();
         let buffer = "";
 
-        // State for silent tool results and output control
-        let pendingStartDate: string | null = null;
-        let pendingEndDate: string | null = null;
-        let pendingCity: string | null = null;
-        let resultsSent = false;
-
         try {
           while (true) {
             const { done, value } = await reader.read();
@@ -332,32 +289,12 @@ Format each event as:
                 const toolCalls = parsed.choices?.[0]?.delta?.tool_calls;
 
                 if (toolCalls) {
-                  // Handle tool calls
                   for (const toolCall of toolCalls) {
-                    if (toolCall.function?.name === "parse_relative_date") {
-                      const args = JSON.parse(toolCall.function.arguments);
-                      console.log("Parsing relative date:", args);
-                      
-                      // Process silently - don't show to user
-                      const parsedDate = parseRelativeDate(args.dateExpression, now);
-                      pendingStartDate = parsedDate.start;
-                      pendingEndDate = parsedDate.end;
-                      console.log("Parsed date result:", parsedDate);
-                      
-                    } else if (toolCall.function?.name === "standardize_city_name") {
-                      const args = JSON.parse(toolCall.function.arguments);
-                      console.log("Standardizing city name:", args);
-                      
-                      // Process silently - don't show to user
-                      const standardized = standardizeCityName(args.cityInput);
-                      pendingCity = standardized;
-                      console.log("Standardized city:", standardized);
-                      
-                    } else if (toolCall.function?.name === "query_database_events") {
+                    if (toolCall.function?.name === "query_database_events") {
                       const args = JSON.parse(toolCall.function.arguments);
                       console.log("Querying database:", args);
 
-                      // Build full-day range: [start 00:00:00, end+1day 00:00:00)
+                      // Build full-day range
                       const startBound = new Date(`${args.startDate}T00:00:00Z`).toISOString();
                       const endExclusive = new Date(new Date(`${args.endDate}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000).toISOString();
 
@@ -368,9 +305,8 @@ Format each event as:
                         .lt("event_date", endExclusive)
                         .order("event_date");
 
-                      const cityFilter = args.city || pendingCity;
-                      if (cityFilter) {
-                        query = query.ilike("city", cityFilter);
+                      if (args.city) {
+                        query = query.ilike("city", args.city);
                       }
 
                       const { data: events, error } = await query;
@@ -385,52 +321,53 @@ Format each event as:
                           )
                         );
                       } else {
-                        // If no city filter, apply 10km proximity filter using provided coords
-                        const useProximity = !cityFilter && typeof args.latitude === 'number' && typeof args.longitude === 'number';
+                        // If no city filter, apply 10km proximity filter
+                        const useProximity = !args.city && typeof args.latitude === 'number' && typeof args.longitude === 'number';
                         const filteredEvents = (events || []).filter((event) => {
                           if (useProximity) {
                             if (!event.latitude || !event.longitude) return false;
                             const distance = Math.sqrt(
                               Math.pow(event.latitude - args.latitude, 2) +
                               Math.pow(event.longitude - args.longitude, 2)
-                            ) * 111; // rough km conversion
+                            ) * 111;
                             return distance <= 10;
                           }
                           return true;
                         });
 
-                        const formattedEvents = filteredEvents
-                          .map((e) => {
-                            const date = new Date(e.event_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                            const time = new Date(e.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                            const ticketLink = e.ticket_url ? `🎫 [Tickets](${e.ticket_url})` : '';
-                            const mapsLink = e.latitude && e.longitude ? `📍 [Map](https://maps.google.com/?q=${e.latitude},${e.longitude})` : '';
-                            const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
-                            const place = e.city ? `${e.venue}, ${e.city}` : e.venue;
-                            return `🎵 **${e.artist || e.name}** at ${place}\n${e.description ? `📝 ${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}\n` : ''}📅 ${date} at ${time}\n💰 ${e.price ? `€${e.price}` : "Free"}\n${links}`;
-                          })
-                          .join("\n\n");
+                        if (filteredEvents.length > 0) {
+                          const formattedEvents = filteredEvents
+                            .map((e) => {
+                              const date = new Date(e.event_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                              const time = new Date(e.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                              const ticketLink = e.ticket_url ? `🎫 [Tickets](${e.ticket_url})` : '';
+                              const mapsLink = e.latitude && e.longitude ? `📍 [Map](https://maps.google.com/?q=${e.latitude},${e.longitude})` : '';
+                              const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
+                              const place = e.city ? `${e.venue}, ${e.city}` : e.venue;
+                              return `🎵 **${e.artist || e.name}** at ${place}\n${e.description ? `📝 ${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}\n` : ''}📅 ${date} at ${time}\n💰 ${e.price ? `€${e.price}` : "Free"}\n${links}`;
+                            })
+                            .join("\n\n");
 
-                        const responseMessage = filteredEvents.length > 0
-                          ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} for ${cityFilter ? cityFilter : 'your area'} from ${args.startDate} to ${args.endDate}:\n\n${formattedEvents}`
-                          : `I couldn't find any events matching your criteria for ${cityFilter ? cityFilter : 'your area'} between ${args.startDate} and ${args.endDate}.`;
-                        resultsSent = true;
-
-                        controller.enqueue(
-                          encoder.encode(
-                            `data: ${JSON.stringify({ choices: [{ delta: { content: responseMessage } }] })}\n\n`
-                          )
-                        );
+                          controller.enqueue(
+                            encoder.encode(
+                              `data: ${JSON.stringify({ choices: [{ delta: { content: `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''}:\n\n${formattedEvents}` } }] })}\n\n`
+                            )
+                          );
+                        } else {
+                          controller.enqueue(
+                            encoder.encode(
+                              `data: ${JSON.stringify({ choices: [{ delta: { content: `I couldn't find any events matching your criteria. Try adjusting the date or location.` } }] })}\n\n`
+                            )
+                          );
+                        }
                       }
                     } else if (toolCall.function?.name === "search_internet_events") {
                       const args = JSON.parse(toolCall.function.arguments);
                       console.log("Internet search requested:", args);
                       
-                      // Perform web search for events
-                      const searchQuery = `live music events ${args.city} ${args.startDate} ${args.endDate} ${args.genre || ""} tickets`;
+                      const searchQuery = `live music events ${args.city} ${args.startDate} ${args.endDate} tickets`;
                       
                       try {
-                        // Search multiple event platforms
                         const searchResults = await searchWebEvents(searchQuery, args);
                         
                         if (searchResults.length > 0) {
@@ -438,57 +375,26 @@ Format each event as:
                             const ticketLink = event.ticketUrl ? `🎫 [Tickets](${event.ticketUrl})` : '';
                             const mapsLink = event.mapsUrl ? `📍 [Map](${event.mapsUrl})` : '';
                             const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
-                            
-                            return `🎵 **${event.artist}** at ${event.venue}
-${event.description ? `📝 ${event.description}\n` : ''}📅 ${event.date}
-💰 ${event.price}
-${links}`;
+                            return `🎵 **${event.artist}** at ${event.venue}\n${event.description ? `📝 ${event.description}\n` : ''}📅 ${event.date}\n💰 ${event.price}\n${links}`;
                           }).join("\n\n");
                           
-                          resultsSent = true;
                           controller.enqueue(
                             encoder.encode(
-                              `data: ${JSON.stringify({
-                                choices: [
-                                  {
-                                    delta: {
-                                      content: `I found ${searchResults.length} event${searchResults.length > 1 ? 's' : ''} for you:\n\n${formattedResults}`,
-                                    },
-                                  },
-                                ],
-                              })}\n\n`
+                              `data: ${JSON.stringify({ choices: [{ delta: { content: `I found ${searchResults.length} event${searchResults.length > 1 ? 's' : ''}:\n\n${formattedResults}` } }] })}\n\n`
                             )
                           );
                         } else {
-                          resultsSent = true;
                           controller.enqueue(
                             encoder.encode(
-                              `data: ${JSON.stringify({
-                                choices: [
-                                  {
-                                    delta: {
-                                      content: `I searched for events in ${args.city} from ${args.startDate} to ${args.endDate}, but couldn't find any results. Try adjusting your search parameters or checking specific venue websites.`,
-                                    },
-                                  },
-                                ],
-                              })}\n\n`
+                              `data: ${JSON.stringify({ choices: [{ delta: { content: `I searched for events in ${args.city} but couldn't find any results. The internet search feature is still in development - try the laiive database search instead.` } }] })}\n\n`
                             )
                           );
                         }
                       } catch (searchError) {
                         console.error("Web search error:", searchError);
-                          resultsSent = true;
-                          controller.enqueue(
+                        controller.enqueue(
                           encoder.encode(
-                            `data: ${JSON.stringify({
-                              choices: [
-                                {
-                                  delta: {
-                                    content: `⚠️ I encountered an issue searching the web. Please try the laiive database search instead.`,
-                                  },
-                                },
-                              ],
-                            })}\n\n`
+                            `data: ${JSON.stringify({ choices: [{ delta: { content: `⚠️ I encountered an issue searching the web. Please try the laiive database search instead.` } }] })}\n\n`
                           )
                         );
                       }
@@ -501,96 +407,6 @@ ${links}`;
               } catch (e) {
                 console.error("Parse error:", e);
               }
-            }
-          }
-
-          // Fallback: if no results were sent, perform automatic search using parsed parameters
-          if (!resultsSent) {
-            try {
-              const start = pendingStartDate || currentDate;
-              const end = pendingEndDate || start;
-
-              if (searchMode === "database" && location?.latitude && location?.longitude) {
-                const startBound = new Date(`${start}T00:00:00Z`).toISOString();
-                const endExclusive = new Date(new Date(`${end}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000).toISOString();
-
-                let query = supabaseClient
-                  .from("events")
-                  .select("*")
-                  .gte("event_date", startBound)
-                  .lt("event_date", endExclusive)
-                  .order("event_date");
-
-                if (pendingCity) {
-                  query = query.ilike("city", pendingCity);
-                }
-
-                const { data: events, error } = await query;
-
-                if (!error) {
-                  const filteredEvents = (events || []).filter((event) => {
-                    if (!event.latitude || !event.longitude) return false;
-                    const distance = Math.sqrt(
-                      Math.pow(event.latitude - location.latitude, 2) +
-                      Math.pow(event.longitude - location.longitude, 2)
-                    ) * 111;
-                    return distance <= 10;
-                  });
-
-                  const formattedEvents = filteredEvents
-                    .map((e) => {
-                      const date = new Date(e.event_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                      const time = new Date(e.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                      const ticketLink = e.ticket_url ? `🎫 [Tickets](${e.ticket_url})` : '';
-                      const mapsLink = e.latitude && e.longitude ? `📍 [Map](https://maps.google.com/?q=${e.latitude},${e.longitude})` : '';
-                      const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
-                      return `🎵 **${e.artist || e.name}** at ${e.venue}\n${e.description ? `📝 ${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}\n` : ''}📅 ${date} at ${time}\n💰 ${e.price ? `€${e.price}` : "Free"}\n${links}`;
-                    })
-                    .join("\n\n");
-
-                  const responseMessage = filteredEvents.length > 0
-                    ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} near you:\n\n${formattedEvents}`
-                    : `I couldn't find any events matching your criteria. Try adjusting the date or location.`;
-
-                  controller.enqueue(
-                    encoder.encode(
-                      `data: ${JSON.stringify({ choices: [{ delta: { content: responseMessage } }] })}\n\n`
-                    )
-                  );
-                  resultsSent = true;
-                }
-              } else if (searchMode === "internet") {
-                const city = pendingCity || (location?.city ? standardizeCityName(location.city) : "");
-                if (city) {
-                  const searchQuery = `live music events ${city} ${start} ${end} tickets`;
-                  const searchResults = await searchWebEvents(searchQuery, { city, startDate: start, endDate: end });
-
-                  if (searchResults.length > 0) {
-                    const formattedResults = searchResults.map((event: any) => {
-                      const ticketLink = event.ticketUrl ? `🎫 [Tickets](${event.ticketUrl})` : '';
-                      const mapsLink = event.mapsUrl ? `📍 [Map](${event.mapsUrl})` : '';
-                      const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
-                      return `🎵 **${event.artist}** at ${event.venue}\n${event.description ? `📝 ${event.description}\n` : ''}📅 ${event.date}\n💰 ${event.price}\n${links}`;
-                    }).join("\n\n");
-
-                    controller.enqueue(
-                      encoder.encode(
-                        `data: ${JSON.stringify({ choices: [{ delta: { content: `I found ${searchResults.length} event${searchResults.length > 1 ? 's' : ''} for you:\n\n${formattedResults}` } }] })}\n\n`
-                      )
-                    );
-                    resultsSent = true;
-                  } else {
-                    controller.enqueue(
-                      encoder.encode(
-                        `data: ${JSON.stringify({ choices: [{ delta: { content: `I searched for events in ${city} from ${start} to ${end}, but couldn't find any results. Try adjusting your search parameters.` } }] })}\n\n`
-                      )
-                    );
-                    resultsSent = true;
-                  }
-                }
-              }
-            } catch (fallbackError) {
-              console.error('Fallback search error:', fallbackError);
             }
           }
 
