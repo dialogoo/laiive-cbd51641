@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Globe, Mic, Send, Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Search, Globe, Mic, Send, Loader2, Users, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -17,6 +18,7 @@ interface UserLocation {
 }
 
 const Chat = () => {
+  const [mode, setMode] = useState<"user" | "promoter">("user");
   const [searchMode, setSearchMode] = useState<"database" | "internet">("database");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -28,6 +30,28 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<UserLocation | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleModeChange = (checked: boolean) => {
+    const newMode = checked ? "promoter" : "user";
+    setMode(newMode);
+    
+    // Reset messages with appropriate initial message
+    if (newMode === "promoter") {
+      setMessages([
+        {
+          role: "assistant",
+          content: "Hello! I can help you add your event to the laiive platform. To start, please provide me with the following information:\n\n*   **Artist name**\n*   **Event description**\n*   **Date and time**\n*   **Venue name**\n*   **City**\n*   **Ticket price**",
+        },
+      ]);
+    } else {
+      setMessages([
+        {
+          role: "assistant",
+          content: "Hey! 👋 I'm here to help you discover amazing live music events near you. What are you in the mood for today?",
+        },
+      ]);
+    }
+  };
 
   useEffect(() => {
     // Get user location
@@ -64,19 +88,24 @@ const Chat = () => {
     setIsLoading(true);
 
     try {
+      const endpoint = mode === "promoter" ? "promoter-create" : "chat";
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${endpoint}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({
-            messages: [...messages, userMessage],
-            location,
-            searchMode,
-          }),
+          body: JSON.stringify(
+            mode === "promoter"
+              ? { messages: [...messages, userMessage] }
+              : {
+                  messages: [...messages, userMessage],
+                  location,
+                  searchMode,
+                }
+          ),
         }
       );
 
@@ -163,35 +192,55 @@ const Chat = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Header with search toggle */}
-      <header className="border-b border-border bg-card p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+    <div className={cn(
+      "flex flex-col h-screen",
+      mode === "promoter" ? "bg-[hsl(0,0%,12%)]" : "bg-background"
+    )}>
+      {/* Header with mode toggle and search options */}
+      <header className={cn(
+        "border-b border-border p-4",
+        mode === "promoter" ? "bg-[hsl(0,0%,18%)]" : "bg-card"
+      )}>
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🫦</span>
             <span className="font-montserrat font-bold text-xl text-primary">laiive</span>
           </div>
           
-          <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-            <Button
-              variant={searchMode === "database" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setSearchMode("database")}
-              className="gap-2"
-            >
-              <Search className="w-4 h-4" />
-              <span className="hidden sm:inline">laiive search</span>
-            </Button>
-            <Button
-              variant={searchMode === "internet" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setSearchMode("internet")}
-              className="gap-2"
-            >
-              <Globe className="w-4 h-4" />
-              <span className="hidden sm:inline">Internet search</span>
-            </Button>
+          {/* Mode Switch */}
+          <div className="flex items-center gap-3 bg-muted rounded-lg px-3 py-2">
+            <MessageCircle className="w-4 h-4 text-muted-foreground" />
+            <Switch
+              id="mode-toggle"
+              checked={mode === "promoter"}
+              onCheckedChange={handleModeChange}
+            />
+            <Users className="w-4 h-4 text-muted-foreground" />
           </div>
+          
+          {/* Search Mode Toggle - Only visible in user mode */}
+          {mode === "user" && (
+            <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+              <Button
+                variant={searchMode === "database" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSearchMode("database")}
+                className="gap-2"
+              >
+                <Search className="w-4 h-4" />
+                <span className="hidden sm:inline">laiive search</span>
+              </Button>
+              <Button
+                variant={searchMode === "internet" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSearchMode("internet")}
+                className="gap-2"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="hidden sm:inline">Internet search</span>
+              </Button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -210,7 +259,11 @@ const Chat = () => {
                 className={cn(
                   "max-w-[80%] rounded-2xl px-4 py-3 font-ibm-plex whitespace-pre-wrap",
                   msg.role === "user"
-                    ? "bg-muted text-foreground border border-border"
+                    ? mode === "promoter"
+                      ? "bg-[hsl(0,0%,22%)] text-foreground border border-[hsl(0,0%,30%)]"
+                      : "bg-muted text-foreground border border-border"
+                    : mode === "promoter"
+                    ? "bg-[hsl(0,0%,18%)] text-card-foreground border border-[hsl(0,0%,30%)]"
                     : "bg-card text-card-foreground border border-border"
                 )}
                 dangerouslySetInnerHTML={{
@@ -223,7 +276,12 @@ const Chat = () => {
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-card text-card-foreground border border-border rounded-2xl px-4 py-3">
+              <div className={cn(
+                "text-card-foreground border rounded-2xl px-4 py-3",
+                mode === "promoter" 
+                  ? "bg-[hsl(0,0%,18%)] border-[hsl(0,0%,30%)]"
+                  : "bg-card border-border"
+              )}>
                 <Loader2 className="w-5 h-5 animate-spin" />
               </div>
             </div>
@@ -233,7 +291,10 @@ const Chat = () => {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-border bg-card p-4">
+      <div className={cn(
+        "border-t border-border p-4",
+        mode === "promoter" ? "bg-[hsl(0,0%,18%)]" : "bg-card"
+      )}>
         <div className="max-w-4xl mx-auto flex items-center gap-2">
           <Button
             variant="ghost"
@@ -247,8 +308,11 @@ const Chat = () => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            placeholder="Tell me what you're looking for..."
-            className="flex-1 bg-background border-border font-ibm-plex"
+            placeholder={mode === "promoter" ? "Tell me about your event..." : "Tell me what you're looking for..."}
+            className={cn(
+              "flex-1 border-border font-ibm-plex",
+              mode === "promoter" ? "bg-[hsl(0,0%,12%)]" : "bg-background"
+            )}
           />
           
           <Button
