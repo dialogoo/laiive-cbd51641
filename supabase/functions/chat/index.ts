@@ -304,6 +304,12 @@ Format each event as:
         const decoder = new TextDecoder();
         let buffer = "";
 
+        // State for silent tool results and output control
+        let pendingStartDate: string | null = null;
+        let pendingEndDate: string | null = null;
+        let pendingCity: string | null = null;
+        let resultsSent = false;
+
         try {
           while (true) {
             const { done, value } = await reader.read();
@@ -333,6 +339,8 @@ Format each event as:
                       
                       // Process silently - don't show to user
                       const parsedDate = parseRelativeDate(args.dateExpression, now);
+                      pendingStartDate = parsedDate.start;
+                      pendingEndDate = parsedDate.end;
                       console.log("Parsed date result:", parsedDate);
                       
                     } else if (toolCall.function?.name === "standardize_city_name") {
@@ -341,6 +349,7 @@ Format each event as:
                       
                       // Process silently - don't show to user
                       const standardized = standardizeCityName(args.cityInput);
+                      pendingCity = standardized;
                       console.log("Standardized city:", standardized);
                       
                     } else if (toolCall.function?.name === "query_database_events") {
@@ -407,6 +416,7 @@ ${links}`;
                         const responseMessage = filteredEvents.length > 0
                           ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} for you:\n\n${formattedEvents}`
                           : `I couldn't find any events matching your criteria. Try adjusting the date or location.`;
+                        resultsSent = true;
 
                         controller.enqueue(
                           encoder.encode(
@@ -445,6 +455,7 @@ ${event.description ? `📝 ${event.description}\n` : ''}📅 ${event.date}
 ${links}`;
                           }).join("\n\n");
                           
+                          resultsSent = true;
                           controller.enqueue(
                             encoder.encode(
                               `data: ${JSON.stringify({
@@ -459,6 +470,7 @@ ${links}`;
                             )
                           );
                         } else {
+                          resultsSent = true;
                           controller.enqueue(
                             encoder.encode(
                               `data: ${JSON.stringify({
@@ -475,7 +487,8 @@ ${links}`;
                         }
                       } catch (searchError) {
                         console.error("Web search error:", searchError);
-                        controller.enqueue(
+                          resultsSent = true;
+                          controller.enqueue(
                           encoder.encode(
                             `data: ${JSON.stringify({
                               choices: [
@@ -498,6 +511,87 @@ ${links}`;
               } catch (e) {
                 console.error("Parse error:", e);
               }
+            }
+          }
+
+          // Fallback: if no results were sent, perform automatic search using parsed parameters
+          if (!resultsSent) {
+            try {
+              const start = pendingStartDate || currentDate;
+              const end = pendingEndDate || start;
+
+              if (searchMode === "database" && location?.latitude && location?.longitude) {
+                const { data: events, error } = await supabaseClient
+                  .from("events")
+                  .select("*")
+                  .gte("event_date", start)
+                  .lte("event_date", end)
+                  .order("event_date");
+
+                if (!error) {
+                  const filteredEvents = (events || []).filter((event) => {
+                    if (!event.latitude || !event.longitude) return false;
+                    const distance = Math.sqrt(
+                      Math.pow(event.latitude - location.latitude, 2) +
+                      Math.pow(event.longitude - location.longitude, 2)
+                    ) * 111;
+                    return distance <= 10;
+                  });
+
+                  const formattedEvents = filteredEvents
+                    .map((e) => {
+                      const date = new Date(e.event_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                      const time = new Date(e.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                      const ticketLink = e.ticket_url ? `🎫 [Tickets](${e.ticket_url})` : '';
+                      const mapsLink = e.latitude && e.longitude ? `📍 [Map](https://maps.google.com/?q=${e.latitude},${e.longitude})` : '';
+                      const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
+                      return `🎵 **${e.artist || e.name}** at ${e.venue}\n${e.description ? `📝 ${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}\n` : ''}📅 ${date} at ${time}\n💰 ${e.price ? `€${e.price}` : "Free"}\n${links}`;
+                    })
+                    .join("\n\n");
+
+                  const responseMessage = filteredEvents.length > 0
+                    ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} near you:\n\n${formattedEvents}`
+                    : `I couldn't find any events matching your criteria. Try adjusting the date or location.`;
+
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ choices: [{ delta: { content: responseMessage } }] })}\n\n`
+                    )
+                  );
+                  resultsSent = true;
+                }
+              } else if (searchMode === "internet") {
+                const city = pendingCity || (location?.city ? standardizeCityName(location.city) : "");
+                if (city) {
+                  const searchQuery = `live music events ${city} ${start} ${end} tickets`;
+                  const searchResults = await searchWebEvents(searchQuery, { city, startDate: start, endDate: end });
+
+                  if (searchResults.length > 0) {
+                    const formattedResults = searchResults.map((event: any) => {
+                      const ticketLink = event.ticketUrl ? `🎫 [Tickets](${event.ticketUrl})` : '';
+                      const mapsLink = event.mapsUrl ? `📍 [Map](${event.mapsUrl})` : '';
+                      const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
+                      return `🎵 **${event.artist}** at ${event.venue}\n${event.description ? `📝 ${event.description}\n` : ''}📅 ${event.date}\n💰 ${event.price}\n${links}`;
+                    }).join("\n\n");
+
+                    controller.enqueue(
+                      encoder.encode(
+                        `data: ${JSON.stringify({ choices: [{ delta: { content: `I found ${searchResults.length} event${searchResults.length > 1 ? 's' : ''} for you:\n\n${formattedResults}` } }] })}\n\n`
+                      )
+                    );
+                    resultsSent = true;
+                  } else {
+                    controller.enqueue(
+                      encoder.encode(
+                        `data: ${JSON.stringify({ choices: [{ delta: { content: `I searched for events in ${city} from ${start} to ${end}, but couldn't find any results. Try adjusting your search parameters.` } }] })}\n\n`
+                      )
+                    );
+                    resultsSent = true;
+                  }
+                }
+              }
+            } catch (fallbackError) {
+              console.error('Fallback search error:', fallbackError);
             }
           }
 
