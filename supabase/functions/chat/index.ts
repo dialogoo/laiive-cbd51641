@@ -230,18 +230,29 @@ ${locationInfo}
 
 ${searchMode === "database" ? "You have access to the laiive database of events." : "You can search the internet for events from various ticketing platforms and venues."}
 
-IMPORTANT INSTRUCTIONS:
-1. When users mention relative dates (tomorrow, this weekend, next week), use the parse_relative_date tool FIRST to get the exact dates
-2. When users mention cities that may have typos or variations, use standardize_city_name tool to get the correct format
-3. Always use the user's current location as default if they don't specify another location
-4. If users change search parameters (location, date, genre), call the search tool again with updated parameters
+CRITICAL WORKFLOW:
+1. When users mention relative dates (tomorrow, this weekend, next week), use parse_relative_date tool to convert them silently
+2. When users mention cities, use standardize_city_name tool to correct them silently
+3. After parsing dates and cities, immediately call the search tool (${searchMode === "database" ? "query_database_events" : "search_internet_events"})
+4. Present results conversationally with clear formatting
+5. If users request different parameters, repeat the process with new parameters
 
-Format results as:
-**Artist/Event Name** at Venue
+HELPER TOOLS (use silently, don't announce):
+- parse_relative_date: converts "tomorrow", "next week" etc. to ISO dates
+- standardize_city_name: fixes typos and standardizes city names
+
+IMPORTANT:
+- Use user's current location as default if not specified
+- Always call helper tools before the main search tool
+- Don't show intermediate parsing steps to users
+- Present results in a friendly, conversational way
+
+Format each event as:
+🎵 **Artist/Event Name** at Venue
+📝 Brief description
 📅 Date & Time
 💰 Price
-🎫 [Ticket Link]
-📍 [Google Maps]`;
+🎫 [Ticket Link if available] | 📍 [Google Maps Location]`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -320,40 +331,18 @@ Format results as:
                       const args = JSON.parse(toolCall.function.arguments);
                       console.log("Parsing relative date:", args);
                       
+                      // Process silently - don't show to user
                       const parsedDate = parseRelativeDate(args.dateExpression, now);
+                      console.log("Parsed date result:", parsedDate);
                       
-                      controller.enqueue(
-                        encoder.encode(
-                          `data: ${JSON.stringify({
-                            choices: [
-                              {
-                                delta: {
-                                  content: `📅 Understood: ${args.dateExpression} = ${parsedDate.start} to ${parsedDate.end}\n\n`,
-                                },
-                              },
-                            ],
-                          })}\n\n`
-                        )
-                      );
                     } else if (toolCall.function?.name === "standardize_city_name") {
                       const args = JSON.parse(toolCall.function.arguments);
                       console.log("Standardizing city name:", args);
                       
+                      // Process silently - don't show to user
                       const standardized = standardizeCityName(args.cityInput);
+                      console.log("Standardized city:", standardized);
                       
-                      controller.enqueue(
-                        encoder.encode(
-                          `data: ${JSON.stringify({
-                            choices: [
-                              {
-                                delta: {
-                                  content: `📍 Searching in: ${standardized}\n\n`,
-                                },
-                              },
-                            ],
-                          })}\n\n`
-                        )
-                      );
                     } else if (toolCall.function?.name === "query_database_events") {
                       const args = JSON.parse(toolCall.function.arguments);
                       console.log("Querying database:", args);
@@ -386,13 +375,38 @@ Format results as:
                           return distance <= 10;
                         }) || [];
 
-                        // Format events
+                        // Format events with proper icons and links
                         const formattedEvents = filteredEvents
                           .map(
-                            (e) =>
-                              `**${e.artist || e.name}** at ${e.venue}\n📅 ${new Date(e.event_date).toLocaleDateString()}\n💰 ${e.price ? `€${e.price}` : "Free"}\n${e.ticket_url ? `🎫 [Get Tickets](${e.ticket_url})` : ""}\n📍 [Directions](https://maps.google.com/?q=${e.latitude},${e.longitude})`
+                            (e) => {
+                              const date = new Date(e.event_date).toLocaleDateString('en-US', { 
+                                weekday: 'short', 
+                                year: 'numeric', 
+                                month: 'short', 
+                                day: 'numeric' 
+                              });
+                              const time = new Date(e.event_date).toLocaleTimeString('en-US', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              });
+                              
+                              const ticketLink = e.ticket_url ? `🎫 [Tickets](${e.ticket_url})` : '';
+                              const mapsLink = e.latitude && e.longitude 
+                                ? `📍 [Map](https://maps.google.com/?q=${e.latitude},${e.longitude})` 
+                                : '';
+                              const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
+                              
+                              return `🎵 **${e.artist || e.name}** at ${e.venue}
+${e.description ? `📝 ${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}\n` : ''}📅 ${date} at ${time}
+💰 ${e.price ? `€${e.price}` : "Free"}
+${links}`;
+                            }
                           )
                           .join("\n\n");
+
+                        const responseMessage = filteredEvents.length > 0
+                          ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} for you:\n\n${formattedEvents}`
+                          : `I couldn't find any events matching your criteria. Try adjusting the date or location.`;
 
                         controller.enqueue(
                           encoder.encode(
@@ -400,7 +414,7 @@ Format results as:
                               choices: [
                                 {
                                   delta: {
-                                    content: `Found ${filteredEvents.length} events near you:\n\n${formattedEvents || "No events found."}`,
+                                    content: responseMessage,
                                   },
                                 },
                               ],
@@ -420,9 +434,16 @@ Format results as:
                         const searchResults = await searchWebEvents(searchQuery, args);
                         
                         if (searchResults.length > 0) {
-                          const formattedResults = searchResults.map(event => 
-                            `**${event.artist}** at ${event.venue}\n📅 ${event.date}\n💰 ${event.price}\n🎫 [Tickets](${event.ticketUrl})\n📍 [Directions](${event.mapsUrl})`
-                          ).join("\n\n");
+                          const formattedResults = searchResults.map(event => {
+                            const ticketLink = event.ticketUrl ? `🎫 [Tickets](${event.ticketUrl})` : '';
+                            const mapsLink = event.mapsUrl ? `📍 [Map](${event.mapsUrl})` : '';
+                            const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
+                            
+                            return `🎵 **${event.artist}** at ${event.venue}
+${event.description ? `📝 ${event.description}\n` : ''}📅 ${event.date}
+💰 ${event.price}
+${links}`;
+                          }).join("\n\n");
                           
                           controller.enqueue(
                             encoder.encode(
@@ -430,7 +451,7 @@ Format results as:
                                 choices: [
                                   {
                                     delta: {
-                                      content: `🎵 Found ${searchResults.length} live music events:\n\n${formattedResults}`,
+                                      content: `I found ${searchResults.length} event${searchResults.length > 1 ? 's' : ''} for you:\n\n${formattedResults}`,
                                     },
                                   },
                                 ],
@@ -444,7 +465,7 @@ Format results as:
                                 choices: [
                                   {
                                     delta: {
-                                      content: `🔍 I searched for events in ${args.city} from ${args.startDate} to ${args.endDate}, but couldn't find any results. Try checking specific venue websites or adjusting your search dates.`,
+                                      content: `I searched for events in ${args.city} from ${args.startDate} to ${args.endDate}, but couldn't find any results. Try adjusting your search parameters or checking specific venue websites.`,
                                     },
                                   },
                                 ],
