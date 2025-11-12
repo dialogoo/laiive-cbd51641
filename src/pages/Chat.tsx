@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Search, Globe, Mic, Send, Loader2, Users, MessageCircle } from "lucide-react";
+import { Search, Globe, Mic, Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -31,8 +30,8 @@ const Chat = () => {
   const [location, setLocation] = useState<UserLocation | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleModeChange = (checked: boolean) => {
-    const newMode = checked ? "promoter" : "user";
+  const handleModeChange = () => {
+    const newMode = mode === "user" ? "promoter" : "user";
     setMode(newMode);
     
     // Reset messages with appropriate initial message
@@ -207,16 +206,13 @@ const Chat = () => {
             <span className="font-montserrat font-bold text-xl text-primary">laiive</span>
           </div>
           
-          {/* Mode Switch */}
-          <div className="flex items-center gap-3 bg-muted rounded-lg px-3 py-2">
-            <MessageCircle className="w-4 h-4 text-muted-foreground" />
-            <Switch
-              id="mode-toggle"
-              checked={mode === "promoter"}
-              onCheckedChange={handleModeChange}
-            />
-            <Users className="w-4 h-4 text-muted-foreground" />
-          </div>
+          {/* Mode Link */}
+          <button
+            onClick={handleModeChange}
+            className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            {mode === "user" ? "promoter app →" : "user app →"}
+          </button>
           
           {/* Search Mode Toggle - Only visible in user mode */}
           {mode === "user" && (
