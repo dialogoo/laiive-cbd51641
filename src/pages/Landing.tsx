@@ -56,32 +56,6 @@ const Landing = () => {
           </button>
         </div>
 
-        {/* Feature highlights */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl animate-in fade-in duration-700 delay-500">
-          <div className="text-center">
-            <div className="text-4xl mb-3">🎤</div>
-            <h3 className="font-montserrat font-bold text-lg mb-2">Voice Search</h3>
-            <p className="text-sm text-muted-foreground font-ibm-plex">
-              Just speak what you're looking for
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-4xl mb-3">📍</div>
-            <h3 className="font-montserrat font-bold text-lg mb-2">Near You</h3>
-            <p className="text-sm text-muted-foreground font-ibm-plex">
-              Events within 10km radius
-            </p>
-          </div>
-          
-          <div className="text-center">
-            <div className="text-4xl mb-3">🎵</div>
-            <h3 className="font-montserrat font-bold text-lg mb-2">AI Powered</h3>
-            <p className="text-sm text-muted-foreground font-ibm-plex">
-              Smart recommendations just for you
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -64,12 +64,12 @@ const Promoters = () => {
             <Card
               key={tier.name}
               className={cn(
-                "relative p-6 bg-card border-border hover:shadow-glow-primary transition-all duration-300",
-                tier.popular && "border-primary shadow-glow-primary scale-105"
+                "relative p-6 bg-card border-border hover:border-muted transition-all duration-300",
+                tier.popular && "border-muted scale-105"
               )}
             >
               {tier.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-montserrat font-bold">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-muted text-foreground px-4 py-1 rounded-full text-sm font-montserrat font-bold">
                   POPULAR
                 </div>
               )}
@@ -84,7 +84,7 @@ const Promoters = () => {
                   {tier.name}
                 </h3>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-5xl font-montserrat font-bold text-primary">
+                  <span className="text-5xl font-montserrat font-bold text-foreground">
                     {tier.price}
                   </span>
                   <span className="text-muted-foreground font-ibm-plex">
@@ -95,11 +95,11 @@ const Promoters = () => {
 
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
+                  <Check className="w-5 h-5 text-muted-foreground" />
                   <span className="font-ibm-plex">{tier.events}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-5 h-5 text-primary" />
+                  <Check className="w-5 h-5 text-muted-foreground" />
                   <span className="font-ibm-plex">{tier.promoted}</span>
                 </div>
               </div>

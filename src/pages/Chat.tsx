@@ -44,10 +44,7 @@ const Chat = () => {
               variant={searchMode === "database" ? "default" : "ghost"}
               size="sm"
               onClick={() => setSearchMode("database")}
-              className={cn(
-                "gap-2",
-                searchMode === "database" && "shadow-glow-primary"
-              )}
+              className="gap-2"
             >
               <Search className="w-4 h-4" />
               <span className="hidden sm:inline">laiive search</span>
@@ -56,10 +53,7 @@ const Chat = () => {
               variant={searchMode === "internet" ? "default" : "ghost"}
               size="sm"
               onClick={() => setSearchMode("internet")}
-              className={cn(
-                "gap-2",
-                searchMode === "internet" && "shadow-glow-primary"
-              )}
+              className="gap-2"
             >
               <Globe className="w-4 h-4" />
               <span className="hidden sm:inline">Internet search</span>
@@ -80,15 +74,15 @@ const Chat = () => {
               )}
             >
               <div
-                className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-3 font-ibm-plex",
-                  msg.role === "user"
-                    ? "bg-primary text-primary-foreground shadow-glow-primary"
-                    : "bg-card text-card-foreground border border-border"
-                )}
-              >
-                {msg.content}
-              </div>
+              className={cn(
+                "max-w-[80%] rounded-2xl px-4 py-3 font-ibm-plex",
+                msg.role === "user"
+                  ? "bg-muted text-foreground border border-border"
+                  : "bg-card text-card-foreground border border-border"
+              )}
+            >
+              {msg.content}
+            </div>
             </div>
           ))}
         </div>
@@ -115,9 +109,8 @@ const Chat = () => {
           
           <Button
             onClick={handleSendMessage}
-            variant="hero"
+            variant="default"
             size="icon"
-            className="shadow-glow-primary"
           >
             <Send className="w-5 h-5" />
           </Button>
