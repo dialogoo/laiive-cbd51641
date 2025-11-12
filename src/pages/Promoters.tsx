@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Crown, Rocket } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Promoters = () => {
+  const navigate = useNavigate();
+  
   const tiers = [
     {
       name: "Free Tier",
@@ -108,6 +111,7 @@ const Promoters = () => {
                 variant={tier.variant}
                 size="lg"
                 className="w-full"
+                onClick={() => tier.price === "$0" ? navigate("/promoters/create") : null}
               >
                 {tier.price === "$0" ? "Get Started" : "Go Pro"}
               </Button>
@@ -118,7 +122,7 @@ const Promoters = () => {
         {/* Sign in section */}
         <div className="text-center">
           <p className="font-ibm-plex text-muted-foreground mb-4">
-            Sign in with Google to start posting events
+            Sign in with Google to unlock Pro and Event Hub features
           </p>
           <Button variant="hero" size="xl">
             Sign in with Google
