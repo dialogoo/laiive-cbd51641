@@ -205,16 +205,17 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "query_database_events",
-          description: "Query the laiive database for live music events within 10km of location",
+          description: "Query the laiive database for live music events. You can filter by city or by proximity to coordinates.",
           parameters: {
             type: "object",
             properties: {
-              latitude: { type: "number" },
-              longitude: { type: "number" },
-              startDate: { type: "string", description: "ISO format date" },
-              endDate: { type: "string", description: "ISO format date" },
+              latitude: { type: "number", description: "User latitude (required if city is not provided)" },
+              longitude: { type: "number", description: "User longitude (required if city is not provided)" },
+              startDate: { type: "string", description: "ISO date (YYYY-MM-DD) start" },
+              endDate: { type: "string", description: "ISO date (YYYY-MM-DD) end" },
+              city: { type: "string", description: "Optional city filter. When provided, search by city name instead of coordinates." },
             },
-            required: ["latitude", "longitude", "startDate", "endDate"],
+            required: ["startDate", "endDate"],
           },
         },
       });
@@ -356,13 +357,23 @@ Format each event as:
                       const args = JSON.parse(toolCall.function.arguments);
                       console.log("Querying database:", args);
 
-                      // Query events within 10km radius
-                      const { data: events, error } = await supabaseClient
+                      // Build full-day range: [start 00:00:00, end+1day 00:00:00)
+                      const startBound = new Date(`${args.startDate}T00:00:00Z`).toISOString();
+                      const endExclusive = new Date(new Date(`${args.endDate}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000).toISOString();
+
+                      let query = supabaseClient
                         .from("events")
                         .select("*")
-                        .gte("event_date", args.startDate)
-                        .lte("event_date", args.endDate)
+                        .gte("event_date", startBound)
+                        .lt("event_date", endExclusive)
                         .order("event_date");
+
+                      const cityFilter = args.city || pendingCity;
+                      if (cityFilter) {
+                        query = query.ilike("city", cityFilter);
+                      }
+
+                      const { data: events, error } = await query;
 
                       if (error) {
                         console.error("Database query error:", error);
@@ -374,61 +385,40 @@ Format each event as:
                           )
                         );
                       } else {
-                        // Filter by distance (simple approximation)
-                        const filteredEvents = events?.filter((event) => {
-                          if (!event.latitude || !event.longitude) return false;
-                          const distance = Math.sqrt(
-                            Math.pow(event.latitude - args.latitude, 2) +
+                        // If no city filter, apply 10km proximity filter using provided coords
+                        const useProximity = !cityFilter && typeof args.latitude === 'number' && typeof args.longitude === 'number';
+                        const filteredEvents = (events || []).filter((event) => {
+                          if (useProximity) {
+                            if (!event.latitude || !event.longitude) return false;
+                            const distance = Math.sqrt(
+                              Math.pow(event.latitude - args.latitude, 2) +
                               Math.pow(event.longitude - args.longitude, 2)
-                          ) * 111; // rough km conversion
-                          return distance <= 10;
-                        }) || [];
+                            ) * 111; // rough km conversion
+                            return distance <= 10;
+                          }
+                          return true;
+                        });
 
-                        // Format events with proper icons and links
                         const formattedEvents = filteredEvents
-                          .map(
-                            (e) => {
-                              const date = new Date(e.event_date).toLocaleDateString('en-US', { 
-                                weekday: 'short', 
-                                year: 'numeric', 
-                                month: 'short', 
-                                day: 'numeric' 
-                              });
-                              const time = new Date(e.event_date).toLocaleTimeString('en-US', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              });
-                              
-                              const ticketLink = e.ticket_url ? `🎫 [Tickets](${e.ticket_url})` : '';
-                              const mapsLink = e.latitude && e.longitude 
-                                ? `📍 [Map](https://maps.google.com/?q=${e.latitude},${e.longitude})` 
-                                : '';
-                              const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
-                              
-                              return `🎵 **${e.artist || e.name}** at ${e.venue}
-${e.description ? `📝 ${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}\n` : ''}📅 ${date} at ${time}
-💰 ${e.price ? `€${e.price}` : "Free"}
-${links}`;
-                            }
-                          )
+                          .map((e) => {
+                            const date = new Date(e.event_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                            const time = new Date(e.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                            const ticketLink = e.ticket_url ? `🎫 [Tickets](${e.ticket_url})` : '';
+                            const mapsLink = e.latitude && e.longitude ? `📍 [Map](https://maps.google.com/?q=${e.latitude},${e.longitude})` : '';
+                            const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
+                            const place = e.city ? `${e.venue}, ${e.city}` : e.venue;
+                            return `🎵 **${e.artist || e.name}** at ${place}\n${e.description ? `📝 ${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}\n` : ''}📅 ${date} at ${time}\n💰 ${e.price ? `€${e.price}` : "Free"}\n${links}`;
+                          })
                           .join("\n\n");
 
                         const responseMessage = filteredEvents.length > 0
-                          ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} for you:\n\n${formattedEvents}`
-                          : `I couldn't find any events matching your criteria. Try adjusting the date or location.`;
+                          ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} for ${cityFilter ? cityFilter : 'your area'} from ${args.startDate} to ${args.endDate}:\n\n${formattedEvents}`
+                          : `I couldn't find any events matching your criteria for ${cityFilter ? cityFilter : 'your area'} between ${args.startDate} and ${args.endDate}.`;
                         resultsSent = true;
 
                         controller.enqueue(
                           encoder.encode(
-                            `data: ${JSON.stringify({
-                              choices: [
-                                {
-                                  delta: {
-                                    content: responseMessage,
-                                  },
-                                },
-                              ],
-                            })}\n\n`
+                            `data: ${JSON.stringify({ choices: [{ delta: { content: responseMessage } }] })}\n\n`
                           )
                         );
                       }
@@ -521,12 +511,21 @@ ${links}`;
               const end = pendingEndDate || start;
 
               if (searchMode === "database" && location?.latitude && location?.longitude) {
-                const { data: events, error } = await supabaseClient
+                const startBound = new Date(`${start}T00:00:00Z`).toISOString();
+                const endExclusive = new Date(new Date(`${end}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000).toISOString();
+
+                let query = supabaseClient
                   .from("events")
                   .select("*")
-                  .gte("event_date", start)
-                  .lte("event_date", end)
+                  .gte("event_date", startBound)
+                  .lt("event_date", endExclusive)
                   .order("event_date");
+
+                if (pendingCity) {
+                  query = query.ilike("city", pendingCity);
+                }
+
+                const { data: events, error } = await query;
 
                 if (!error) {
                   const filteredEvents = (events || []).filter((event) => {

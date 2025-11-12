@@ -8,7 +8,13 @@ import { cn } from "@/lib/utils";
 const PromoterCreate = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
+    {
+      role: "assistant",
+      content:
+        "Hello! I can help you add your event to the laiive platform. To start, please provide me with the following information:\n\n*   **Artist name**\n*   **Event description**\n*   **Date and time**\n*   **Venue name**\n*   **City**\n*   **Ticket price**",
+    },
+  ]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -16,73 +22,6 @@ const PromoterCreate = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => {
-    // Send initial welcome message
-    const fetchWelcome = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/promoter-create`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({
-              messages: [{ role: "user", content: "start" }],
-            }),
-          }
-        );
-
-        if (!response.ok || !response.body) {
-          throw new Error("Failed to start conversation");
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let assistantMessage = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n");
-
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const data = line.slice(6);
-              if (data === "[DONE]") continue;
-
-              try {
-                const parsed = JSON.parse(data);
-                const content = parsed.choices?.[0]?.delta?.content;
-                if (content) {
-                  assistantMessage += content;
-                  setMessages([{ role: "assistant", content: assistantMessage }]);
-                }
-              } catch (e) {
-                console.error("Parse error:", e);
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching welcome:", error);
-        setMessages([
-          {
-            role: "assistant",
-            content: "Hey! 👋 I'll help you add your event to laiive. Let's start - what's the artist or band name?",
-          },
-        ]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchWelcome();
-  }, []);
 
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
