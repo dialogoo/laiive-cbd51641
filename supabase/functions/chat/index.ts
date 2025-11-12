@@ -91,11 +91,10 @@ function standardizeCityName(cityInput: string): string {
 async function searchWebEvents(query: string, filters: any): Promise<any[]> {
   console.log("Searching web for:", query, filters);
   
-  // Simple web scraping approach - search common event platforms
   const results: any[] = [];
   
   try {
-    // Search Google for events (basic approach)
+    // Search Google for events
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     const response = await fetch(searchUrl, {
       headers: {
@@ -105,24 +104,62 @@ async function searchWebEvents(query: string, filters: any): Promise<any[]> {
     
     if (response.ok) {
       const html = await response.text();
-      
-      // Basic parsing - look for common event patterns
-      // This is a simplified version - in production you'd use proper HTML parsing
-      const eventPatterns = [
-        /live music/gi,
-        /concert/gi,
-        /tickets/gi,
-      ];
-      
-      // For now, return a placeholder that indicates search was attempted
       console.log("Web search completed, found content length:", html.length);
+      
+      // Extract event information using regex patterns
+      // Look for text blocks that mention concerts, venues, dates, and prices
+      
+      // Pattern for extracting artist/venue combinations
+      const titlePattern = /<h3[^>]*>(.*?)<\/h3>/gi;
+      const titles = [];
+      let match;
+      
+      while ((match = titlePattern.exec(html)) !== null) {
+        const cleanText = match[1].replace(/<[^>]*>/g, '').trim();
+        if (cleanText && (
+          cleanText.toLowerCase().includes('concert') ||
+          cleanText.toLowerCase().includes('live') ||
+          cleanText.toLowerCase().includes('music') ||
+          cleanText.toLowerCase().includes('show')
+        )) {
+          titles.push(cleanText);
+        }
+      }
+      
+      // Look for price patterns (€, EUR, $, USD)
+      const pricePattern = /(?:€|EUR|&#8364;)\s*(\d+(?:[.,]\d{2})?)|(?:\$|USD)\s*(\d+(?:[.,]\d{2})?)/gi;
+      const prices = [];
+      while ((match = pricePattern.exec(html)) !== null) {
+        prices.push(match[0]);
+      }
+      
+      // Look for date patterns
+      const datePattern = /\b(?:\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2}(?:,?\s+\d{4})?)\b/gi;
+      const dates = [];
+      while ((match = datePattern.exec(html)) !== null) {
+        dates.push(match[0]);
+      }
+      
+      // Create event objects from extracted data
+      const maxEvents = Math.min(titles.length, 5); // Limit to 5 events
+      for (let i = 0; i < maxEvents; i++) {
+        if (titles[i]) {
+          results.push({
+            artist: titles[i].split(/\sat\s|\s-\s|,/i)[0] || titles[i],
+            venue: filters.city,
+            date: dates[i] || filters.startDate,
+            price: prices[i] || "Check website",
+            description: "",
+            ticketUrl: "",
+            mapsUrl: `https://maps.google.com/?q=${encodeURIComponent(filters.city)}`
+          });
+        }
+      }
     }
   } catch (error) {
     console.error("Web search error:", error);
   }
   
-  // Return empty array for now - actual web scraping would need more robust implementation
-  // or integration with event APIs like Ticketmaster, Songkick, etc.
   return results;
 }
 
