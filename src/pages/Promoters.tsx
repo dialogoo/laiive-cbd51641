@@ -79,7 +79,7 @@ const Promoters = () => {
           </div>
         </div>
 
-        {/* Early partner block */}
+        {/* Early collaborator block */}
         <Card className="p-6 bg-card border-border">
           <div className="space-y-4">
             <h3 className="font-montserrat font-bold text-xl text-center">
@@ -91,14 +91,14 @@ const Promoters = () => {
             <div className="text-center space-y-2">
               <p className="font-ibm-plex">
                 <span className="text-muted-foreground">{t.promoter.email}</span>{" "}
-                <a href="mailto:hello@laiive.app" className="text-primary hover:underline">
-                  hello@laiive.app
+                <a href="mailto:oscar@laiive.com" className="text-primary hover:underline">
+                  oscar@laiive.com
                 </a>
               </p>
               <p className="font-ibm-plex">
                 <span className="text-muted-foreground">{t.promoter.phone}</span>{" "}
-                <a href="tel:+1234567890" className="text-primary hover:underline">
-                  +1 (234) 567-890
+                <a href="https://wa.me/34645620007" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                  +34 645 620 007
                 </a>
               </p>
             </div>

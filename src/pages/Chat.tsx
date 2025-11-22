@@ -27,12 +27,7 @@ const Chat = () => {
   const [mode, setMode] = useState<"user" | "promoter">("user");
   
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: t.chat.welcome,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<UserLocation | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -52,12 +47,7 @@ const Chat = () => {
         },
       ]);
     } else {
-      setMessages([
-        {
-          role: "assistant",
-          content: t.chat.welcome,
-        },
-      ]);
+      setMessages([]);
     }
   };
 
@@ -291,7 +281,34 @@ const Chat = () => {
       {/* Chat messages */}
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-4xl mx-auto space-y-4">
-          {messages.map((msg, idx) => (
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-4 pt-20">
+              <div className="flex flex-col gap-3 w-full max-w-md">
+                <Button
+                  variant="outline"
+                  className="w-full h-auto py-4 px-6 text-left justify-start font-ibm-plex"
+                  onClick={() => {
+                    setMessage("Is there a concert close to me for this evening?");
+                    setTimeout(() => handleSendMessage(), 100);
+                  }}
+                >
+                  Is there a concert close to me for this evening?
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full h-auto py-4 px-6 text-left justify-start font-ibm-plex"
+                  onClick={() => {
+                    setMessage("What to do Friday night at Bergamo?");
+                    setTimeout(() => handleSendMessage(), 100);
+                  }}
+                >
+                  What to do Friday night at Bergamo?
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {messages.map((msg, idx) => (
             <div
               key={idx}
               className={cn(
@@ -317,20 +334,22 @@ const Chat = () => {
                 }}
               />
             </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className={cn(
-                "text-card-foreground border rounded-2xl px-4 py-3",
-                mode === "promoter" 
-                  ? "bg-[hsl(0,0%,18%)] border-[hsl(0,0%,30%)]"
-                  : "bg-card border-border"
-              )}>
-                <Loader2 className="w-5 h-5 animate-spin" />
-              </div>
-            </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className={cn(
+                    "text-card-foreground border rounded-2xl px-4 py-3",
+                    mode === "promoter" 
+                      ? "bg-[hsl(0,0%,18%)] border-[hsl(0,0%,30%)]"
+                      : "bg-card border-border"
+                  )}>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </>
           )}
-          <div ref={messagesEndRef} />
         </div>
       </div>
 
