@@ -159,19 +159,24 @@ const PromoterCreate = () => {
     setMessage("");
     setIsLoading(true);
 
-    // Log user message
+    // Log user message with validation
     if (sessionId) {
-      supabase.from('conversations').insert({
-        session_id: sessionId,
-        conversation_type: 'promoter',
-        message_role: 'user',
-        message_content: userMessage.content,
-        device_type: deviceType,
-        user_agent: userAgent,
-        language: language,
-      }).then(({ error }) => {
-        if (error) console.error('Error logging user message:', error);
-      });
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-conversation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          session_id: sessionId,
+          conversation_type: 'promoter',
+          message_role: 'user',
+          message_content: userMessage.content,
+          device_type: deviceType,
+          user_agent: userAgent,
+          language: language,
+        }),
+      }).catch((error) => console.error('Error logging user message:', error));
     }
 
     try {
@@ -233,19 +238,24 @@ const PromoterCreate = () => {
         }
       }
 
-      // Log assistant message
+      // Log assistant message with validation
       if (sessionId && assistantMessage) {
-        supabase.from('conversations').insert({
-          session_id: sessionId,
-          conversation_type: 'promoter',
-          message_role: 'assistant',
-          message_content: assistantMessage,
-          device_type: deviceType,
-          user_agent: userAgent,
-          language: language,
-        }).then(({ error }) => {
-          if (error) console.error('Error logging assistant message:', error);
-        });
+        fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-conversation`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            session_id: sessionId,
+            conversation_type: 'promoter',
+            message_role: 'assistant',
+            message_content: assistantMessage,
+            device_type: deviceType,
+            user_agent: userAgent,
+            language: language,
+          }),
+        }).catch((error) => console.error('Error logging assistant message:', error));
       }
     } catch (error) {
       console.error("Error sending message:", error);
