@@ -1,9 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Mic, Loader2 } from "lucide-react";
+import { ArrowLeft, Send, Mic, Loader2, Upload, ImagePlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { EventConfirmationForm } from "@/components/EventConfirmationForm";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+interface EventDetails {
+  name: string;
+  artist?: string | null;
+  description?: string | null;
+  event_date: string;
+  venue: string;
+  city: string;
+  price?: number | null;
+  ticket_url?: string | null;
+}
 
 const PromoterCreate = () => {
   const navigate = useNavigate();
@@ -16,11 +30,116 @@ const PromoterCreate = () => {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [extractedEvent, setExtractedEvent] = useState<EventDetails | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (JPG, PNG, etc.)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsExtracting(true);
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result?.toString().split(",")[1];
+        
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-event-details`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ imageBase64: base64 }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to extract event details");
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+          setExtractedEvent(data.eventDetails);
+          toast({
+            title: "Event details extracted!",
+            description: "Please review and confirm the information.",
+          });
+        } else {
+          throw new Error(data.error || "Extraction failed");
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error extracting event details:", error);
+      toast({
+        title: "Extraction failed",
+        description: "We couldn't read all details from this file. Please try again or enter manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExtracting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleConfirmEvent = async (eventDetails: EventDetails) => {
+    try {
+      const { error } = await supabase.from("events").insert({
+        name: eventDetails.name,
+        artist: eventDetails.artist,
+        description: eventDetails.description,
+        event_date: eventDetails.event_date,
+        venue: eventDetails.venue,
+        city: eventDetails.city,
+        price: eventDetails.price,
+        ticket_url: eventDetails.ticket_url,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Event created from your poster.",
+      });
+
+      setExtractedEvent(null);
+      setMessages([
+        ...messages,
+        {
+          role: "assistant",
+          content: `Great! I've created the event "${eventDetails.name}" at ${eventDetails.venue} in ${eventDetails.city}. Would you like to add another event?`,
+        },
+      ]);
+    } catch (error) {
+      console.error("Error creating event:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
 
   const handleSendMessage = async () => {
@@ -123,7 +242,15 @@ const PromoterCreate = () => {
       {/* Chat messages */}
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-4xl mx-auto space-y-4">
-          {messages.map((msg, idx) => (
+          {extractedEvent ? (
+            <EventConfirmationForm
+              eventDetails={extractedEvent}
+              onConfirm={handleConfirmEvent}
+              onCancel={() => setExtractedEvent(null)}
+            />
+          ) : (
+            <>
+              {messages.map((msg, idx) => (
             <div
               key={idx}
               className={cn(
@@ -142,46 +269,72 @@ const PromoterCreate = () => {
                 {msg.content}
               </div>
             </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-card text-card-foreground border border-border rounded-2xl px-4 py-3 flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="font-ibm-plex text-sm">Thinking...</span>
-              </div>
-            </div>
+              ))}
+              {(isLoading || isExtracting) && (
+                <div className="flex justify-start">
+                  <div className="bg-card text-card-foreground border border-border rounded-2xl px-4 py-3 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="font-ibm-plex text-sm">
+                      {isExtracting ? "Extracting event details..." : "Thinking..."}
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </>
           )}
-          <div ref={messagesEndRef} />
         </div>
       </div>
 
       {/* Input area */}
       <div className="border-t border-border bg-card p-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-primary"
-          >
-            <Mic className="w-5 h-5" />
-          </Button>
+        <div className="max-w-4xl mx-auto space-y-3">
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isExtracting || isLoading || extractedEvent !== null}
+              className="flex items-center gap-2"
+            >
+              <ImagePlus className="w-4 h-4" />
+              <span className="font-ibm-plex text-sm">Upload poster or file</span>
+            </Button>
+          </div>
           
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            placeholder="Tell me about your event..."
-            className="flex-1 bg-background border-border font-ibm-plex"
-          />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-primary"
+            >
+              <Mic className="w-5 h-5" />
+            </Button>
           
-          <Button
-            onClick={handleSendMessage}
-            variant="default"
-            size="icon"
-            disabled={isLoading}
-          >
-            <Send className="w-5 h-5" />
-          </Button>
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+              placeholder="Tell me about your event..."
+              className="flex-1 bg-background border-border font-ibm-plex"
+              disabled={extractedEvent !== null}
+            />
+            
+            <Button
+              onClick={handleSendMessage}
+              variant="default"
+              size="icon"
+              disabled={isLoading || extractedEvent !== null}
+            >
+              <Send className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
