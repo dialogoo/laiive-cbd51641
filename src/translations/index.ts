@@ -39,6 +39,11 @@ export interface Translations {
   language: {
     label: string;
   };
+  // Promoter create page
+  promoterCreate: {
+    welcome: string;
+    placeholder: string;
+  };
 }
 
 export const translations: Record<Language, Translations> = {
@@ -77,6 +82,10 @@ export const translations: Record<Language, Translations> = {
     language: {
       label: "Language",
     },
+    promoterCreate: {
+      welcome: "Hi! Tell me about your event and I'll help you publish it on laiive.",
+      placeholder: "Describe your event...",
+    },
   },
   es: {
     chat: {
@@ -112,6 +121,10 @@ export const translations: Record<Language, Translations> = {
     },
     language: {
       label: "Idioma",
+    },
+    promoterCreate: {
+      welcome: "¡Hola! Cuéntame sobre tu evento y te ayudaré a publicarlo en laiive.",
+      placeholder: "Describe tu evento...",
     },
   },
   it: {
@@ -149,6 +162,10 @@ export const translations: Record<Language, Translations> = {
     language: {
       label: "Lingua",
     },
+    promoterCreate: {
+      welcome: "Ciao! Raccontami del tuo evento e ti aiuterò a pubblicarlo su laiive.",
+      placeholder: "Descrivi il tuo evento...",
+    },
   },
   ca: {
     chat: {
@@ -184,6 +201,10 @@ export const translations: Record<Language, Translations> = {
     },
     language: {
       label: "Idioma",
+    },
+    promoterCreate: {
+      welcome: "Hola! Explica'm sobre el teu esdeveniment i t'ajudaré a publicar-lo a laiive.",
+      placeholder: "Descriu el teu esdeveniment...",
     },
   },
 };

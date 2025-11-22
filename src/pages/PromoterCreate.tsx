@@ -25,13 +25,12 @@ interface EventDetails {
 
 const PromoterCreate = () => {
   const navigate = useNavigate();
-  const { language } = useTranslation();
+  const { language, t } = useTranslation();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
     {
       role: "assistant",
-      content:
-        "Hello! I can help you add your event to the laiive platform. To start, please provide me with the following information:\n\n*   **Artist name**\n*   **Event description**\n*   **Date and time**\n*   **Venue name**\n*   **City**\n*   **Ticket price**",
+      content: t.promoterCreate.welcome,
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -444,7 +443,7 @@ const PromoterCreate = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-              placeholder="Tell me about your event..."
+              placeholder={t.promoterCreate.placeholder}
               className="flex-1 bg-background border-border font-ibm-plex"
               disabled={extractedEvent !== null}
             />
