@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mic, Send, Loader2 } from "lucide-react";
+import { Mic, Send, Loader2, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { AudioRecorder } from "@/utils/audioRecorder";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Message {
   role: "user" | "assistant";
@@ -33,6 +35,8 @@ const Chat = () => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<UserLocation | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const audioRecorderRef = useRef<AudioRecorder>(new AudioRecorder());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleModeChange = () => {
@@ -194,6 +198,65 @@ const Chat = () => {
     }
   };
 
+  const handleMicClick = async () => {
+    if (isRecording) {
+      try {
+        const audioBase64 = await audioRecorderRef.current.stop();
+        setIsRecording(false);
+
+        // Transcribe audio
+        const transcribeResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-audio`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ audio: audioBase64 }),
+          }
+        );
+
+        if (!transcribeResponse.ok) {
+          throw new Error("Transcription failed");
+        }
+
+        const { text } = await transcribeResponse.json();
+        
+        // Set the transcribed text as the message
+        setMessage(text);
+        
+        toast({
+          title: "Audio transcribed",
+          description: "Please review and send the message.",
+        });
+      } catch (error) {
+        console.error("Error processing audio:", error);
+        toast({
+          title: "Transcription failed",
+          description: "We couldn't understand the audio. Please try speaking again.",
+          variant: "destructive",
+        });
+      }
+    } else {
+      try {
+        await audioRecorderRef.current.start();
+        setIsRecording(true);
+        toast({
+          title: "Recording...",
+          description: "Speak now. Click again to stop.",
+        });
+      } catch (error) {
+        console.error("Error starting recording:", error);
+        toast({
+          title: "Microphone access denied",
+          description: "Please grant microphone permission to use voice input.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   return (
     <div className={cn(
       "flex flex-col h-screen",
@@ -277,13 +340,27 @@ const Chat = () => {
         mode === "promoter" ? "bg-[hsl(0,0%,18%)]" : "bg-card"
       )}>
         <div className="max-w-4xl mx-auto flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-primary"
-          >
-            <Mic className="w-5 h-5" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleMicClick}
+                  className={cn(
+                    "text-muted-foreground hover:text-primary",
+                    isRecording && "text-destructive animate-pulse"
+                  )}
+                  disabled={isLoading}
+                >
+                  {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Beta — voice transcription may contain errors</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           
           <Input
             value={message}

@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Mic, Loader2, Upload, ImagePlus } from "lucide-react";
+import { ArrowLeft, Send, Mic, Loader2, Upload, ImagePlus, MicOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { EventConfirmationForm } from "@/components/EventConfirmationForm";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AudioRecorder } from "@/utils/audioRecorder";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface EventDetails {
   name: string;
@@ -32,8 +34,10 @@ const PromoterCreate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [extractedEvent, setExtractedEvent] = useState<EventDetails | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioRecorderRef = useRef<AudioRecorder>(new AudioRecorder());
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -213,6 +217,138 @@ const PromoterCreate = () => {
     }
   };
 
+  const handleMicClick = async () => {
+    if (isRecording) {
+      try {
+        const audioBase64 = await audioRecorderRef.current.stop();
+        setIsRecording(false);
+        setIsExtracting(true);
+
+        // Transcribe audio
+        const transcribeResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-audio`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ audio: audioBase64 }),
+          }
+        );
+
+        if (!transcribeResponse.ok) {
+          throw new Error("Transcription failed");
+        }
+
+        const { text } = await transcribeResponse.json();
+
+        // Extract event details from transcribed text using AI
+        const LOVABLE_API_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const extractResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              {
+                role: "system",
+                content: `You are an expert at extracting event information from natural language text. 
+                Extract the following information and return it as JSON:
+                - name (event/concert name)
+                - artist (artist/band name)
+                - description (brief description if available)
+                - event_date (ISO 8601 format YYYY-MM-DDTHH:MM:SS)
+                - venue (venue name)
+                - city (city name)
+                - price (ticket price as number, null if free or not specified)
+                - ticket_url (ticket link if available)
+                
+                If you cannot find certain information, use null. Be as accurate as possible with dates and times.`,
+              },
+              {
+                role: "user",
+                content: `Extract event details from this text: ${text}`,
+              },
+            ],
+            tools: [
+              {
+                type: "function",
+                function: {
+                  name: "extract_event_details",
+                  description: "Extract event details from text",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      name: { type: "string", description: "Event or concert name" },
+                      artist: { type: ["string", "null"], description: "Artist or band name" },
+                      description: { type: ["string", "null"], description: "Event description" },
+                      event_date: { type: "string", description: "Event date and time in ISO 8601 format" },
+                      venue: { type: "string", description: "Venue name" },
+                      city: { type: "string", description: "City name" },
+                      price: { type: ["number", "null"], description: "Ticket price" },
+                      ticket_url: { type: ["string", "null"], description: "Ticket purchase URL" },
+                    },
+                    required: ["name", "event_date", "venue", "city"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+            ],
+            tool_choice: { type: "function", function: { name: "extract_event_details" } },
+          }),
+        });
+
+        if (!extractResponse.ok) {
+          throw new Error("Event extraction failed");
+        }
+
+        const extractData = await extractResponse.json();
+        const toolCall = extractData.choices?.[0]?.message?.tool_calls?.[0];
+        
+        if (!toolCall) {
+          throw new Error("No event details extracted");
+        }
+
+        const eventDetails = JSON.parse(toolCall.function.arguments);
+        setExtractedEvent(eventDetails);
+        
+        toast({
+          title: "Event details extracted!",
+          description: "Please review and confirm the information.",
+        });
+      } catch (error) {
+        console.error("Error processing audio:", error);
+        toast({
+          title: "Extraction failed",
+          description: "We couldn't understand the audio. Please try speaking again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsExtracting(false);
+      }
+    } else {
+      try {
+        await audioRecorderRef.current.start();
+        setIsRecording(true);
+        toast({
+          title: "Recording...",
+          description: "Speak now. Click again to stop.",
+        });
+      } catch (error) {
+        console.error("Error starting recording:", error);
+        toast({
+          title: "Microphone access denied",
+          description: "Please grant microphone permission to use voice input.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
@@ -309,13 +445,27 @@ const PromoterCreate = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-primary"
-            >
-              <Mic className="w-5 h-5" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleMicClick}
+                    className={cn(
+                      "text-muted-foreground hover:text-primary",
+                      isRecording && "text-destructive animate-pulse"
+                    )}
+                    disabled={isLoading || isExtracting || extractedEvent !== null}
+                  >
+                    {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">Beta — voice transcription may contain errors</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           
             <Input
               value={message}
