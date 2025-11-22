@@ -214,7 +214,7 @@ const Chat = () => {
               onClick={handleModeChange}
               className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              {mode === "user" ? "promoter app →" : "user app →"}
+              {mode === "user" ? "are you a promoter or musician? →" : "user app →"}
             </button>
             
             {/* Promoter/Musician Area Link */}
@@ -226,30 +226,6 @@ const Chat = () => {
               <span>For Promoters</span>
             </button>
           </div>
-          
-          {/* Search Mode Toggle - Only visible in user mode */}
-          {mode === "user" && (
-            <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
-              <Button
-                variant={searchMode === "database" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setSearchMode("database")}
-                className="gap-2"
-              >
-                <Search className="w-4 h-4" />
-                <span className="hidden sm:inline">laiive search</span>
-              </Button>
-              <Button
-                variant={searchMode === "internet" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setSearchMode("internet")}
-                className="gap-2"
-              >
-                <Globe className="w-4 h-4" />
-                <span className="hidden sm:inline">Internet search</span>
-              </Button>
-            </div>
-          )}
         </div>
       </header>
 
