@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AudioRecorder } from "@/utils/audioRecorder";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useSession } from "@/hooks/useSession";
 
 interface EventDetails {
   name: string;
@@ -26,6 +27,7 @@ interface EventDetails {
 const PromoterCreate = () => {
   const navigate = useNavigate();
   const { language, t } = useTranslation();
+  const { sessionId, deviceType, userAgent } = useSession();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
     {
@@ -157,6 +159,21 @@ const PromoterCreate = () => {
     setMessage("");
     setIsLoading(true);
 
+    // Log user message
+    if (sessionId) {
+      supabase.from('conversations').insert({
+        session_id: sessionId,
+        conversation_type: 'promoter',
+        message_role: 'user',
+        message_content: userMessage.content,
+        device_type: deviceType,
+        user_agent: userAgent,
+        language: language,
+      }).then(({ error }) => {
+        if (error) console.error('Error logging user message:', error);
+      });
+    }
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/promoter-create`,
@@ -214,6 +231,21 @@ const PromoterCreate = () => {
             }
           }
         }
+      }
+
+      // Log assistant message
+      if (sessionId && assistantMessage) {
+        supabase.from('conversations').insert({
+          session_id: sessionId,
+          conversation_type: 'promoter',
+          message_role: 'assistant',
+          message_content: assistantMessage,
+          device_type: deviceType,
+          user_agent: userAgent,
+          language: language,
+        }).then(({ error }) => {
+          if (error) console.error('Error logging assistant message:', error);
+        });
       }
     } catch (error) {
       console.error("Error sending message:", error);

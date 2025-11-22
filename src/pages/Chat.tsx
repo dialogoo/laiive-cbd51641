@@ -9,6 +9,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { AudioRecorder } from "@/utils/audioRecorder";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useSession } from "@/hooks/useSession";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -24,6 +26,7 @@ interface UserLocation {
 const Chat = () => {
   const navigate = useNavigate();
   const { t, language } = useTranslation();
+  const { sessionId, deviceType, userAgent } = useSession();
   const [mode, setMode] = useState<"user" | "promoter">("user");
   
   const [message, setMessage] = useState("");
@@ -84,6 +87,21 @@ const Chat = () => {
     setMessages((prev) => [...prev, userMessage]);
     setMessage("");
     setIsLoading(true);
+
+    // Log user message
+    if (sessionId) {
+      supabase.from('conversations').insert({
+        session_id: sessionId,
+        conversation_type: 'user',
+        message_role: 'user',
+        message_content: userMessage.content,
+        device_type: deviceType,
+        user_agent: userAgent,
+        language: language,
+      }).then(({ error }) => {
+        if (error) console.error('Error logging user message:', error);
+      });
+    }
 
     try {
       const endpoint = mode === "promoter" ? "promoter-create" : "chat";
@@ -176,6 +194,21 @@ const Chat = () => {
             console.error("Parse error:", e);
           }
         }
+      }
+
+      // Log assistant message
+      if (sessionId && assistantContent) {
+        supabase.from('conversations').insert({
+          session_id: sessionId,
+          conversation_type: 'user',
+          message_role: 'assistant',
+          message_content: assistantContent,
+          device_type: deviceType,
+          user_agent: userAgent,
+          language: language,
+        }).then(({ error }) => {
+          if (error) console.error('Error logging assistant message:', error);
+        });
       }
     } catch (error) {
       console.error("Chat error:", error);

@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversations: {
+        Row: {
+          conversation_type: string
+          created_at: string
+          device_type: string | null
+          id: string
+          ip_address: string | null
+          language: string | null
+          message_content: string
+          message_role: string
+          session_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          conversation_type: string
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          language?: string | null
+          message_content: string
+          message_role: string
+          session_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          conversation_type?: string
+          created_at?: string
+          device_type?: string | null
+          id?: string
+          ip_address?: string | null
+          language?: string | null
+          message_content?: string
+          message_role?: string
+          session_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           artist: string | null
