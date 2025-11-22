@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Globe, Mic, Send, Loader2, Users } from "lucide-react";
+import { Mic, Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,7 @@ interface UserLocation {
 const Chat = () => {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"user" | "promoter">("user");
-  const [searchMode, setSearchMode] = useState<"database" | "internet">("database");
+  
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -104,7 +104,6 @@ const Chat = () => {
               : {
                   messages: [...messages, userMessage],
                   location,
-                  searchMode,
                 }
           ),
         }
@@ -208,24 +207,13 @@ const Chat = () => {
             <span className="font-montserrat font-bold text-xl text-primary">laiive</span>
           </div>
           
-          <div className="flex items-center gap-4">
-            {/* Mode Link */}
-            <button
-              onClick={handleModeChange}
-              className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {mode === "user" ? "are you a promoter or musician? →" : "user app →"}
-            </button>
-            
-            {/* Promoter/Musician Area Link */}
-            <button
-              onClick={() => navigate("/promoters")}
-              className="flex items-center gap-2 font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Users className="w-4 h-4" />
-              <span>For Promoters</span>
-            </button>
-          </div>
+          {/* Mode Link */}
+          <button
+            onClick={() => navigate("/promoters")}
+            className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            are you a promoter or musician? →
+          </button>
         </div>
       </header>
 
