@@ -195,6 +195,15 @@ const PromoterCreate = () => {
               const parsed = JSON.parse(data);
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) {
+                // Check if this is an extracted event
+                const extractedMatch = content.match(/__EVENT_EXTRACTED__(.+)__EVENT_EXTRACTED__/);
+                if (extractedMatch) {
+                  const eventDetails = JSON.parse(extractedMatch[1]);
+                  setExtractedEvent(eventDetails);
+                  setMessages([...newMessages, { role: "assistant", content: "Great! I've extracted the event details. Please review and confirm." }]);
+                  return;
+                }
+                
                 assistantMessage += content;
                 setMessages([...newMessages, { role: "assistant", content: assistantMessage }]);
               }
@@ -386,7 +395,7 @@ const PromoterCreate = () => {
 
       {/* Input area */}
       <div className="border-t border-border bg-card p-4">
-        <div className="max-w-4xl mx-auto space-y-3">
+        <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-2">
             <input
               ref={fileInputRef}
@@ -405,9 +414,7 @@ const PromoterCreate = () => {
             >
               <Camera className="w-5 h-5" />
             </Button>
-          </div>
-          
-          <div className="flex items-center gap-2">
+            
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

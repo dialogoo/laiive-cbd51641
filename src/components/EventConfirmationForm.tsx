@@ -70,11 +70,12 @@ export const EventConfirmationForm = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="artist">Artist/Band</Label>
+          <Label htmlFor="artist">Artist/Band *</Label>
           <Input
             id="artist"
             value={formData.artist || ""}
             onChange={(e) => setFormData({ ...formData, artist: e.target.value })}
+            required
             className="font-ibm-plex"
           />
         </div>
@@ -125,13 +126,14 @@ export const EventConfirmationForm = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="price">Ticket Price</Label>
+          <Label htmlFor="price">Ticket Price *</Label>
           <Input
             id="price"
             type="number"
             step="0.01"
             value={formData.price || ""}
             onChange={(e) => setFormData({ ...formData, price: e.target.value ? parseFloat(e.target.value) : null })}
+            required
             className="font-ibm-plex"
           />
         </div>

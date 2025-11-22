@@ -29,23 +29,21 @@ serve(async (req) => {
       {
         type: "function",
         function: {
-          name: "insert_event",
-          description: "Insert a new event into the database after all information is confirmed",
+          name: "extract_event",
+          description: "Extract event details from conversation to show in confirmation form",
           parameters: {
             type: "object",
             properties: {
-              name: { type: "string", description: "Event or artist name" },
-              artist: { type: ["string", "null"], description: "Artist name (optional)" },
+              name: { type: "string", description: "Event name" },
+              artist: { type: "string", description: "Artist name" },
               description: { type: ["string", "null"], description: "Event description (optional)" },
               venue: { type: "string", description: "Venue name" },
               city: { type: "string", description: "City name" },
               event_date: { type: "string", description: "Event date and time in ISO format" },
-              price: { type: ["number", "null"], description: "Ticket price (optional)" },
-              latitude: { type: ["number", "null"], description: "Venue latitude (optional)" },
-              longitude: { type: ["number", "null"], description: "Venue longitude (optional)" },
+              price: { type: "number", description: "Ticket price" },
               ticket_url: { type: ["string", "null"], description: "Ticket URL (optional)" },
             },
-            required: ["name", "venue", "city", "event_date"],
+            required: ["name", "artist", "venue", "city", "event_date", "price"],
           },
         },
       },
@@ -53,40 +51,27 @@ serve(async (req) => {
 
     const systemPrompt = `You are an AI assistant helping event promoters add their events to the laiive platform. 
 
-Follow this conversation flow:
+Your job is to collect ALL REQUIRED information through conversation:
+- Event name (REQUIRED)
+- Artist name (REQUIRED)
+- Date and time (REQUIRED)
+- Venue name (REQUIRED)
+- City (REQUIRED)
+- Ticket price (REQUIRED)
 
-1. WELCOME & COLLECT: Start with a friendly welcome and ask for these REQUIRED fields:
-   - Event name (REQUIRED)
-   - Date and time (REQUIRED)
-   - Venue name (REQUIRED)
-   - City (REQUIRED)
-   
-   And these OPTIONAL fields:
-   - Artist name (optional)
-   - Event description (optional)
-   - Ticket price (optional)
+Optional information:
+- Event description
+- Ticket URL
 
-2. VALIDATE & CONFIRM: Once you have all information, show a checklist for confirmation:
-   ✓ Artist: [name]
-   ✓ Description: [description]
-   ✓ Date & Time: [date]
-   ✓ Venue: [venue]
-   ✓ City: [city]
-   ✓ Price: [price]
-   
-   Ask "Does everything look correct? If not, please let me know what needs to be changed."
+Be conversational and friendly. Ask for missing information naturally. Once you have ALL REQUIRED fields, use the extract_event tool to provide the details for confirmation.
 
-3. ENRICH DATA: Tell the user you're searching for venue location and artist information online to complete the listing.
+IMPORTANT: 
+- Do not make up information
+- Ask clarifying questions if something is unclear
+- Parse dates naturally (e.g., "tomorrow at 8pm", "next Friday", etc.)
+- When you have all required info, call the extract_event tool
 
-4. VENUE & ARTIST CONFIRMATION: Show what you found:
-   📍 Venue: [venue name] in [city]
-   🎤 Artist: [artist info you found]
-   
-   Ask for confirmation with: "Does this information look correct?"
-
-5. INSERT TO DATABASE: After final confirmation, use the insert_event tool to save the event and confirm success.
-
-Be conversational, helpful, and guide the user through each step. If information is missing or incorrect, politely ask for clarification.`;
+Be helpful and guide the user through collecting all the details.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -160,7 +145,7 @@ Be conversational, helpful, and guide the user through each step. If information
 
                 if (toolCalls) {
                   for (const toolCall of toolCalls) {
-                    if (toolCall.function?.name === "insert_event") {
+                    if (toolCall.function?.name === "extract_event") {
                       // Accumulate tool call arguments
                       if (toolCall.function?.arguments) {
                         toolCallBuffer += toolCall.function.arguments;
@@ -169,53 +154,22 @@ Be conversational, helpful, and guide the user through each step. If information
                       // Try to parse when we have complete JSON
                       try {
                         const args = JSON.parse(toolCallBuffer);
-                        console.log("Inserting event:", args);
+                        console.log("Extracted event details:", args);
 
-                        const insertData: any = {
-                          name: args.name,
-                          venue: args.venue,
-                          city: args.city,
-                          event_date: args.event_date,
-                        };
-
-                        // Only include optional fields if they have actual values
-                        if (args.artist) insertData.artist = args.artist;
-                        if (args.description) insertData.description = args.description;
-                        if (args.price !== null && args.price !== undefined) insertData.price = args.price;
-                        if (args.latitude !== null && args.latitude !== undefined) insertData.latitude = args.latitude;
-                        if (args.longitude !== null && args.longitude !== undefined) insertData.longitude = args.longitude;
-                        if (args.ticket_url) insertData.ticket_url = args.ticket_url;
-
-                        const { data: eventData, error } = await supabaseClient
-                          .from("events")
-                          .insert(insertData)
-                          .select()
-                          .single();
-
-                        if (error) {
-                          console.error("Database insert error:", error);
-                          controller.enqueue(
-                            encoder.encode(
-                              `data: ${JSON.stringify({
-                                choices: [{ delta: { content: "Sorry, I couldn't save the event to the database. Please try again." } }],
-                              })}\n\n`
-                            )
-                          );
-                        } else {
-                          controller.enqueue(
-                            encoder.encode(
-                              `data: ${JSON.stringify({
-                                choices: [
-                                  {
-                                    delta: {
-                                      content: `✅ **Event successfully posted!**\n\nYour event "${args.name}" has been added to laiive and will be visible to users searching for live music events in ${args.city}.`,
-                                    },
+                        // Send event details as a special message
+                        controller.enqueue(
+                          encoder.encode(
+                            `data: ${JSON.stringify({
+                              choices: [
+                                {
+                                  delta: {
+                                    content: `__EVENT_EXTRACTED__${JSON.stringify(args)}__EVENT_EXTRACTED__`,
                                   },
-                                ],
-                              })}\n\n`
-                            )
-                          );
-                        }
+                                },
+                              ],
+                            })}\n\n`
+                          )
+                        );
 
                         toolCallBuffer = "";
                       } catch (e) {
