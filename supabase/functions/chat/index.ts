@@ -6,60 +6,95 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Helper function to parse relative dates
-function parseRelativeDate(expression: string, referenceDate: Date): { start: string; end: string } {
+// Helper function to parse relative dates with time-of-day awareness
+function parseRelativeDate(expression: string, referenceDate: Date): { start: string; end: string; timeContext?: string } {
   const expr = expression.toLowerCase().trim();
   const ref = new Date(referenceDate);
+  const currentHour = ref.getHours();
   
+  // Extract time-of-day context
+  let timeContext = "";
+  let targetDate = new Date(ref);
+  
+  // Parse day modifiers
   if (expr.includes("tomorrow")) {
-    const tomorrow = new Date(ref);
-    tomorrow.setDate(ref.getDate() + 1);
-    const dateStr = tomorrow.toISOString().split('T')[0];
-    return { start: dateStr, end: dateStr };
-  }
-  
-  if (expr.includes("today")) {
-    const dateStr = ref.toISOString().split('T')[0];
-    return { start: dateStr, end: dateStr };
-  }
-  
-  if (expr.includes("this weekend") || expr.includes("weekend")) {
+    targetDate.setDate(ref.getDate() + 1);
+  } else if (expr.includes("today") || expr.includes("tonight") || expr.includes("this evening") || expr.includes("this afternoon") || expr.includes("this morning")) {
+    // Keep current date
+  } else if (expr.includes("this weekend") || expr.includes("weekend")) {
     const dayOfWeek = ref.getDay();
     const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
-    const saturday = new Date(ref);
-    saturday.setDate(ref.getDate() + daysUntilSaturday);
-    const sunday = new Date(saturday);
-    sunday.setDate(saturday.getDate() + 1);
+    targetDate.setDate(ref.getDate() + daysUntilSaturday);
+    const sunday = new Date(targetDate);
+    sunday.setDate(targetDate.getDate() + 1);
     return {
-      start: saturday.toISOString().split('T')[0],
-      end: sunday.toISOString().split('T')[0]
+      start: targetDate.toISOString().split('T')[0],
+      end: sunday.toISOString().split('T')[0],
+      timeContext: "evening"
     };
-  }
-  
-  if (expr.includes("next week")) {
-    const nextWeekStart = new Date(ref);
-    nextWeekStart.setDate(ref.getDate() + (7 - ref.getDay() + 1));
-    const nextWeekEnd = new Date(nextWeekStart);
-    nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+  } else if (expr.includes("next week")) {
+    targetDate.setDate(ref.getDate() + (7 - ref.getDay() + 1));
+    const nextWeekEnd = new Date(targetDate);
+    nextWeekEnd.setDate(targetDate.getDate() + 6);
     return {
-      start: nextWeekStart.toISOString().split('T')[0],
+      start: targetDate.toISOString().split('T')[0],
       end: nextWeekEnd.toISOString().split('T')[0]
     };
-  }
-  
-  if (expr.includes("this week")) {
-    const weekStart = new Date(ref);
-    weekStart.setDate(ref.getDate() - ref.getDay() + 1);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
+  } else if (expr.includes("this week")) {
+    targetDate.setDate(ref.getDate() - ref.getDay() + 1);
+    const weekEnd = new Date(targetDate);
+    weekEnd.setDate(targetDate.getDate() + 6);
     return {
-      start: weekStart.toISOString().split('T')[0],
+      start: targetDate.toISOString().split('T')[0],
       end: weekEnd.toISOString().split('T')[0]
     };
   }
   
-  // Default: return the expression as-is if it looks like a date
-  return { start: expression, end: expression };
+  // Parse time-of-day
+  if (expr.includes("tonight") || expr.includes("this evening") || expr.includes("evening")) {
+    timeContext = "evening";
+  } else if (expr.includes("this afternoon") || expr.includes("afternoon")) {
+    timeContext = "afternoon";
+  } else if (expr.includes("this morning") || expr.includes("morning")) {
+    timeContext = "morning";
+  } else if (expr.includes("this night") || expr.includes("night")) {
+    timeContext = "night";
+  }
+  
+  const dateStr = targetDate.toISOString().split('T')[0];
+  return { start: dateStr, end: dateStr, timeContext };
+}
+
+// Helper function to parse location phrases
+function parseLocationPhrase(userMessage: string, userLocation: any): { useUserLocation: boolean; city?: string } {
+  const msg = userMessage.toLowerCase();
+  
+  // Check for explicit location phrases
+  if (msg.includes("here") || msg.includes("around me") || msg.includes("near me") || msg.includes("close to me") || msg.includes("nearby")) {
+    return { useUserLocation: true };
+  }
+  
+  // Check if user mentions a specific city
+  const cityPatterns = [
+    /\bin\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i,
+    /\bat\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i,
+    /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:concert|event|show)/i
+  ];
+  
+  for (const pattern of cityPatterns) {
+    const match = userMessage.match(pattern);
+    if (match && match[1]) {
+      const city = match[1].trim();
+      // Filter out common words that aren't cities
+      const excludeWords = ["live", "music", "friday", "saturday", "sunday", "monday", "tuesday", "wednesday", "thursday", "tomorrow", "today", "weekend"];
+      if (!excludeWords.includes(city.toLowerCase())) {
+        return { useUserLocation: false, city: standardizeCityName(city) };
+      }
+    }
+  }
+  
+  // Default: use user location if available
+  return { useUserLocation: true };
 }
 
 // Helper function to standardize city names
@@ -212,15 +247,16 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "query_database_events",
-          description: "Query the laiive database for live music events. Parse dates like 'tomorrow', 'this weekend' to ISO format yourself. Standardize city names yourself. Use city filter if user specifies a city, otherwise use lat/long.",
+          description: "Query the laiive database for live music events. IMPORTANT: When user says 'here', 'around me', 'near me', use latitude/longitude. When user specifies a city name, use city filter only (not lat/long). Parse time phrases: 'tonight'=today evening, 'tomorrow night'=tomorrow evening, 'this weekend'=Sat-Sun.",
           parameters: {
             type: "object",
             properties: {
-              latitude: { type: "number", description: "User latitude for proximity search" },
-              longitude: { type: "number", description: "User longitude for proximity search" },
-              startDate: { type: "string", description: "Start date ISO format (YYYY-MM-DD)" },
-              endDate: { type: "string", description: "End date ISO format (YYYY-MM-DD)" },
-              city: { type: "string", description: "City name filter (optional, use instead of lat/long if specified)" },
+              latitude: { type: "number", description: "User latitude for proximity search (use when user says 'here', 'around me', 'near me', 'nearby')" },
+              longitude: { type: "number", description: "User longitude for proximity search (use when user says 'here', 'around me', 'near me', 'nearby')" },
+              startDate: { type: "string", description: "Start date ISO format (YYYY-MM-DD). Parse 'tonight'/'today' as current date, 'tomorrow' as next day." },
+              endDate: { type: "string", description: "End date ISO format (YYYY-MM-DD). Same as startDate for single day events." },
+              city: { type: "string", description: "City name filter (only when user specifies a city explicitly, not for 'here'/'around me')" },
+              timeContext: { type: "string", enum: ["morning", "afternoon", "evening", "night"], description: "Time of day context: morning (before 12:00), afternoon (12:00-18:00), evening/night (after 18:00)" },
             },
             required: ["startDate", "endDate"],
           },
@@ -228,32 +264,57 @@ serve(async (req) => {
       });
     }
 
+    // Get the last user message to parse location and date context
+    const lastUserMessage = messages[messages.length - 1]?.content || "";
+    const locationParse = parseLocationPhrase(lastUserMessage, location);
+    const dateParse = parseRelativeDate(lastUserMessage, now);
+    
     const locationInfo = location ? `User location: ${location.city || 'Unknown'} (${location.latitude}, ${location.longitude})` : "No location";
+    
+    // Build smart defaults based on parsing
+    const defaultLocation = locationParse.city || location?.city || "nearby";
+    const isUsingUserCoords = locationParse.useUserLocation && !locationParse.city;
 
-    const systemPrompt = `You help users find live music events. Today is ${currentDate}. ${locationInfo}.
+    const systemPrompt = `You help users find live music events. Today is ${currentDate} at ${currentTime}. ${locationInfo}.
 
 ${searchMode === "database" ? "Use query_database_events to search the laiive database." : "Use search_internet_events to search the web."}
 
+NATURAL LANGUAGE UNDERSTANDING:
+When users say phrases like:
+- "tonight here" / "this evening around me" → today's date + user's location coordinates
+- "tomorrow near me" → tomorrow's date + user's location coordinates  
+- "Friday night in Milan" → next Friday + Milan city
+- "this weekend close to me" → Sat-Sun + user's location coordinates
+- "what to do tonight" → today + user's location coordinates
+
+TIME OF DAY CONTEXT:
+- "tonight", "this evening" = today after 18:00
+- "this afternoon" = today 12:00-18:00
+- "this morning" = today before 12:00
+- "tomorrow night" = tomorrow after 18:00
+
+LOCATION CONTEXT:
+- "here", "around me", "near me", "close to me", "nearby" → use latitude/longitude (${location?.latitude}, ${location?.longitude})
+- Specific city name → use city filter (DO NOT use lat/long when city is specified)
+
 WORKFLOW:
-1. Greet user and understand their request
-2. Extract date (convert "tomorrow", "this weekend" etc. to YYYY-MM-DD) and place (use user's location if not specified)
-3. Call the search tool immediately with extracted parameters
-4. Display results with this format:
+1. Parse user's natural language to extract:
+   - Date/time context (convert "tonight", "tomorrow", "this weekend" to YYYY-MM-DD)
+   - Location context (use coordinates for "here"/"around me", or city name if specified)
+2. Call the appropriate search tool with extracted parameters
+3. Display results with this format:
    🎵 **Artist** at Venue, City
    📝 Description (short)
    📅 Date & Time
    💰 Price
    🎫 [Tickets] | 📍 [Map]
-5. If user changes date/place, call search tool again with new parameters
 
-Parse dates yourself:
-- "tomorrow" → ${new Date(new Date(currentDate).getTime() + 86400000).toISOString().split('T')[0]}
-- "today" → ${currentDate}
-- "this weekend" → next Saturday to Sunday
+EXAMPLES:
+- "concert tonight here" → startDate: ${currentDate}, endDate: ${currentDate}, latitude: ${location?.latitude}, longitude: ${location?.longitude}
+- "what to do tomorrow in Bergamo" → startDate: ${new Date(now.getTime() + 86400000).toISOString().split('T')[0]}, city: "Bergamo"
+- "Friday night around me" → startDate: [calculate next Friday], latitude: ${location?.latitude}, longitude: ${location?.longitude}
 
-Standardize cities: Bergamo, Milan, Rome, etc. (capitalize first letter).
-
-Use user's location (${location?.city || location?.latitude + ',' + location?.longitude}) as default if not specified.`;
+Default location when not specified: ${isUsingUserCoords ? `coordinates (${location?.latitude}, ${location?.longitude})` : `${defaultLocation}`}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -341,6 +402,24 @@ Use user's location (${location?.city || location?.latitude + ',' + location?.lo
                         .gte("event_date", startBound)
                         .lt("event_date", endExclusive)
                         .order("event_date");
+
+                      // Apply time-of-day filter if specified
+                      if (args.timeContext) {
+                        const timeRanges: Record<string, { start: number; end: number }> = {
+                          morning: { start: 0, end: 12 },
+                          afternoon: { start: 12, end: 18 },
+                          evening: { start: 18, end: 23 },
+                          night: { start: 18, end: 23 },
+                        };
+                        const range = timeRanges[args.timeContext];
+                        if (range) {
+                          const startTime = `T${String(range.start).padStart(2, '0')}:00:00`;
+                          const endTime = `T${String(range.end).padStart(2, '0')}:59:59`;
+                          query = query
+                            .gte("event_date", `${args.startDate}${startTime}`)
+                            .lte("event_date", `${args.endDate}${endTime}`);
+                        }
+                      }
 
                       if (args.city) {
                         query = query.ilike("city", args.city);
