@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.promoter-create]
 verify_jwt = false
+
+[functions.extract-event-details]
+verify_jwt = false
