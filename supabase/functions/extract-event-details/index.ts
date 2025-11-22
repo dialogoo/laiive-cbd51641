@@ -33,16 +33,17 @@ serve(async (req) => {
             role: "system",
             content: `You are an expert at extracting event information from posters and documents. 
             Extract the following information and return it as JSON:
-            - name (event/concert name)
-            - artist (artist/band name)
-            - description (brief description if available)
-            - event_date (ISO 8601 format YYYY-MM-DDTHH:MM:SS)
-            - venue (venue name)
-            - city (city name)
-            - price (ticket price as number, null if free or not specified)
-            - ticket_url (ticket link if available)
+            - name (event/concert name) - REQUIRED
+            - artist (artist/band name) - optional
+            - description (brief description if available) - optional
+            - event_date (ISO 8601 format YYYY-MM-DDTHH:MM:SS) - REQUIRED
+            - venue (venue name) - REQUIRED
+            - city (city name) - REQUIRED
+            - price (ticket price as number only, omit if free or not specified) - optional
+            - ticket_url (ticket link if available) - optional
             
-            If you cannot find certain information, use null. Be as accurate as possible with dates and times.`,
+            IMPORTANT: For optional fields you cannot find, simply omit them from the response. Do NOT use the string "null" - either provide the actual value or omit the field entirely.
+            Be as accurate as possible with dates and times.`,
           },
           {
             role: "user",

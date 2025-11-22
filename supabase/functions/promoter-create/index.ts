@@ -35,17 +35,17 @@ serve(async (req) => {
             type: "object",
             properties: {
               name: { type: "string", description: "Event or artist name" },
-              artist: { type: "string", description: "Artist name" },
-              description: { type: "string", description: "Event description" },
+              artist: { type: ["string", "null"], description: "Artist name (optional)" },
+              description: { type: ["string", "null"], description: "Event description (optional)" },
               venue: { type: "string", description: "Venue name" },
               city: { type: "string", description: "City name" },
               event_date: { type: "string", description: "Event date and time in ISO format" },
-              price: { type: "number", description: "Ticket price" },
-              latitude: { type: "number", description: "Venue latitude" },
-              longitude: { type: "number", description: "Venue longitude" },
-              ticket_url: { type: "string", description: "Ticket URL if available" },
+              price: { type: ["number", "null"], description: "Ticket price (optional)" },
+              latitude: { type: ["number", "null"], description: "Venue latitude (optional)" },
+              longitude: { type: ["number", "null"], description: "Venue longitude (optional)" },
+              ticket_url: { type: ["string", "null"], description: "Ticket URL (optional)" },
             },
-            required: ["name", "artist", "venue", "city", "event_date"],
+            required: ["name", "venue", "city", "event_date"],
           },
         },
       },
@@ -55,13 +55,16 @@ serve(async (req) => {
 
 Follow this conversation flow:
 
-1. WELCOME & COLLECT: Start with a friendly welcome and ask for these required fields:
-   - Artist name
-   - Event description
-   - Date and time
-   - Venue name
-   - City
-   - Ticket price
+1. WELCOME & COLLECT: Start with a friendly welcome and ask for these REQUIRED fields:
+   - Event name (REQUIRED)
+   - Date and time (REQUIRED)
+   - Venue name (REQUIRED)
+   - City (REQUIRED)
+   
+   And these OPTIONAL fields:
+   - Artist name (optional)
+   - Event description (optional)
+   - Ticket price (optional)
 
 2. VALIDATE & CONFIRM: Once you have all information, show a checklist for confirmation:
    ✓ Artist: [name]
@@ -168,20 +171,24 @@ Be conversational, helpful, and guide the user through each step. If information
                         const args = JSON.parse(toolCallBuffer);
                         console.log("Inserting event:", args);
 
+                        const insertData: any = {
+                          name: args.name,
+                          venue: args.venue,
+                          city: args.city,
+                          event_date: args.event_date,
+                        };
+
+                        // Only include optional fields if they have actual values
+                        if (args.artist) insertData.artist = args.artist;
+                        if (args.description) insertData.description = args.description;
+                        if (args.price !== null && args.price !== undefined) insertData.price = args.price;
+                        if (args.latitude !== null && args.latitude !== undefined) insertData.latitude = args.latitude;
+                        if (args.longitude !== null && args.longitude !== undefined) insertData.longitude = args.longitude;
+                        if (args.ticket_url) insertData.ticket_url = args.ticket_url;
+
                         const { data: eventData, error } = await supabaseClient
                           .from("events")
-                          .insert({
-                            name: args.name,
-                            artist: args.artist,
-                            description: args.description,
-                            venue: args.venue,
-                            city: args.city,
-                            event_date: args.event_date,
-                            price: args.price,
-                            latitude: args.latitude,
-                            longitude: args.longitude,
-                            ticket_url: args.ticket_url,
-                          })
+                          .insert(insertData)
                           .select()
                           .single();
 
