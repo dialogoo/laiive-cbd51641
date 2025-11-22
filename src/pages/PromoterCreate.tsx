@@ -113,18 +113,25 @@ const PromoterCreate = () => {
 
   const handleConfirmEvent = async (eventDetails: EventDetails) => {
     try {
-      const { error } = await supabase.from("events").insert({
-        name: eventDetails.name,
-        artist: eventDetails.artist,
-        description: eventDetails.description,
-        event_date: eventDetails.event_date,
-        venue: eventDetails.venue,
-        city: eventDetails.city,
-        price: eventDetails.price,
-        ticket_url: eventDetails.ticket_url,
+      const response = await supabase.functions.invoke("validate-event", {
+        body: {
+          event: {
+            name: eventDetails.name,
+            artist: eventDetails.artist,
+            description: eventDetails.description,
+            event_date: eventDetails.event_date,
+            venue: eventDetails.venue,
+            city: eventDetails.city,
+            price: eventDetails.price,
+            ticket_url: eventDetails.ticket_url,
+          },
+          session_id: sessionId,
+        },
       });
 
-      if (error) throw error;
+      if (response.error) {
+        throw new Error(response.error.message || "Event validation failed");
+      }
 
       toast({
         title: "Success!",
@@ -143,7 +150,7 @@ const PromoterCreate = () => {
       console.error("Error creating event:", error);
       toast({
         title: "Error",
-        description: "Failed to create event. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to create event. Please try again.",
         variant: "destructive",
       });
     }

@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.validate-conversation]
 verify_jwt = false
+
+[functions.validate-event]
+verify_jwt = false
