@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Mic, Loader2, Upload, ImagePlus, MicOff } from "lucide-react";
+import { ArrowLeft, Send, Mic, Loader2, Upload, Camera, MicOff } from "lucide-react";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { EventConfirmationForm } from "@/components/EventConfirmationForm";
@@ -369,8 +370,14 @@ const PromoterCreate = () => {
             </div>
           </div>
           
-          <div className="font-ibm-plex text-sm text-muted-foreground">
-            Free Tier
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              ← back to user app
+            </button>
+            <LanguageSelector />
           </div>
         </div>
       </header>
@@ -430,17 +437,18 @@ const PromoterCreate = () => {
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              capture="environment"
               onChange={handleFileUpload}
               className="hidden"
             />
             <Button
-              variant="outline"
+              variant="ghost"
+              size="icon"
               onClick={() => fileInputRef.current?.click()}
               disabled={isExtracting || isLoading || extractedEvent !== null}
-              className="flex items-center gap-2"
+              className="text-muted-foreground hover:text-primary"
             >
-              <ImagePlus className="w-4 h-4" />
-              <span className="font-ibm-plex text-sm">Upload poster or file</span>
+              <Camera className="w-5 h-5" />
             </Button>
           </div>
           
