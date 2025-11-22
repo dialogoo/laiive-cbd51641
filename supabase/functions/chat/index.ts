@@ -247,18 +247,20 @@ serve(async (req) => {
         type: "function",
         function: {
           name: "query_database_events",
-          description: "Query the laiive database for live music events. IMPORTANT: When user says 'here', 'around me', 'near me', use latitude/longitude. When user specifies a city name, use city filter only (not lat/long). Parse time phrases: 'tonight'=today evening, 'tomorrow night'=tomorrow evening, 'this weekend'=Sat-Sun.",
+          description: "Query the laiive database for live music events. IMPORTANT: When user says 'here', 'around me', 'near me', use latitude/longitude. When user specifies a city name, use city filter only (not lat/long). Parse time phrases: 'tonight'=today evening, 'tomorrow night'=tomorrow evening, 'this weekend'=Sat-Sun. Supports artist/group and venue searches.",
           parameters: {
             type: "object",
             properties: {
               latitude: { type: "number", description: "User latitude for proximity search (use when user says 'here', 'around me', 'near me', 'nearby')" },
               longitude: { type: "number", description: "User longitude for proximity search (use when user says 'here', 'around me', 'near me', 'nearby')" },
-              startDate: { type: "string", description: "Start date ISO format (YYYY-MM-DD). Parse 'tonight'/'today' as current date, 'tomorrow' as next day." },
-              endDate: { type: "string", description: "End date ISO format (YYYY-MM-DD). Same as startDate for single day events." },
+              startDate: { type: "string", description: "Start date ISO format (YYYY-MM-DD). Parse 'tonight'/'today' as current date, 'tomorrow' as next day. Optional if searching by artist or venue only." },
+              endDate: { type: "string", description: "End date ISO format (YYYY-MM-DD). Same as startDate for single day events. Optional if searching by artist or venue only." },
               city: { type: "string", description: "City name filter (only when user specifies a city explicitly, not for 'here'/'around me')" },
               timeContext: { type: "string", enum: ["morning", "afternoon", "evening", "night"], description: "Time of day context: morning (before 12:00), afternoon (12:00-18:00), evening/night (after 18:00)" },
+              artist: { type: "string", description: "Artist or group name to search for (fuzzy match supported)" },
+              venue: { type: "string", description: "Venue name to search for (fuzzy match supported)" },
             },
-            required: ["startDate", "endDate"],
+            required: [],
           },
         },
       });
@@ -294,6 +296,9 @@ When users say phrases like:
 - "Friday night in Milan" → next Friday + Milan city
 - "this weekend close to me" → Sat-Sun + user's location coordinates
 - "what to do tonight" → today + user's location coordinates
+- "when is [artist/group] playing" → artist: [artist name], startDate: today (or omit if asking in general)
+- "concerts at [venue]" → venue: [venue name]
+- "where is [artist] playing" → artist: [artist name]
 
 TIME OF DAY CONTEXT:
 - "tonight", "this evening" = today after 18:00
@@ -305,10 +310,18 @@ LOCATION CONTEXT:
 - "here", "around me", "near me", "close to me", "nearby" → use latitude/longitude (${location?.latitude}, ${location?.longitude})
 - Specific city name → use city filter (DO NOT use lat/long when city is specified)
 
+ARTIST & VENUE SEARCHES:
+- When user asks about a specific artist/group: use artist parameter (supports partial matches)
+- When user asks about a specific venue: use venue parameter (supports partial matches)
+- You can combine artist/venue with date filters or use them alone
+- Fuzzy matching is automatic - don't worry about exact spelling
+
 WORKFLOW:
 1. Parse user's natural language to extract:
-   - Date/time context (convert "tonight", "tomorrow", "this weekend" to YYYY-MM-DD)
-   - Location context (use coordinates for "here"/"around me", or city name if specified)
+   - Date/time context (convert "tonight", "tomorrow", "this weekend" to YYYY-MM-DD) - OPTIONAL for artist/venue searches
+   - Location context (use coordinates for "here"/"around me", or city name if specified) - OPTIONAL
+   - Artist/group name if mentioned
+   - Venue name if mentioned
 2. Call the appropriate search tool with extracted parameters
 3. Display results with this format:
    🎵 **Artist** at Venue, City
@@ -320,7 +333,10 @@ WORKFLOW:
 EXAMPLES:
 - "concert tonight here" → startDate: ${currentDate}, endDate: ${currentDate}, latitude: ${location?.latitude}, longitude: ${location?.longitude}
 - "what to do tomorrow in Bergamo" → startDate: ${new Date(now.getTime() + 86400000).toISOString().split('T')[0]}, city: "Bergamo"
-- "Friday night around me" → startDate: [calculate next Friday], latitude: ${location?.latitude}, longitude: ${location?.longitude}
+- "when is coldplay playing" → artist: "coldplay"
+- "concerts at sala apollo" → venue: "sala apollo"
+- "where is madonna playing this month" → artist: "madonna", startDate: [first of month], endDate: [last of month]
+- "coldplay tonight in Barcelona" → artist: "coldplay", startDate: ${currentDate}, city: "Barcelona"
 
 Default location when not specified: ${isUsingUserCoords ? `coordinates (${location?.latitude}, ${location?.longitude})` : `${defaultLocation}`}`;
 
@@ -400,38 +416,57 @@ Default location when not specified: ${isUsingUserCoords ? `coordinates (${locat
                       const args = JSON.parse(toolCall.function.arguments);
                       console.log("Querying database:", args);
 
-                      // Build full-day range
-                      const startBound = new Date(`${args.startDate}T00:00:00Z`).toISOString();
-                      const endExclusive = new Date(new Date(`${args.endDate}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000).toISOString();
-
                       let query = supabaseClient
                         .from("events")
-                        .select("*")
-                        .gte("event_date", startBound)
-                        .lt("event_date", endExclusive)
-                        .order("event_date");
+                        .select("*");
 
-                      // Apply time-of-day filter if specified
-                      if (args.timeContext) {
-                        const timeRanges: Record<string, { start: number; end: number }> = {
-                          morning: { start: 0, end: 12 },
-                          afternoon: { start: 12, end: 18 },
-                          evening: { start: 18, end: 23 },
-                          night: { start: 18, end: 23 },
-                        };
-                        const range = timeRanges[args.timeContext];
-                        if (range) {
-                          const startTime = `T${String(range.start).padStart(2, '0')}:00:00`;
-                          const endTime = `T${String(range.end).padStart(2, '0')}:59:59`;
-                          query = query
-                            .gte("event_date", `${args.startDate}${startTime}`)
-                            .lte("event_date", `${args.endDate}${endTime}`);
+                      // Apply date filters if provided
+                      if (args.startDate && args.endDate) {
+                        const startBound = new Date(`${args.startDate}T00:00:00Z`).toISOString();
+                        const endExclusive = new Date(new Date(`${args.endDate}T00:00:00Z`).getTime() + 24 * 60 * 60 * 1000).toISOString();
+                        
+                        query = query
+                          .gte("event_date", startBound)
+                          .lt("event_date", endExclusive);
+
+                        // Apply time-of-day filter if specified
+                        if (args.timeContext) {
+                          const timeRanges: Record<string, { start: number; end: number }> = {
+                            morning: { start: 0, end: 12 },
+                            afternoon: { start: 12, end: 18 },
+                            evening: { start: 18, end: 23 },
+                            night: { start: 18, end: 23 },
+                          };
+                          const range = timeRanges[args.timeContext];
+                          if (range) {
+                            const startTime = `T${String(range.start).padStart(2, '0')}:00:00`;
+                            const endTime = `T${String(range.end).padStart(2, '0')}:59:59`;
+                            query = query
+                              .gte("event_date", `${args.startDate}${startTime}`)
+                              .lte("event_date", `${args.endDate}${endTime}`);
+                          }
                         }
+                      } else {
+                        // If no date specified, get future events
+                        query = query.gte("event_date", now.toISOString());
                       }
 
-                      if (args.city) {
-                        query = query.ilike("city", args.city);
+                      // Apply artist filter with fuzzy matching
+                      if (args.artist) {
+                        query = query.ilike("artist", `%${args.artist}%`);
                       }
+
+                      // Apply venue filter with fuzzy matching
+                      if (args.venue) {
+                        query = query.ilike("venue", `%${args.venue}%`);
+                      }
+
+                      // Apply city filter
+                      if (args.city) {
+                        query = query.ilike("city", `%${args.city}%`);
+                      }
+
+                      query = query.order("event_date").limit(20);
 
                       const { data: events, error } = await query;
 
