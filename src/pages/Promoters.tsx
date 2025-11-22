@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Play } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const Promoters = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-background">
@@ -15,12 +18,15 @@ const Promoters = () => {
             <span className="text-2xl">🫦</span>
             <span className="font-montserrat font-bold text-xl text-primary">laiive</span>
           </div>
-          <button
-            onClick={() => navigate("/")}
-            className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            ← back to user app
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              {t.promoter.backToUser}
+            </button>
+            <LanguageSelector />
+          </div>
         </div>
       </header>
 
@@ -28,10 +34,10 @@ const Promoters = () => {
         {/* Hero section */}
         <div className="text-center space-y-4">
           <h1 className="font-montserrat font-bold text-4xl md:text-5xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            For Promoters & Musicians
+            {t.promoter.title}
           </h1>
           <p className="font-ibm-plex text-lg text-muted-foreground max-w-2xl mx-auto">
-            Share your events with thousands of music lovers
+            {t.promoter.subtitle}
           </p>
         </div>
 
@@ -43,10 +49,10 @@ const Promoters = () => {
                 <Play className="w-10 h-10 text-primary" />
               </div>
               <p className="font-ibm-plex text-muted-foreground">
-                Walkthrough video placeholder
+                {t.promoter.videoPlaceholder}
               </p>
               <p className="font-ibm-plex text-sm text-muted-foreground">
-                Video will be embedded here
+                {t.promoter.videoDescription}
               </p>
             </div>
           </div>
@@ -60,7 +66,7 @@ const Promoters = () => {
             onClick={() => navigate("/promoters/create")}
             className="text-lg px-8 py-6 h-auto font-montserrat font-bold"
           >
-            Push your event now
+            {t.promoter.ctaButton}
           </Button>
           
           <div>
@@ -68,7 +74,7 @@ const Promoters = () => {
               onClick={() => navigate("/promoters/about")}
               className="font-ibm-plex text-sm text-primary hover:underline"
             >
-              Learn more about the project →
+              {t.promoter.learnMore}
             </button>
           </div>
         </div>
@@ -77,21 +83,20 @@ const Promoters = () => {
         <Card className="p-6 bg-card border-border">
           <div className="space-y-4">
             <h3 className="font-montserrat font-bold text-xl text-center">
-              You're an Early Partner 🎵
+              {t.promoter.earlyPartnerTitle}
             </h3>
             <p className="font-ibm-plex text-muted-foreground text-center">
-              You are one of our first partners. Your feedback helps us build something big for small live music scenes.
-              If you have ideas or notice anything, please contact us:
+              {t.promoter.earlyPartnerText}
             </p>
             <div className="text-center space-y-2">
               <p className="font-ibm-plex">
-                <span className="text-muted-foreground">Email:</span>{" "}
+                <span className="text-muted-foreground">{t.promoter.email}</span>{" "}
                 <a href="mailto:hello@laiive.app" className="text-primary hover:underline">
                   hello@laiive.app
                 </a>
               </p>
               <p className="font-ibm-plex">
-                <span className="text-muted-foreground">Phone:</span>{" "}
+                <span className="text-muted-foreground">{t.promoter.phone}</span>{" "}
                 <a href="tel:+1234567890" className="text-primary hover:underline">
                   +1 (234) 567-890
                 </a>

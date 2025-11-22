@@ -5,6 +5,8 @@ import { Mic, Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "@/hooks/useTranslation";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,13 +21,14 @@ interface UserLocation {
 
 const Chat = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [mode, setMode] = useState<"user" | "promoter">("user");
   
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hey! 👋 I'm here to help you discover amazing live music events near you. What are you in the mood for today?",
+      content: t.chat.welcome,
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +51,7 @@ const Chat = () => {
       setMessages([
         {
           role: "assistant",
-          content: "Hey! 👋 I'm here to help you discover amazing live music events near you. What are you in the mood for today?",
+          content: t.chat.welcome,
         },
       ]);
     }
@@ -207,13 +210,18 @@ const Chat = () => {
             <span className="font-montserrat font-bold text-xl text-primary">laiive</span>
           </div>
           
-          {/* Mode Link */}
-          <button
-            onClick={() => navigate("/promoters")}
-            className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            are you a promoter or musician? →
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Mode Link */}
+            <button
+              onClick={() => navigate("/promoters")}
+              className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              {t.chat.promoterLink}
+            </button>
+            
+            {/* Language Selector */}
+            <LanguageSelector />
+          </div>
         </div>
       </header>
 
@@ -281,7 +289,7 @@ const Chat = () => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            placeholder={mode === "promoter" ? "Tell me about your event..." : "Tell me what you're looking for..."}
+            placeholder={mode === "promoter" ? "Tell me about your event..." : t.chat.placeholder}
             className={cn(
               "flex-1 border-border font-ibm-plex",
               mode === "promoter" ? "bg-[hsl(0,0%,12%)]" : "bg-background"

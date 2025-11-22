@@ -1,0 +1,189 @@
+export type Language = 'en' | 'es' | 'it' | 'ca';
+
+export interface Translations {
+  // Chat page
+  chat: {
+    welcome: string;
+    promoterLink: string;
+    placeholder: string;
+  };
+  // Promoter page
+  promoter: {
+    title: string;
+    subtitle: string;
+    videoPlaceholder: string;
+    videoDescription: string;
+    ctaButton: string;
+    learnMore: string;
+    earlyPartnerTitle: string;
+    earlyPartnerText: string;
+    earlyPartnerContact: string;
+    email: string;
+    phone: string;
+    backToUser: string;
+  };
+  // About page
+  about: {
+    title: string;
+    philosophyTitle: string;
+    philosophyText: string;
+    aiEthicsTitle: string;
+    aiEthicsText: string;
+    smallVenuesTitle: string;
+    smallVenuesText: string;
+    joinTitle: string;
+    joinText: string;
+    back: string;
+  };
+  // Language selector
+  language: {
+    label: string;
+  };
+}
+
+export const translations: Record<Language, Translations> = {
+  en: {
+    chat: {
+      welcome: "Hey! 👋 I'm here to help you discover amazing live music events near you. What are you in the mood for today?",
+      promoterLink: "are you a promoter or musician? →",
+      placeholder: "Tell me what you're looking for...",
+    },
+    promoter: {
+      title: "For Promoters & Musicians",
+      subtitle: "Share your events with thousands of music lovers",
+      videoPlaceholder: "Walkthrough video placeholder",
+      videoDescription: "Video will be embedded here",
+      ctaButton: "Push your event now",
+      learnMore: "Learn more about the project →",
+      earlyPartnerTitle: "You're an Early Partner 🎵",
+      earlyPartnerText: "You are one of our first partners. Your feedback helps us build something big for small live music scenes. If you have ideas or notice anything, please contact us:",
+      earlyPartnerContact: "If you have ideas or notice anything, please contact us:",
+      email: "Email:",
+      phone: "Phone:",
+      backToUser: "← back to user app",
+    },
+    about: {
+      title: "About the Project",
+      philosophyTitle: "Our Philosophy",
+      philosophyText: "We believe live music is the heartbeat of local communities. Small venues, emerging artists, and independent promoters deserve the same visibility as major events. Our platform connects passionate music lovers with authentic live experiences, making it easier to discover what's happening in your neighborhood.",
+      aiEthicsTitle: "AI Ethics Layer",
+      aiEthicsText: "Our AI-powered search is designed to be fair and transparent. We don't favor paid promotions or big venues. Instead, we match users with events based on their genuine interests and location. The AI learns what matters to local music scenes—authenticity, diversity, and accessibility. Your data stays private, and our recommendations stay honest.",
+      smallVenuesTitle: "Why Small Venues Matter",
+      smallVenuesText: "Small venues are where legends are born. They're where communities gather, where new sounds emerge, and where music stays real. But they often struggle with visibility and marketing. We're building tools to amplify their voice without changing their soul. By making event discovery smarter and more accessible, we help keep local music scenes alive and thriving.",
+      joinTitle: "Join the Movement",
+      joinText: "As an early partner, you're helping us shape the future of live music discovery. Your feedback, your events, and your community make this platform what it is. Together, we're creating something that puts people and music first—not algorithms and advertising.",
+      back: "← back",
+    },
+    language: {
+      label: "Language",
+    },
+  },
+  es: {
+    chat: {
+      welcome: "¡Hola! 👋 Estoy aquí para ayudarte a descubrir increíbles eventos de música en vivo cerca de ti. ¿Qué te apetece hoy?",
+      promoterLink: "¿eres promotor o músico? →",
+      placeholder: "Dime qué estás buscando...",
+    },
+    promoter: {
+      title: "Para Promotores y Músicos",
+      subtitle: "Comparte tus eventos con miles de amantes de la música",
+      videoPlaceholder: "Marcador de video tutorial",
+      videoDescription: "El video se incrustará aquí",
+      ctaButton: "Publica tu evento ahora",
+      learnMore: "Más información sobre el proyecto →",
+      earlyPartnerTitle: "Eres un Socio Fundador 🎵",
+      earlyPartnerText: "Eres uno de nuestros primeros socios. Tu feedback nos ayuda a construir algo grande para las escenas locales de música en vivo. Si tienes ideas o notas algo, contáctanos:",
+      earlyPartnerContact: "Si tienes ideas o notas algo, contáctanos:",
+      email: "Email:",
+      phone: "Teléfono:",
+      backToUser: "← volver a la app de usuario",
+    },
+    about: {
+      title: "Sobre el Proyecto",
+      philosophyTitle: "Nuestra Filosofía",
+      philosophyText: "Creemos que la música en vivo es el corazón de las comunidades locales. Los lugares pequeños, artistas emergentes y promotores independientes merecen la misma visibilidad que los grandes eventos. Nuestra plataforma conecta amantes apasionados de la música con experiencias auténticas en vivo, facilitando descubrir qué está pasando en tu barrio.",
+      aiEthicsTitle: "Capa de Ética de IA",
+      aiEthicsText: "Nuestra búsqueda impulsada por IA está diseñada para ser justa y transparente. No favorecemos promociones pagadas ni grandes lugares. En cambio, conectamos usuarios con eventos basados en sus intereses genuinos y ubicación. La IA aprende lo que importa a las escenas musicales locales: autenticidad, diversidad y accesibilidad. Tus datos permanecen privados y nuestras recomendaciones honestas.",
+      smallVenuesTitle: "Por Qué Importan los Lugares Pequeños",
+      smallVenuesText: "Los lugares pequeños son donde nacen las leyendas. Son donde las comunidades se reúnen, donde emergen nuevos sonidos y donde la música se mantiene real. Pero a menudo luchan con visibilidad y marketing. Estamos construyendo herramientas para amplificar su voz sin cambiar su alma. Al hacer el descubrimiento de eventos más inteligente y accesible, ayudamos a mantener vivas las escenas musicales locales.",
+      joinTitle: "Únete al Movimiento",
+      joinText: "Como socio fundador, estás ayudándonos a dar forma al futuro del descubrimiento de música en vivo. Tu feedback, tus eventos y tu comunidad hacen que esta plataforma sea lo que es. Juntos, estamos creando algo que pone a las personas y la música primero, no algoritmos y publicidad.",
+      back: "← atrás",
+    },
+    language: {
+      label: "Idioma",
+    },
+  },
+  it: {
+    chat: {
+      welcome: "Ciao! 👋 Sono qui per aiutarti a scoprire fantastici eventi di musica dal vivo vicino a te. Cosa ti va oggi?",
+      promoterLink: "sei un promoter o musicista? →",
+      placeholder: "Dimmi cosa stai cercando...",
+    },
+    promoter: {
+      title: "Per Promoter e Musicisti",
+      subtitle: "Condividi i tuoi eventi con migliaia di amanti della musica",
+      videoPlaceholder: "Segnaposto video tutorial",
+      videoDescription: "Il video sarà incorporato qui",
+      ctaButton: "Pubblica il tuo evento ora",
+      learnMore: "Scopri di più sul progetto →",
+      earlyPartnerTitle: "Sei un Partner Iniziale 🎵",
+      earlyPartnerText: "Sei uno dei nostri primi partner. Il tuo feedback ci aiuta a costruire qualcosa di grande per le scene musicali locali dal vivo. Se hai idee o noti qualcosa, contattaci:",
+      earlyPartnerContact: "Se hai idee o noti qualcosa, contattaci:",
+      email: "Email:",
+      phone: "Telefono:",
+      backToUser: "← torna all'app utente",
+    },
+    about: {
+      title: "Sul Progetto",
+      philosophyTitle: "La Nostra Filosofia",
+      philosophyText: "Crediamo che la musica dal vivo sia il battito del cuore delle comunità locali. I piccoli locali, gli artisti emergenti e i promoter indipendenti meritano la stessa visibilità dei grandi eventi. La nostra piattaforma connette gli amanti appassionati della musica con esperienze autentiche dal vivo, rendendo più facile scoprire cosa succede nel tuo quartiere.",
+      aiEthicsTitle: "Livello di Etica dell'IA",
+      aiEthicsText: "La nostra ricerca basata sull'IA è progettata per essere equa e trasparente. Non favoriamo promozioni a pagamento o grandi locali. Invece, abbiniamo gli utenti con eventi basati sui loro interessi genuini e posizione. L'IA impara ciò che conta per le scene musicali locali: autenticità, diversità e accessibilità. I tuoi dati rimangono privati e le nostre raccomandazioni oneste.",
+      smallVenuesTitle: "Perché i Piccoli Locali Contano",
+      smallVenuesText: "I piccoli locali sono dove nascono le leggende. Sono dove le comunità si riuniscono, dove emergono nuovi suoni e dove la musica rimane vera. Ma spesso lottano con visibilità e marketing. Stiamo costruendo strumenti per amplificare la loro voce senza cambiare la loro anima. Rendendo la scoperta di eventi più intelligente e accessibile, aiutiamo a mantenere vive le scene musicali locali.",
+      joinTitle: "Unisciti al Movimento",
+      joinText: "Come partner iniziale, stai aiutandoci a plasmare il futuro della scoperta di musica dal vivo. Il tuo feedback, i tuoi eventi e la tua comunità rendono questa piattaforma ciò che è. Insieme, stiamo creando qualcosa che mette le persone e la musica al primo posto, non algoritmi e pubblicità.",
+      back: "← indietro",
+    },
+    language: {
+      label: "Lingua",
+    },
+  },
+  ca: {
+    chat: {
+      welcome: "Hola! 👋 Estic aquí per ajudar-te a descobrir increïbles esdeveniments de música en directe a prop teu. Què t'agradaria avui?",
+      promoterLink: "ets promotor o músic? →",
+      placeholder: "Digues-me què estàs buscant...",
+    },
+    promoter: {
+      title: "Per a Promotors i Músics",
+      subtitle: "Comparteix els teus esdeveniments amb milers d'amants de la música",
+      videoPlaceholder: "Marcador de vídeo tutorial",
+      videoDescription: "El vídeo s'inserirà aquí",
+      ctaButton: "Publica el teu esdeveniment ara",
+      learnMore: "Més informació sobre el projecte →",
+      earlyPartnerTitle: "Ets un Soci Fundador 🎵",
+      earlyPartnerText: "Ets un dels nostres primers socis. El teu feedback ens ajuda a construir alguna cosa gran per a les escenes locals de música en directe. Si tens idees o notes alguna cosa, contacta'ns:",
+      earlyPartnerContact: "Si tens idees o notes alguna cosa, contacta'ns:",
+      email: "Email:",
+      phone: "Telèfon:",
+      backToUser: "← tornar a l'app d'usuari",
+    },
+    about: {
+      title: "Sobre el Projecte",
+      philosophyTitle: "La Nostra Filosofia",
+      philosophyText: "Creiem que la música en directe és el cor de les comunitats locals. Els llocs petits, artistes emergents i promotors independents mereixen la mateixa visibilitat que els grans esdeveniments. La nostra plataforma connecta amants apassionats de la música amb experiències autèntiques en directe, facilitant descobrir què passa al teu barri.",
+      aiEthicsTitle: "Capa d'Ètica d'IA",
+      aiEthicsText: "La nostra cerca impulsada per IA està dissenyada per ser justa i transparent. No afavorim promocions pagades ni grans locals. En canvi, connectem usuaris amb esdeveniments basats en els seus interessos genuïns i ubicació. La IA aprèn el que importa a les escenes musicals locals: autenticitat, diversitat i accessibilitat. Les teves dades romanen privades i les nostres recomanacions honestes.",
+      smallVenuesTitle: "Per Què Importen els Llocs Petits",
+      smallVenuesText: "Els llocs petits són on neixen les llegendes. Són on les comunitats es reuneixen, on emergeixen nous sons i on la música es manté real. Però sovint lluiten amb visibilitat i màrqueting. Estem construint eines per amplificar la seva veu sense canviar la seva ànima. Fent el descobriment d'esdeveniments més intel·ligent i accessible, ajudem a mantenir vives les escenes musicals locals.",
+      joinTitle: "Uneix-te al Moviment",
+      joinText: "Com a soci fundador, estàs ajudant-nos a donar forma al futur del descobriment de música en directe. El teu feedback, els teus esdeveniments i la teva comunitat fan que aquesta plataforma sigui el que és. Junts, estem creant alguna cosa que posa les persones i la música primer, no algorismes i publicitat.",
+      back: "← enrere",
+    },
+    language: {
+      label: "Idioma",
+    },
+  },
+};
