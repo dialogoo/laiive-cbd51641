@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AudioRecorder } from "@/utils/audioRecorder";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface EventDetails {
   name: string;
@@ -24,6 +25,7 @@ interface EventDetails {
 
 const PromoterCreate = () => {
   const navigate = useNavigate();
+  const { language } = useTranslation();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
     {
@@ -167,6 +169,7 @@ const PromoterCreate = () => {
           },
           body: JSON.stringify({
             messages: newMessages,
+            language,
           }),
         }
       );

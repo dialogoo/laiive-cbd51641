@@ -23,7 +23,7 @@ interface UserLocation {
 
 const Chat = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [mode, setMode] = useState<"user" | "promoter">("user");
   
   const [message, setMessage] = useState("");
@@ -97,10 +97,11 @@ const Chat = () => {
           },
           body: JSON.stringify(
             mode === "promoter"
-              ? { messages: [...messages, userMessage] }
+              ? { messages: [...messages, userMessage], language }
               : {
                   messages: [...messages, userMessage],
                   location,
+                  language,
                 }
           ),
         }
