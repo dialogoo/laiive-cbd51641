@@ -204,8 +204,8 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, location, searchMode } = await req.json();
-    console.log("Chat request:", { searchMode, location, messageCount: messages.length });
+    const { messages, location, searchMode, language = 'en' } = await req.json();
+    console.log("Chat request:", { searchMode, location, language, messageCount: messages.length });
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -275,7 +275,15 @@ serve(async (req) => {
     const defaultLocation = locationParse.city || location?.city || "nearby";
     const isUsingUserCoords = locationParse.useUserLocation && !locationParse.city;
 
-    const systemPrompt = `You help users find live music events. Today is ${currentDate} at ${currentTime}. ${locationInfo}.
+    const languageMap: Record<string, string> = {
+      'en': 'English',
+      'es': 'Spanish',
+      'it': 'Italian',
+      'ca': 'Catalan'
+    };
+    const userLanguage = languageMap[language] || 'English';
+
+    const systemPrompt = `You help users find live music events. IMPORTANT: Always respond in ${userLanguage}. Today is ${currentDate} at ${currentTime}. ${locationInfo}.
 
 ${searchMode === "database" ? "Use query_database_events to search the laiive database." : "Use search_internet_events to search the web."}
 

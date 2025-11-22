@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, language = 'en' } = await req.json();
     console.log("Promoter create request:", { messageCount: messages.length });
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -49,7 +49,15 @@ serve(async (req) => {
       },
     ];
 
-    const systemPrompt = `You are an AI assistant helping event promoters add their events to the laiive platform. 
+    const languageMap: Record<string, string> = {
+      'en': 'English',
+      'es': 'Spanish',
+      'it': 'Italian',
+      'ca': 'Catalan'
+    };
+    const userLanguage = languageMap[language] || 'English';
+
+    const systemPrompt = `You are an AI assistant helping event promoters add their events to the laiive platform. IMPORTANT: Always respond in ${userLanguage}.
 
 Your job is to collect ALL REQUIRED information through conversation:
 - Event name (REQUIRED)
