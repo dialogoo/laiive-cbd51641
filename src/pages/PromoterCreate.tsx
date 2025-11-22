@@ -244,77 +244,32 @@ const PromoterCreate = () => {
 
         const { text } = await transcribeResponse.json();
 
-        // Extract event details from transcribed text using AI
-        const LOVABLE_API_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const extractResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              {
-                role: "system",
-                content: `You are an expert at extracting event information from natural language text. 
-                Extract the following information and return it as JSON:
-                - name (event/concert name)
-                - artist (artist/band name)
-                - description (brief description if available)
-                - event_date (ISO 8601 format YYYY-MM-DDTHH:MM:SS)
-                - venue (venue name)
-                - city (city name)
-                - price (ticket price as number, null if free or not specified)
-                - ticket_url (ticket link if available)
-                
-                If you cannot find certain information, use null. Be as accurate as possible with dates and times.`,
-              },
-              {
-                role: "user",
-                content: `Extract event details from this text: ${text}`,
-              },
-            ],
-            tools: [
-              {
-                type: "function",
-                function: {
-                  name: "extract_event_details",
-                  description: "Extract event details from text",
-                  parameters: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string", description: "Event or concert name" },
-                      artist: { type: ["string", "null"], description: "Artist or band name" },
-                      description: { type: ["string", "null"], description: "Event description" },
-                      event_date: { type: "string", description: "Event date and time in ISO 8601 format" },
-                      venue: { type: "string", description: "Venue name" },
-                      city: { type: "string", description: "City name" },
-                      price: { type: ["number", "null"], description: "Ticket price" },
-                      ticket_url: { type: ["string", "null"], description: "Ticket purchase URL" },
-                    },
-                    required: ["name", "event_date", "venue", "city"],
-                    additionalProperties: false,
-                  },
-                },
-              },
-            ],
-            tool_choice: { type: "function", function: { name: "extract_event_details" } },
-          }),
-        });
+        console.log("Transcribed text:", text);
+
+        // Extract event details from transcribed text via backend
+        const extractResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-event-from-text`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ text }),
+          }
+        );
 
         if (!extractResponse.ok) {
           throw new Error("Event extraction failed");
         }
 
         const extractData = await extractResponse.json();
-        const toolCall = extractData.choices?.[0]?.message?.tool_calls?.[0];
         
-        if (!toolCall) {
-          throw new Error("No event details extracted");
+        if (!extractData.success) {
+          throw new Error(extractData.error || "Failed to extract event details");
         }
 
-        const eventDetails = JSON.parse(toolCall.function.arguments);
+        const eventDetails = extractData.eventDetails;
         setExtractedEvent(eventDetails);
         
         toast({
