@@ -287,6 +287,8 @@ serve(async (req) => {
 
     const systemPrompt = `You help users find live music events. IMPORTANT: Always respond in ${userLanguage}. Today is ${currentDate} at ${currentTime}. ${locationInfo}.
 
+CRITICAL: Do NOT greet the user or introduce yourself. Do NOT say "Hey!", "Hi!", "Ciao!", "Hello!" or any welcome message. Just wait for the user's query and respond directly to what they ask. Never start with introductions or explanations of what you can do.
+
 ${searchMode === "database" ? "Use query_database_events to search the laiive database." : "Use search_internet_events to search the web."}
 
 NATURAL LANGUAGE UNDERSTANDING:
