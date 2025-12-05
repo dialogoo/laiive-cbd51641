@@ -88,13 +88,9 @@ const PromoterCreate = () => {
 
       const data = await response.json();
       
-      if (data.success && data.eventData) {
-        setExtractedEvent(data.eventData);
-        toast({
-          title: "Event details extracted!",
-          description: "Please review and confirm the information.",
-        });
-        return true;
+        if (data.success && data.eventData) {
+          setExtractedEvent(data.eventData);
+          return true;
       } else {
         throw new Error(data.error || "Could not extract event details");
       }
@@ -156,10 +152,6 @@ const PromoterCreate = () => {
         
         if (data.success) {
           setExtractedEvent(data.eventDetails);
-          toast({
-            title: "Event details extracted!",
-            description: "Please review and confirm the information.",
-          });
         } else {
           throw new Error(data.error || "Extraction failed");
         }
