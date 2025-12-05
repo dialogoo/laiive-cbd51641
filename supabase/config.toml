@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.validate-event]
 verify_jwt = false
+
+[functions.extract-event-from-url]
+verify_jwt = false
