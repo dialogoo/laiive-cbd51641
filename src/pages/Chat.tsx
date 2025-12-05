@@ -348,13 +348,7 @@ const Chat = () => {
       {/* Chat messages */}
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-4xl mx-auto space-y-4">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-4 pt-20">
-              <p className="font-ibm-plex text-muted-foreground text-center max-w-md">
-                {t.chat.welcome}
-              </p>
-            </div>
-          ) : (
+          {messages.length === 0 ? null : (
             <>
               {messages.map((msg, idx) => (
             <div
@@ -389,12 +383,12 @@ const Chat = () => {
               {isLoading && (
                 <div className="flex justify-start">
                   <div className={cn(
-                    "text-card-foreground border rounded-2xl px-4 py-3",
+                    "rounded-2xl px-4 py-3",
                     mode === "promoter" 
-                      ? "bg-[hsl(0,0%,18%)] border-[hsl(0,0%,30%)]"
-                      : "bg-card border-border"
+                      ? "bg-[hsl(0,0%,18%)]"
+                      : "bg-card"
                   )}>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <div className="w-5 h-5 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
                   </div>
                 </div>
               )}
