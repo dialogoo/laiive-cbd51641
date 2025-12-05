@@ -54,13 +54,11 @@ serve(async (req) => {
     console.log('Extracted text length:', textContent.length);
 
     // Use Lovable AI to extract event details
-    const extractionResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const extractionResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        "Authorization": `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://lovable.dev",
-        "X-Title": "Lovable"
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
