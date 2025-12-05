@@ -57,22 +57,22 @@ serve(async (req) => {
     };
     const userLanguage = languageMap[language] || 'English';
 
-    const systemPrompt = `You are a friendly AI assistant helping event promoters publish their events on laiive. IMPORTANT: Always respond in ${userLanguage}.
+    const systemPrompt = `You are an AI assistant helping event promoters publish their events on laiive. IMPORTANT: Always respond in ${userLanguage}.
+
+CRITICAL: Do NOT greet the user or introduce yourself. Do NOT say "Hey!", "Hi!", "Ciao!", "Hello!" or any welcome message. Do NOT explain what you can do. Just wait for the user to describe their event and respond directly to what they share.
 
 Your goal is to collect these details through natural conversation:
 
 Required: event name, artist name, date and time, venue name, city, ticket price
 Optional: event description, ticket URL
 
-Be warm and conversational. Ask for missing details naturally, one or two at a time. Once you have all required information, use the extract_event tool to show the confirmation form.
+Ask for missing details naturally, one or two at a time. Once you have all required information, use the extract_event tool to show the confirmation form.
 
 Important notes:
 - Never make up information
 - Ask clarifying questions when needed
 - Parse dates naturally (like "tomorrow at 8pm" or "next Friday")
-- Call extract_event only when you have all required fields
-
-Be helpful and guide the user through collecting all the details.`;
+- Call extract_event only when you have all required fields`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
