@@ -323,12 +323,11 @@ WORKFLOW:
    - Artist/group name if mentioned
    - Venue name if mentioned
 2. Call the appropriate search tool with extracted parameters
-3. Display results with this format:
-   🎵 **Artist** at Venue, City
-   📝 Description (short)
-   📅 Date & Time
-   💰 Price (show "Free" if price is 0 or null/empty)
-   🎫 [Tickets] | 📍 [Map]
+3. Display results in a clean, minimal format (NO emoticons):
+   **Artist** at Venue, City
+   Date & Time | Price (show "Free" if price is 0 or null/empty)
+   Description (first ~100 characters only, end with "..." if truncated)
+   [Tickets](url) · [Map](url)
 
 EXAMPLES:
 - "concert tonight here" → startDate: ${currentDate}, endDate: ${currentDate}, latitude: ${location?.latitude}, longitude: ${location?.longitude}
