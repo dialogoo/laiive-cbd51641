@@ -6,13 +6,60 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting: track requests per IP
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 30; // requests per minute
+const RATE_WINDOW = 60000; // 1 minute in ms
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  
+  if (!entry || now > entry.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+    return true;
+  }
+  
+  if (entry.count >= RATE_LIMIT) {
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
+function getClientIP(req: Request): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+         req.headers.get("x-real-ip") || 
+         "unknown";
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Rate limit check
+  const clientIP = getClientIP(req);
+  if (!checkRateLimit(clientIP)) {
+    console.log(`Rate limit exceeded for IP: ${clientIP}`);
+    return new Response(
+      JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     const { messages, language = 'en' } = await req.json();
+    
+    // Input validation - limit conversation history
+    if (messages && messages.length > 50) {
+      return new Response(
+        JSON.stringify({ error: "Conversation history too long" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
     console.log("Promoter create request:", { messageCount: messages.length });
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
