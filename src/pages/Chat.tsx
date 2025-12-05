@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mic, Send, Loader2, MicOff } from "lucide-react";
+import { Mic, Send, Loader2, MicOff, Calendar, MapPin, Ticket, Music, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,91 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import DOMPurify from "dompurify";
+
+// Parse event blocks from message content
+const parseEventContent = (content: string) => {
+  // Match event pattern: **Artist** at Venue, City\nDate | Price\n...
+  const eventPattern = /\*\*(.+?)\*\*\s+at\s+(.+?),\s+(.+?)\n(.+?)\s*\|\s*(.+?)(?:\n(.+?))?(?:\n\[(.+?)\]\((.+?)\))?/g;
+  const events: Array<{
+    artist: string;
+    venue: string;
+    city: string;
+    dateTime: string;
+    price: string;
+    description?: string;
+    ticketUrl?: string;
+    ticketLabel?: string;
+  }> = [];
+  
+  let match;
+  let lastIndex = 0;
+  const textParts: string[] = [];
+  
+  while ((match = eventPattern.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      textParts.push(content.slice(lastIndex, match.index));
+    }
+    events.push({
+      artist: match[1],
+      venue: match[2],
+      city: match[3],
+      dateTime: match[4],
+      price: match[5],
+      description: match[6]?.trim(),
+      ticketLabel: match[7],
+      ticketUrl: match[8],
+    });
+    lastIndex = match.index + match[0].length;
+  }
+  
+  if (lastIndex < content.length) {
+    textParts.push(content.slice(lastIndex));
+  }
+  
+  return { events, textParts, hasEvents: events.length > 0 };
+};
+
+// Event card component
+const EventCard = ({ event }: { event: { artist: string; venue: string; city: string; dateTime: string; price: string; description?: string; ticketUrl?: string; ticketLabel?: string } }) => (
+  <div className="border border-border/50 rounded-xl p-4 my-2 bg-background/50 backdrop-blur-sm hover:border-primary/30 transition-colors">
+    <div className="flex items-start gap-3">
+      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+        <Music className="w-5 h-5 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-semibold text-foreground truncate">{event.artist}</h4>
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
+          <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="truncate">{event.venue}, {event.city}</span>
+        </div>
+        <div className="flex items-center gap-4 mt-2 text-sm">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{event.dateTime}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-primary font-medium">
+            <Ticket className="w-3.5 h-3.5" />
+            <span>{event.price}</span>
+          </div>
+        </div>
+        {event.description && (
+          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{event.description}</p>
+        )}
+        {event.ticketUrl && (
+          <a 
+            href={event.ticketUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mt-3"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            {event.ticketLabel || "Get tickets"}
+          </a>
+        )}
+      </div>
+    </div>
+  </div>
+);
 
 interface Message {
   role: "user" | "assistant";
@@ -350,36 +435,71 @@ const Chat = () => {
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 ? null : (
             <>
-              {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={cn(
-                "flex",
-                msg.role === "user" ? "justify-end" : "justify-start"
-              )}
-            >
-              <div
-                className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-3 font-ibm-plex whitespace-pre-wrap",
-                  msg.role === "user"
-                    ? mode === "promoter"
-                      ? "bg-[hsl(0,0%,22%)] text-foreground border border-[hsl(0,0%,30%)]"
-                      : "bg-muted text-foreground border border-border"
-                    : mode === "promoter"
-                    ? "bg-[hsl(0,0%,18%)] text-card-foreground border border-[hsl(0,0%,30%)]"
-                    : "bg-card text-card-foreground border border-border"
-                )}
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(
-                    msg.content
-                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>'),
-                    { ALLOWED_TAGS: ['strong', 'a'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] }
-                  ),
-                }}
-              />
-            </div>
-              ))}
+              {messages.map((msg, idx) => {
+                // For assistant messages, try to parse events
+                const parsed = msg.role === "assistant" ? parseEventContent(msg.content) : null;
+                
+                return (
+                  <div
+                    key={idx}
+                    className={cn(
+                      "flex",
+                      msg.role === "user" ? "justify-end" : "justify-start"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "max-w-[85%] rounded-2xl font-ibm-plex",
+                        msg.role === "user"
+                          ? mode === "promoter"
+                            ? "bg-[hsl(0,0%,22%)] text-foreground border border-[hsl(0,0%,30%)] px-4 py-3"
+                            : "bg-muted text-foreground border border-border px-4 py-3"
+                          : mode === "promoter"
+                          ? "bg-[hsl(0,0%,18%)] text-card-foreground border border-[hsl(0,0%,30%)] px-4 py-3"
+                          : parsed?.hasEvents
+                          ? "bg-transparent p-0"
+                          : "bg-card text-card-foreground border border-border px-4 py-3"
+                      )}
+                    >
+                      {parsed?.hasEvents ? (
+                        <div className="space-y-3">
+                          {parsed.textParts.map((text, i) => 
+                            text.trim() && (
+                              <p 
+                                key={`text-${i}`} 
+                                className="whitespace-pre-wrap text-muted-foreground text-sm"
+                                dangerouslySetInnerHTML={{
+                                  __html: DOMPurify.sanitize(
+                                    text
+                                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                                      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>'),
+                                    { ALLOWED_TAGS: ['strong', 'a'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] }
+                                  ),
+                                }}
+                              />
+                            )
+                          )}
+                          {parsed.events.map((event, i) => (
+                            <EventCard key={`event-${i}`} event={event} />
+                          ))}
+                        </div>
+                      ) : (
+                        <div 
+                          className="whitespace-pre-wrap"
+                          dangerouslySetInnerHTML={{
+                            __html: DOMPurify.sanitize(
+                              msg.content
+                                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>'),
+                              { ALLOWED_TAGS: ['strong', 'a'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] }
+                            ),
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
               {isLoading && (
                 <div className="flex justify-start">
                   <div className={cn(
