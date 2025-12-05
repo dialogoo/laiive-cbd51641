@@ -166,14 +166,21 @@ export const EventConfirmationForm = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="price">Ticket Price *</Label>
+          <Label htmlFor="price">Ticket Price</Label>
           <Input
             id="price"
-            type="number"
-            step="0.01"
-            value={formData.price || ""}
-            onChange={(e) => setFormData({ ...formData, price: e.target.value ? parseFloat(e.target.value) : null })}
-            required
+            type="text"
+            placeholder="Free or enter price"
+            value={formData.price === 0 ? "Free" : (formData.price || "")}
+            onChange={(e) => {
+              const val = e.target.value.toLowerCase();
+              if (val === "free" || val === "") {
+                setFormData({ ...formData, price: 0 });
+              } else {
+                const num = parseFloat(e.target.value);
+                setFormData({ ...formData, price: isNaN(num) ? null : num });
+              }
+            }}
             disabled={isSubmitting}
             className="font-ibm-plex"
           />

@@ -327,7 +327,7 @@ WORKFLOW:
    🎵 **Artist** at Venue, City
    📝 Description (short)
    📅 Date & Time
-   💰 Price
+   💰 Price (show "Free" if price is 0 or null/empty)
    🎫 [Tickets] | 📍 [Map]
 
 EXAMPLES:
