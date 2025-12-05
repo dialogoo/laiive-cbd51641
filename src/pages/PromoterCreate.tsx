@@ -59,6 +59,58 @@ const PromoterCreate = () => {
     return null;
   };
 
+  // Detect URL in text
+  const extractUrl = (text: string): string | null => {
+    const urlRegex = /(https?:\/\/[^\s]+)/i;
+    const match = text.match(urlRegex);
+    return match ? match[1] : null;
+  };
+
+  // Extract event from URL
+  const extractEventFromUrl = async (url: string) => {
+    setIsExtracting(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-event-from-url`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ url, language }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to extract event from URL");
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.eventData) {
+        setExtractedEvent(data.eventData);
+        toast({
+          title: "Event details extracted!",
+          description: "Please review and confirm the information.",
+        });
+        return true;
+      } else {
+        throw new Error(data.error || "Could not extract event details");
+      }
+    } catch (error) {
+      console.error("Error extracting from URL:", error);
+      toast({
+        title: "Extraction failed",
+        description: "Could not extract event details from this URL. Please enter manually.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -187,6 +239,20 @@ const PromoterCreate = () => {
     }
 
     const currentLanguage = detected || language;
+
+    // Check if message contains a URL and try to extract event
+    const url = extractUrl(message);
+    if (url) {
+      const userMessage = { role: "user" as const, content: message };
+      setMessages([...messages, userMessage]);
+      setMessage("");
+      
+      const extracted = await extractEventFromUrl(url);
+      if (extracted) {
+        return; // Event form will be shown
+      }
+      // If extraction failed, continue with normal chat flow
+    }
 
     const userMessage = { role: "user" as const, content: message };
     const newMessages = [...messages, userMessage];
