@@ -183,49 +183,42 @@ const PromoterCreate = () => {
     }
   };
 
-  const handleConfirmEvent = async (eventDetails: EventDetails) => {
-    try {
-      const response = await supabase.functions.invoke("validate-event", {
-        body: {
-          event: {
-            name: eventDetails.name,
-            artist: eventDetails.artist,
-            description: eventDetails.description,
-            event_date: eventDetails.event_date,
-            venue: eventDetails.venue,
-            city: eventDetails.city,
-            price: eventDetails.price,
-            ticket_url: eventDetails.ticket_url,
-          },
-          session_id: sessionId,
+  const handleConfirmEvent = async (eventDetails: EventDetails): Promise<void> => {
+    const response = await supabase.functions.invoke("validate-event", {
+      body: {
+        event: {
+          name: eventDetails.name,
+          artist: eventDetails.artist,
+          description: eventDetails.description,
+          event_date: eventDetails.event_date,
+          venue: eventDetails.venue,
+          city: eventDetails.city,
+          price: eventDetails.price,
+          ticket_url: eventDetails.ticket_url,
         },
-      });
+        session_id: sessionId,
+      },
+    });
 
-      if (response.error) {
-        throw new Error(response.error.message || "Event validation failed");
-      }
-
-      toast({
-        title: "Success!",
-        description: "Event created from your poster.",
-      });
-
-      setExtractedEvent(null);
-      setMessages([
-        ...messages,
-        {
-          role: "assistant",
-          content: `Great! I've created the event "${eventDetails.name}" at ${eventDetails.venue} in ${eventDetails.city}. Would you like to add another event?`,
-        },
-      ]);
-    } catch (error) {
-      console.error("Error creating event:", error);
+    if (response.error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create event. Please try again.",
+        description: response.error.message || "Failed to create event. Please try again.",
         variant: "destructive",
       });
+      throw new Error(response.error.message || "Event validation failed");
     }
+  };
+
+  const handleFormClose = () => {
+    setExtractedEvent(null);
+    setMessages([
+      ...messages,
+      {
+        role: "assistant",
+        content: t.promoterCreate.welcome,
+      },
+    ]);
   };
 
 
@@ -500,7 +493,7 @@ const PromoterCreate = () => {
             <EventConfirmationForm
               eventDetails={extractedEvent}
               onConfirm={handleConfirmEvent}
-              onCancel={() => setExtractedEvent(null)}
+              onCancel={handleFormClose}
             />
           ) : (
             <>
