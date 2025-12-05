@@ -103,7 +103,7 @@ Response:`;
       );
     }
 
-    // Event is legitimate, insert into database
+    // Event is legitimate, check for duplicates before inserting
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -113,7 +113,52 @@ Response:`;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data, error } = await supabase.from("events").insert([event]).select();
+    // Check for existing similar event (same venue, city, and date within 2 hours)
+    const eventDate = new Date(event.event_date);
+    const dateMin = new Date(eventDate.getTime() - 2 * 60 * 60 * 1000).toISOString();
+    const dateMax = new Date(eventDate.getTime() + 2 * 60 * 60 * 1000).toISOString();
+
+    const { data: existingEvents } = await supabase
+      .from("events")
+      .select("*")
+      .ilike("venue", event.venue)
+      .ilike("city", event.city)
+      .gte("event_date", dateMin)
+      .lte("event_date", dateMax);
+
+    let data, error;
+
+    if (existingEvents && existingEvents.length > 0) {
+      // Update existing event instead of creating duplicate
+      const existingEvent = existingEvents[0];
+      console.log("Found existing event, updating:", existingEvent.id);
+      
+      const { data: updatedData, error: updateError } = await supabase
+        .from("events")
+        .update({
+          name: event.name,
+          artist: event.artist,
+          description: event.description,
+          price: event.price,
+          ticket_url: event.ticket_url,
+          event_date: event.event_date,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", existingEvent.id)
+        .select();
+      
+      data = updatedData;
+      error = updateError;
+    } else {
+      // Insert new event
+      const { data: insertedData, error: insertError } = await supabase
+        .from("events")
+        .insert([event])
+        .select();
+      
+      data = insertedData;
+      error = insertError;
+    }
 
     if (error) {
       console.error("Database insertion error:", error);
@@ -124,7 +169,7 @@ Response:`;
     }
 
     return new Response(
-      JSON.stringify({ success: true, event: data[0] }),
+      JSON.stringify({ success: true, event: data?.[0] ?? null }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
