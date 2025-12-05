@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Play } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LanguageSelector } from "@/components/LanguageSelector";
 
 const Promoters = () => {
   const navigate = useNavigate();
@@ -25,7 +24,6 @@ const Promoters = () => {
             >
               {t.promoter.backToUser}
             </button>
-            <LanguageSelector />
           </div>
         </div>
       </header>
@@ -79,26 +77,19 @@ const Promoters = () => {
           </div>
         </div>
 
-        {/* Early collaborator block */}
+        {/* Welcome block */}
         <Card className="p-6 bg-card border-border">
           <div className="space-y-4">
             <h3 className="font-montserrat font-bold text-xl text-center">
-              {t.promoter.earlyPartnerTitle}
+              {t.promoter.welcomeTitle}
             </h3>
             <p className="font-ibm-plex text-muted-foreground text-center">
-              {t.promoter.earlyPartnerText}
+              {t.promoter.welcomeText}
             </p>
             <div className="text-center space-y-2">
               <p className="font-ibm-plex">
-                <span className="text-muted-foreground">{t.promoter.email}</span>{" "}
-                <a href="mailto:oscar@laiive.com" className="text-primary hover:underline">
-                  oscar@laiive.com
-                </a>
-              </p>
-              <p className="font-ibm-plex">
-                <span className="text-muted-foreground">{t.promoter.phone}</span>{" "}
-                <a href="https://wa.me/34645620007" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                  +34 645 620 007
+                <a href="mailto:info@laiive.com" className="text-primary hover:underline">
+                  info@laiive.com
                 </a>
               </p>
             </div>

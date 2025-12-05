@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Mic, Loader2, Upload, Camera, MicOff } from "lucide-react";
-import { LanguageSelector } from "@/components/LanguageSelector";
+import { ArrowLeft, Send, Mic, Loader2, Camera, MicOff, Plus, X, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { EventConfirmationForm } from "@/components/EventConfirmationForm";
@@ -26,7 +25,7 @@ interface EventDetails {
 
 const PromoterCreate = () => {
   const navigate = useNavigate();
-  const { language, t } = useTranslation();
+  const { language, setLanguage, t } = useTranslation();
   const { sessionId, deviceType, userAgent } = useSession();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
@@ -39,9 +38,26 @@ const PromoterCreate = () => {
   const [extractedEvent, setExtractedEvent] = useState<EventDetails | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const audioRecorderRef = useRef<AudioRecorder>(new AudioRecorder());
+
+  // Detect language from user message
+  const detectLanguageFromText = (text: string): string | null => {
+    const spanishIndicators = /\b(hola|qué|dónde|cuándo|cómo|quiero|busco|hay|para|esta|evento|música|concierto)\b/i;
+    const italianIndicators = /\b(ciao|dove|quando|come|voglio|cerco|c'è|per|questa|evento|musica|concerto)\b/i;
+    const catalanIndicators = /\b(hola|què|on|quan|com|vull|busco|hi ha|per|aquesta|esdeveniment|música|concert)\b/i;
+    const englishIndicators = /\b(hello|hi|what|where|when|how|want|looking|is there|for|this|event|music|concert)\b/i;
+
+    if (spanishIndicators.test(text)) return 'es';
+    if (italianIndicators.test(text)) return 'it';
+    if (catalanIndicators.test(text)) return 'ca';
+    if (englishIndicators.test(text)) return 'en';
+    
+    return null;
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,6 +77,7 @@ const PromoterCreate = () => {
     }
 
     setIsExtracting(true);
+    setIsMenuOpen(false);
 
     try {
       const reader = new FileReader();
@@ -107,6 +124,9 @@ const PromoterCreate = () => {
       setIsExtracting(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
+      }
+      if (cameraInputRef.current) {
+        cameraInputRef.current.value = "";
       }
     }
   };
@@ -160,6 +180,14 @@ const PromoterCreate = () => {
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
 
+    // Detect language from user message and update if different
+    const detected = detectLanguageFromText(message);
+    if (detected && detected !== language) {
+      setLanguage(detected as 'en' | 'es' | 'it' | 'ca');
+    }
+
+    const currentLanguage = detected || language;
+
     const userMessage = { role: "user" as const, content: message };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
@@ -181,7 +209,7 @@ const PromoterCreate = () => {
           message_content: userMessage.content,
           device_type: deviceType,
           user_agent: userAgent,
-          language: language,
+          language: currentLanguage,
         }),
       }).catch((error) => console.error('Error logging user message:', error));
     }
@@ -197,7 +225,7 @@ const PromoterCreate = () => {
           },
           body: JSON.stringify({
             messages: newMessages,
-            language,
+            language: currentLanguage,
           }),
         }
       );
@@ -230,8 +258,9 @@ const PromoterCreate = () => {
                 const extractedMatch = content.match(/__EVENT_EXTRACTED__(.+)__EVENT_EXTRACTED__/);
                 if (extractedMatch) {
                   const eventDetails = JSON.parse(extractedMatch[1]);
+                  // Directly show the form without adding a chat confirmation message
                   setExtractedEvent(eventDetails);
-                  setMessages([...newMessages, { role: "assistant", content: "Great! I've extracted the event details. Please review and confirm." }]);
+                  setIsLoading(false);
                   return;
                 }
                 
@@ -260,7 +289,7 @@ const PromoterCreate = () => {
             message_content: assistantMessage,
             device_type: deviceType,
             user_agent: userAgent,
-            language: language,
+            language: currentLanguage,
           }),
         }).catch((error) => console.error('Error logging assistant message:', error));
       }
@@ -279,6 +308,8 @@ const PromoterCreate = () => {
   };
 
   const handleMicClick = async () => {
+    setIsMenuOpen(false);
+    
     if (isRecording) {
       try {
         const audioBase64 = await audioRecorderRef.current.stop();
@@ -392,7 +423,6 @@ const PromoterCreate = () => {
             >
               ← back to user app
             </button>
-            <LanguageSelector />
           </div>
         </div>
       </header>
@@ -452,41 +482,99 @@ const PromoterCreate = () => {
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
               capture="environment"
               onChange={handleFileUpload}
               className="hidden"
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isExtracting || isLoading || extractedEvent !== null}
-              className="text-muted-foreground hover:text-primary"
-            >
-              <Camera className="w-5 h-5" />
-            </Button>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleMicClick}
-                    className={cn(
-                      "text-muted-foreground hover:text-primary",
-                      isRecording && "text-destructive animate-pulse"
-                    )}
-                    disabled={isLoading || isExtracting || extractedEvent !== null}
-                  >
-                    {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-xs">Beta — voice transcription may contain errors</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {/* Plus button with expandable menu */}
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                disabled={isExtracting || isLoading || extractedEvent !== null}
+                className={cn(
+                  "text-muted-foreground hover:text-primary transition-transform",
+                  isMenuOpen && "rotate-45"
+                )}
+              >
+                {isMenuOpen ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+              </Button>
+              
+              {/* Expandable menu */}
+              {isMenuOpen && (
+                <div className="absolute bottom-full left-0 mb-2 flex flex-col gap-1 bg-card border border-border rounded-lg p-1 shadow-lg">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            cameraInputRef.current?.click();
+                          }}
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <Camera className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p className="text-xs">Take a photo</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleMicClick}
+                          className={cn(
+                            "text-muted-foreground hover:text-primary",
+                            isRecording && "text-destructive animate-pulse"
+                          )}
+                        >
+                          {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p className="text-xs">Voice input (Beta)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            fileInputRef.current?.click();
+                          }}
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <Upload className="w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p className="text-xs">Upload image or document</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              )}
+            </div>
           
             <Input
               value={message}
@@ -501,9 +589,9 @@ const PromoterCreate = () => {
               onClick={handleSendMessage}
               variant="default"
               size="icon"
-              disabled={isLoading || extractedEvent !== null}
+              disabled={isLoading || !message.trim() || extractedEvent !== null}
             >
-              <Send className="w-5 h-5" />
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </Button>
           </div>
         </div>
