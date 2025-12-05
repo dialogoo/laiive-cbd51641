@@ -28,12 +28,7 @@ const PromoterCreate = () => {
   const { language, setLanguage, t } = useTranslation();
   const { sessionId, deviceType, userAgent } = useSession();
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
-    {
-      role: "assistant",
-      content: t.promoterCreate.welcome,
-    },
-  ]);
+  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [extractedEvent, setExtractedEvent] = useState<EventDetails | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
