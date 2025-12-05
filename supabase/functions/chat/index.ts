@@ -241,10 +241,6 @@ serve(async (req) => {
     );
   }
 
-  if (req.method !== "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
-
   try {
     const { messages, location, searchMode, language = 'en' } = await req.json();
     console.log("Chat request:", { searchMode, location, language, messageCount: messages.length });
