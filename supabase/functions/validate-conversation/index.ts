@@ -38,7 +38,22 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a content filter for a live music events platform. Determine if the conversation message is legitimate user interaction about finding concerts/music events, OR if it's spam, abuse, flooding, or malicious content. Respond with ONLY 'ALLOW' or 'BLOCK'. ALLOW genuine questions about music, concerts, venues, artists. BLOCK spam, repetitive flooding, abuse, offensive content, or obvious bot activity."
+            content: `You are a permissive content filter for a live music events platform. Your job is to ALLOW most content and only BLOCK obvious abuse.
+
+ALWAYS ALLOW:
+- Questions about music, concerts, events, artists, venues
+- URLs to event pages, ticket sites, or any websites
+- Event details, dates, prices, descriptions
+- Greetings, casual conversation
+- Any language (English, Spanish, Italian, Catalan, etc.)
+- Assistant responses
+
+ONLY BLOCK:
+- Explicit hate speech or threats
+- Obvious spam (repeated identical messages)
+- Clearly malicious content
+
+When in doubt, ALLOW. Respond with ONLY 'ALLOW' or 'BLOCK'.`
           },
           {
             role: "user",
