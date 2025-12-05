@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LanguageSelector } from "@/components/LanguageSelector";
 
 const PromoterAbout = () => {
   const navigate = useNavigate();
@@ -24,7 +23,6 @@ const PromoterAbout = () => {
             >
               {t.about.back}
             </button>
-            <LanguageSelector />
           </div>
         </div>
       </header>

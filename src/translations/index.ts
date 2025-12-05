@@ -15,11 +15,8 @@ export interface Translations {
     videoDescription: string;
     ctaButton: string;
     learnMore: string;
-    earlyPartnerTitle: string;
-    earlyPartnerText: string;
-    earlyPartnerContact: string;
-    email: string;
-    phone: string;
+    welcomeTitle: string;
+    welcomeText: string;
     backToUser: string;
   };
   // About page
@@ -60,11 +57,8 @@ export const translations: Record<Language, Translations> = {
       videoDescription: "Video will be embedded here",
       ctaButton: "Push your event now",
       learnMore: "Learn more about the project →",
-      earlyPartnerTitle: "You're an Early Collaborator 🎵",
-      earlyPartnerText: "You are one of our first collaborators. Your feedback helps us build something big for small live music scenes. I am Oscar, don't hesitate to contact me for anything:",
-      earlyPartnerContact: "If you have ideas or notice anything, please contact us:",
-      email: "Email:",
-      phone: "Phone / WhatsApp:",
+      welcomeTitle: "Welcome to laiive 🎵",
+      welcomeText: "Your feedback is valuable to us. Tell us how we can help you build a community around your events.",
       backToUser: "← back to user app",
     },
     about: {
@@ -100,11 +94,8 @@ export const translations: Record<Language, Translations> = {
       videoDescription: "El video se incrustará aquí",
       ctaButton: "Publica tu evento ahora",
       learnMore: "Más información sobre el proyecto →",
-      earlyPartnerTitle: "Eres un Colaborador Inicial 🎵",
-      earlyPartnerText: "Eres uno de nuestros primeros colaboradores. Tu feedback nos ayuda a construir algo grande para las escenas locales de música en vivo. Soy Oscar, no dudes en contactarme para cualquier cosa:",
-      earlyPartnerContact: "Si tienes ideas o notas algo, contáctanos:",
-      email: "Email:",
-      phone: "Teléfono / WhatsApp:",
+      welcomeTitle: "Bienvenido a laiive 🎵",
+      welcomeText: "Tu feedback es valioso para nosotros. Cuéntanos cómo podemos ayudarte a construir una comunidad alrededor de tus eventos.",
       backToUser: "← volver a la app de usuario",
     },
     about: {
@@ -140,11 +131,8 @@ export const translations: Record<Language, Translations> = {
       videoDescription: "Il video sarà incorporato qui",
       ctaButton: "Pubblica il tuo evento ora",
       learnMore: "Scopri di più sul progetto →",
-      earlyPartnerTitle: "Sei un Collaboratore Iniziale 🎵",
-      earlyPartnerText: "Sei uno dei nostri primi collaboratori. Il tuo feedback ci aiuta a costruire qualcosa di grande per le scene musicali locali dal vivo. Sono Oscar, non esitare a contattarmi per qualsiasi cosa:",
-      earlyPartnerContact: "Se hai idee o noti qualcosa, contattaci:",
-      email: "Email:",
-      phone: "Telefono / WhatsApp:",
+      welcomeTitle: "Benvenuto su laiive 🎵",
+      welcomeText: "Il tuo feedback è prezioso per noi. Raccontaci come possiamo aiutarti a costruire una comunità attorno ai tuoi eventi.",
       backToUser: "← torna all'app utente",
     },
     about: {
@@ -180,11 +168,8 @@ export const translations: Record<Language, Translations> = {
       videoDescription: "El vídeo s'inserirà aquí",
       ctaButton: "Publica el teu esdeveniment ara",
       learnMore: "Més informació sobre el projecte →",
-      earlyPartnerTitle: "Ets un Col·laborador Inicial 🎵",
-      earlyPartnerText: "Ets un dels nostres primers col·laboradors. El teu feedback ens ajuda a construir alguna cosa gran per a les escenes locals de música en directe. Sóc Oscar, no dubtis en contactar-me per qualsevol cosa:",
-      earlyPartnerContact: "Si tens idees o notes alguna cosa, contacta'ns:",
-      email: "Email:",
-      phone: "Telèfon / WhatsApp:",
+      welcomeTitle: "Benvingut a laiive 🎵",
+      welcomeText: "El teu feedback és valuós per a nosaltres. Explica'ns com podem ajudar-te a construir una comunitat al voltant dels teus esdeveniments.",
       backToUser: "← tornar a l'app d'usuari",
     },
     about: {

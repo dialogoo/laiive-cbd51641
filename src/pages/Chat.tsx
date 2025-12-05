@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LanguageSelector } from "@/components/LanguageSelector";
 import { AudioRecorder } from "@/utils/audioRecorder";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSession } from "@/hooks/useSession";
@@ -25,7 +24,7 @@ interface UserLocation {
 
 const Chat = () => {
   const navigate = useNavigate();
-  const { t, language } = useTranslation();
+  const { t, language, setLanguage } = useTranslation();
   const { sessionId, deviceType, userAgent } = useSession();
   const [mode, setMode] = useState<"user" | "promoter">("user");
   
@@ -34,6 +33,7 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<UserLocation | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
   const audioRecorderRef = useRef<AudioRecorder>(new AudioRecorder());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +52,22 @@ const Chat = () => {
     } else {
       setMessages([]);
     }
+  };
+
+  // Detect language from user message
+  const detectLanguageFromText = (text: string): string | null => {
+    // Simple language detection based on common words
+    const spanishIndicators = /\b(hola|qué|dónde|cuándo|cómo|quiero|busco|hay|para|esta|esta noche|cerca|evento|música|concierto)\b/i;
+    const italianIndicators = /\b(ciao|dove|quando|come|voglio|cerco|c'è|per|questa|stasera|vicino|evento|musica|concerto)\b/i;
+    const catalanIndicators = /\b(hola|què|on|quan|com|vull|busco|hi ha|per|aquesta|avui|prop|esdeveniment|música|concert)\b/i;
+    const englishIndicators = /\b(hello|hi|what|where|when|how|want|looking|is there|for|this|tonight|near|event|music|concert)\b/i;
+
+    if (spanishIndicators.test(text)) return 'es';
+    if (italianIndicators.test(text)) return 'it';
+    if (catalanIndicators.test(text)) return 'ca';
+    if (englishIndicators.test(text)) return 'en';
+    
+    return null;
   };
 
   useEffect(() => {
@@ -83,6 +99,15 @@ const Chat = () => {
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
 
+    // Detect language from user message and update if different
+    const detected = detectLanguageFromText(message);
+    if (detected && detected !== language) {
+      setLanguage(detected as 'en' | 'es' | 'it' | 'ca');
+      setDetectedLanguage(detected);
+    }
+
+    const currentLanguage = detected || language;
+
     const userMessage: Message = { role: "user", content: message };
     setMessages((prev) => [...prev, userMessage]);
     setMessage("");
@@ -103,7 +128,7 @@ const Chat = () => {
           message_content: userMessage.content,
           device_type: deviceType,
           user_agent: userAgent,
-          language: language,
+          language: currentLanguage,
         }),
       }).catch((error) => console.error('Error logging user message:', error));
     }
@@ -120,11 +145,11 @@ const Chat = () => {
           },
           body: JSON.stringify(
             mode === "promoter"
-              ? { messages: [...messages, userMessage], language }
+              ? { messages: [...messages, userMessage], language: currentLanguage }
               : {
                   messages: [...messages, userMessage],
                   location,
-                  language,
+                  language: currentLanguage,
                 }
           ),
         }
@@ -216,7 +241,7 @@ const Chat = () => {
             message_content: assistantContent,
             device_type: deviceType,
             user_agent: userAgent,
-            language: language,
+            language: currentLanguage,
           }),
         }).catch((error) => console.error('Error logging assistant message:', error));
       }
@@ -296,7 +321,7 @@ const Chat = () => {
       "flex flex-col h-screen",
       mode === "promoter" ? "bg-[hsl(0,0%,12%)]" : "bg-background"
     )}>
-      {/* Header with mode toggle and search options */}
+      {/* Header with mode toggle */}
       <header className={cn(
         "border-b border-border p-4",
         mode === "promoter" ? "bg-[hsl(0,0%,18%)]" : "bg-card"
@@ -315,9 +340,6 @@ const Chat = () => {
             >
               {t.chat.promoterLink}
             </button>
-            
-            {/* Language Selector */}
-            <LanguageSelector />
           </div>
         </div>
       </header>
@@ -327,28 +349,9 @@ const Chat = () => {
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 pt-20">
-              <div className="flex flex-col gap-3 w-full max-w-md">
-                <Button
-                  variant="outline"
-                  className="w-full h-auto py-4 px-6 text-left justify-start font-ibm-plex"
-                  onClick={() => {
-                    setMessage("Is there a concert close to me for this evening?");
-                    setTimeout(() => handleSendMessage(), 100);
-                  }}
-                >
-                  Is there a concert close to me for this evening?
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full h-auto py-4 px-6 text-left justify-start font-ibm-plex"
-                  onClick={() => {
-                    setMessage("What to do Friday night at Bergamo?");
-                    setTimeout(() => handleSendMessage(), 100);
-                  }}
-                >
-                  What to do Friday night at Bergamo?
-                </Button>
-              </div>
+              <p className="font-ibm-plex text-muted-foreground text-center max-w-md">
+                {t.chat.welcome}
+              </p>
             </div>
           ) : (
             <>
