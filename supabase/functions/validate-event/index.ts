@@ -29,7 +29,8 @@ serve(async (req) => {
     }
 
     // Use lightweight LLM to validate event legitimacy
-    const validationPrompt = `You are a content moderator for a live music events platform. Analyze if this event submission is legitimate or spam/fraud.
+    // Be PERMISSIVE - only block obvious spam, not edge cases
+    const validationPrompt = `You are a permissive content moderator for a live music events platform. Your job is to ALLOW most events and only BLOCK obvious spam or fraud.
 
 Event details:
 - Name: ${event.name}
@@ -41,15 +42,21 @@ Event details:
 - Ticket URL: ${event.ticket_url || "None"}
 - Description: ${event.description || "None"}
 
-Check for:
-1. Is this a real venue/city combination?
-2. Is the ticket URL from a legitimate ticketing service (or no URL provided)?
-3. Are there suspicious patterns (impossible date, unrealistic price)?
-4. Does this appear to be a legitimate music event?
+ONLY block if you see CLEAR signs of:
+1. Gibberish or random characters in name/venue
+2. Obvious phishing URLs (not just unfamiliar domains)
+3. Sexually explicit or illegal content
+4. Clear spam patterns (repeated text, promotional garbage)
 
-Respond with ONLY one word:
-- "ALLOW" if the event appears legitimate
-- "BLOCK" if it appears fake, spam, or fraudulent
+DO NOT block for:
+- Unknown artists or venues (new artists are fine)
+- Historical dates or tribute concerts
+- Missing optional information
+- Unusual but plausible event details
+
+Default to ALLOW. When in doubt, ALLOW.
+
+Respond with ONLY one word: "ALLOW" or "BLOCK"
 
 Response:`;
 
