@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { X, Check } from "lucide-react";
+import { X, Check, Loader2, PartyPopper } from "lucide-react";
 
 interface EventDetails {
   name: string;
@@ -19,7 +19,7 @@ interface EventDetails {
 
 interface EventConfirmationFormProps {
   eventDetails: EventDetails;
-  onConfirm: (details: EventDetails) => void;
+  onConfirm: (details: EventDetails) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -29,10 +29,18 @@ export const EventConfirmationForm = ({
   onCancel,
 }: EventConfirmationFormProps) => {
   const [formData, setFormData] = useState<EventDetails>(eventDetails);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onConfirm(formData);
+    setIsSubmitting(true);
+    try {
+      await onConfirm(formData);
+      setIsSuccess(true);
+    } catch (error) {
+      setIsSubmitting(false);
+    }
   };
 
   const formatDateForInput = (isoDate: string) => {
@@ -44,11 +52,37 @@ export const EventConfirmationForm = ({
     }
   };
 
+  // Success state
+  if (isSuccess) {
+    return (
+      <Card className="p-8 border-border bg-card text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+            <PartyPopper className="w-8 h-8 text-primary" />
+          </div>
+          <h3 className="text-xl font-semibold font-montserrat text-primary">
+            Event Published!
+          </h3>
+          <p className="text-muted-foreground font-ibm-plex max-w-sm">
+            <strong>{formData.name}</strong> at {formData.venue} in {formData.city} has been successfully added to laiive.
+          </p>
+          <Button 
+            onClick={onCancel} 
+            className="mt-4"
+            size="lg"
+          >
+            Add Another Event
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6 border-border bg-card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold font-montserrat">Confirm Event Details</h3>
-        <Button variant="ghost" size="icon" onClick={onCancel}>
+        <Button variant="ghost" size="icon" onClick={onCancel} disabled={isSubmitting}>
           <X className="w-4 h-4" />
         </Button>
       </div>
@@ -65,6 +99,7 @@ export const EventConfirmationForm = ({
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
+            disabled={isSubmitting}
             className="font-ibm-plex"
           />
         </div>
@@ -76,6 +111,7 @@ export const EventConfirmationForm = ({
             value={formData.artist || ""}
             onChange={(e) => setFormData({ ...formData, artist: e.target.value })}
             required
+            disabled={isSubmitting}
             className="font-ibm-plex"
           />
         </div>
@@ -86,6 +122,7 @@ export const EventConfirmationForm = ({
             id="description"
             value={formData.description || ""}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            disabled={isSubmitting}
             className="font-ibm-plex"
             rows={3}
           />
@@ -99,6 +136,7 @@ export const EventConfirmationForm = ({
             value={formatDateForInput(formData.event_date)}
             onChange={(e) => setFormData({ ...formData, event_date: new Date(e.target.value).toISOString() })}
             required
+            disabled={isSubmitting}
             className="font-ibm-plex"
           />
         </div>
@@ -110,6 +148,7 @@ export const EventConfirmationForm = ({
             value={formData.venue}
             onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
             required
+            disabled={isSubmitting}
             className="font-ibm-plex"
           />
         </div>
@@ -121,6 +160,7 @@ export const EventConfirmationForm = ({
             value={formData.city}
             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
             required
+            disabled={isSubmitting}
             className="font-ibm-plex"
           />
         </div>
@@ -134,6 +174,7 @@ export const EventConfirmationForm = ({
             value={formData.price || ""}
             onChange={(e) => setFormData({ ...formData, price: e.target.value ? parseFloat(e.target.value) : null })}
             required
+            disabled={isSubmitting}
             className="font-ibm-plex"
           />
         </div>
@@ -145,16 +186,26 @@ export const EventConfirmationForm = ({
             type="url"
             value={formData.ticket_url || ""}
             onChange={(e) => setFormData({ ...formData, ticket_url: e.target.value })}
+            disabled={isSubmitting}
             className="font-ibm-plex"
           />
         </div>
 
         <div className="flex gap-3 pt-4">
-          <Button type="submit" className="flex-1" size="lg">
-            <Check className="w-4 h-4 mr-2" />
-            Confirm Event
+          <Button type="submit" className="flex-1" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Publishing...
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Confirm Event
+              </>
+            )}
           </Button>
-          <Button type="button" variant="outline" onClick={onCancel} size="lg">
+          <Button type="button" variant="outline" onClick={onCancel} size="lg" disabled={isSubmitting}>
             Cancel
           </Button>
         </div>
