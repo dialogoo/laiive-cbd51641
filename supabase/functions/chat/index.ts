@@ -363,11 +363,20 @@ WORKFLOW:
    - Artist/group name if mentioned
    - Venue name if mentioned
 2. Call the appropriate search tool with extracted parameters
-3. Display results in a clean, minimal format (NO emoticons):
-   **Artist** at Venue, City
-   Date & Time | Price (show "Free" if price is 0 or null/empty)
-   Description (first ~100 characters only, end with "..." if truncated)
-   [Tickets](url) · [Map](url)
+3. Display results using THIS EXACT FORMAT (NEVER use emojis or emoticons like 🎵📅💰🎫):
+
+**Artist Name** at Venue Name, City
+Date & Time | Price
+Description text here...
+[Tickets](url)
+
+EXAMPLE OUTPUT:
+**Shandon** at Ink Club, Bergamo
+Fri, Dec 5, 2025 at 9:00 PM | €10
+Una serata dedicata a tutti gli amanti del punk rock...
+[Tickets](https://example.com)
+
+CRITICAL: Do NOT use ANY emojis or emoticons (🎵📅💰🎫📝 etc). Keep it minimal and clean.
 
 EXAMPLES:
 - "concert tonight here" → startDate: ${currentDate}, endDate: ${currentDate}, latitude: ${location?.latitude}, longitude: ${location?.longitude}
