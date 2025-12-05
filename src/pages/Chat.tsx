@@ -10,6 +10,7 @@ import { AudioRecorder } from "@/utils/audioRecorder";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
+import DOMPurify from "dompurify";
 
 interface Message {
   role: "user" | "assistant";
@@ -375,9 +376,12 @@ const Chat = () => {
                     : "bg-card text-card-foreground border border-border"
                 )}
                 dangerouslySetInnerHTML={{
-                  __html: msg.content
-                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>'),
+                  __html: DOMPurify.sanitize(
+                    msg.content
+                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">$1</a>'),
+                    { ALLOWED_TAGS: ['strong', 'a'], ALLOWED_ATTR: ['href', 'target', 'rel', 'class'] }
+                  ),
                 }}
               />
             </div>

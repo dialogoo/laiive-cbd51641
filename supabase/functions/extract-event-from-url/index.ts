@@ -21,6 +21,55 @@ serve(async (req) => {
       });
     }
 
+    // Validate URL to prevent SSRF attacks
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid URL format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Block private IPs, localhost, and cloud metadata endpoints
+    const hostname = parsedUrl.hostname.toLowerCase();
+    const blockedPatterns = [
+      'localhost',
+      '127.0.0.1',
+      '0.0.0.0',
+      '169.254.169.254', // AWS/GCP metadata
+      '[::1]',
+    ];
+    
+    const blockedPrefixes = [
+      '10.',
+      '192.168.',
+      '172.16.', '172.17.', '172.18.', '172.19.',
+      '172.20.', '172.21.', '172.22.', '172.23.',
+      '172.24.', '172.25.', '172.26.', '172.27.',
+      '172.28.', '172.29.', '172.30.', '172.31.',
+    ];
+
+    if (blockedPatterns.includes(hostname) || 
+        blockedPrefixes.some(prefix => hostname.startsWith(prefix)) ||
+        hostname.endsWith('.local') ||
+        hostname.endsWith('.internal')) {
+      console.log('Blocked SSRF attempt to:', hostname);
+      return new Response(JSON.stringify({ error: 'URL not allowed' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Only allow http and https protocols
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return new Response(JSON.stringify({ error: 'Only HTTP and HTTPS URLs are allowed' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('Fetching URL:', url);
 
     // Fetch the webpage content
