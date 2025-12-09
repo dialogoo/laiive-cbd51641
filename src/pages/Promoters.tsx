@@ -66,15 +66,6 @@ const Promoters = () => {
           >
             {t.promoter.ctaButton}
           </Button>
-          
-          <div>
-            <button
-              onClick={() => navigate("/promoters/about")}
-              className="font-ibm-plex text-sm text-primary hover:underline"
-            >
-              {t.promoter.learnMore}
-            </button>
-          </div>
         </div>
 
         {/* Welcome block */}
@@ -86,12 +77,18 @@ const Promoters = () => {
             <p className="font-ibm-plex text-muted-foreground text-center">
               {t.promoter.welcomeText}
             </p>
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-3">
               <p className="font-ibm-plex">
                 <a href="mailto:info@laiive.com" className="text-primary hover:underline">
                   info@laiive.com
                 </a>
               </p>
+              <button
+                onClick={() => navigate("/promoters/about")}
+                className="font-ibm-plex text-sm text-primary hover:underline"
+              >
+                {t.promoter.learnMore}
+              </button>
             </div>
           </div>
         </Card>
