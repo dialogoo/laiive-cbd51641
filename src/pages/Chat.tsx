@@ -24,8 +24,8 @@ const proStyles = {
 
 // Parse event blocks from message content
 const parseEventContent = (content: string) => {
-  // Match event pattern: **Artist** at Venue, City\nDate | Price\n...
-  const eventPattern = /\*\*(.+?)\*\*\s+at\s+(.+?),\s+(.+?)\n(.+?)\s*\|\s*(.+?)(?:\n(.+?))?(?:\n\[(.+?)\]\((.+?)\))?/g;
+  // Match event pattern: **Artist** at Venue, City\nDate | Price\nDescription\n[tickets](url)
+  const eventPattern = /\*\*(.+?)\*\*\s+at\s+(.+?),\s*(.+?)\n(.+?)\s*\|\s*(.+?)(?:\n(.+?))?(?:\n\[tickets\]\((.+?)\))?(?=\n\n\*\*|$)/gs;
   const events: Array<{
     artist: string;
     venue: string;
@@ -34,39 +34,47 @@ const parseEventContent = (content: string) => {
     price: string;
     description?: string;
     ticketUrl?: string;
-    ticketLabel?: string;
   }> = [];
   
   let match;
   let lastIndex = 0;
   const textParts: string[] = [];
   
+  // Get text before first event
+  const firstEventMatch = content.match(/\*\*(.+?)\*\*\s+at\s+/);
+  if (firstEventMatch && firstEventMatch.index !== undefined && firstEventMatch.index > 0) {
+    textParts.push(content.slice(0, firstEventMatch.index));
+    lastIndex = firstEventMatch.index;
+  }
+  
   while ((match = eventPattern.exec(content)) !== null) {
-    if (match.index > lastIndex) {
-      textParts.push(content.slice(lastIndex, match.index));
-    }
     events.push({
-      artist: match[1],
-      venue: match[2],
-      city: match[3],
-      dateTime: match[4],
-      price: match[5],
+      artist: match[1]?.trim(),
+      venue: match[2]?.trim(),
+      city: match[3]?.trim(),
+      dateTime: match[4]?.trim(),
+      price: match[5]?.trim(),
       description: match[6]?.trim(),
-      ticketLabel: match[7],
-      ticketUrl: match[8],
+      ticketUrl: match[7]?.trim(),
     });
     lastIndex = match.index + match[0].length;
   }
   
-  if (lastIndex < content.length) {
-    textParts.push(content.slice(lastIndex));
+  if (lastIndex < content.length && events.length > 0) {
+    const remaining = content.slice(lastIndex).trim();
+    if (remaining) textParts.push(remaining);
+  }
+  
+  // If no events found, put entire content in textParts
+  if (events.length === 0) {
+    textParts.push(content);
   }
   
   return { events, textParts, hasEvents: events.length > 0 };
 };
 
 // Event card component with expandable description
-const EventCard = ({ event }: { event: { artist: string; venue: string; city: string; dateTime: string; price: string; description?: string; ticketUrl?: string; ticketLabel?: string } }) => {
+const EventCard = ({ event }: { event: { artist: string; venue: string; city: string; dateTime: string; price: string; description?: string; ticketUrl?: string } }) => {
   const [expanded, setExpanded] = useState(false);
   
   return (
@@ -98,7 +106,7 @@ const EventCard = ({ event }: { event: { artist: string; venue: string; city: st
             rel="noopener noreferrer"
             className="inline-block text-sm text-primary hover:underline pt-1"
           >
-            {event.ticketLabel || "tickets →"}
+            tickets →
           </a>
         )}
       </div>

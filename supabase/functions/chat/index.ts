@@ -566,11 +566,11 @@ Default location when not specified: ${isUsingUserCoords ? `coordinates (${locat
                             .map((e) => {
                               const date = new Date(e.event_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
                               const time = new Date(e.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                              const ticketLink = e.ticket_url ? `🎫 [Tickets](${e.ticket_url})` : '';
-                              const mapsLink = e.latitude && e.longitude ? `📍 [Map](https://maps.google.com/?q=${e.latitude},${e.longitude})` : '';
-                              const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
+                              const price = e.price ? `€${e.price}` : "Free";
                               const place = e.city ? `${e.venue}, ${e.city}` : e.venue;
-                              return `🎵 **${e.artist || e.name}** at ${place}\n${e.description ? `📝 ${e.description.substring(0, 100)}${e.description.length > 100 ? '...' : ''}\n` : ''}📅 ${date} at ${time}\n💰 ${e.price ? `€${e.price}` : "Free"}\n${links}`;
+                              const ticketLink = e.ticket_url ? `[tickets](${e.ticket_url})` : '';
+                              const description = e.description || '';
+                              return `**${e.artist || e.name}** at ${place}, ${e.city}\n${date} at ${time} | ${price}\n${description}\n${ticketLink}`;
                             })
                             .join("\n\n");
 
@@ -598,10 +598,8 @@ Default location when not specified: ${isUsingUserCoords ? `coordinates (${locat
                         
                         if (searchResults.length > 0) {
                           const formattedResults = searchResults.map(event => {
-                            const ticketLink = event.ticketUrl ? `🎫 [Tickets](${event.ticketUrl})` : '';
-                            const mapsLink = event.mapsUrl ? `📍 [Map](${event.mapsUrl})` : '';
-                            const links = [ticketLink, mapsLink].filter(Boolean).join(' | ');
-                            return `🎵 **${event.artist}** at ${event.venue}\n${event.description ? `📝 ${event.description}\n` : ''}📅 ${event.date}\n💰 ${event.price}\n${links}`;
+                            const ticketLink = event.ticketUrl ? `[tickets](${event.ticketUrl})` : '';
+                            return `**${event.artist}** at ${event.venue}, ${event.city || ''}\n${event.date} | ${event.price}\n${event.description || ''}\n${ticketLink}`;
                           }).join("\n\n");
                           
                           controller.enqueue(
