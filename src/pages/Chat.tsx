@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mic, Send, Loader2, MicOff, Calendar, MapPin, Ticket, Music, ExternalLink, Briefcase } from "lucide-react";
+import { Mic, Send, Loader2, MicOff, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -65,47 +65,46 @@ const parseEventContent = (content: string) => {
   return { events, textParts, hasEvents: events.length > 0 };
 };
 
-// Event card component
-const EventCard = ({ event }: { event: { artist: string; venue: string; city: string; dateTime: string; price: string; description?: string; ticketUrl?: string; ticketLabel?: string } }) => (
-  <div className="border border-border/50 rounded-xl p-4 sm:p-5 my-2 sm:my-3 bg-background/50 backdrop-blur-sm hover:border-primary/30 transition-colors">
-    <div className="flex items-start gap-3 sm:gap-4">
-      <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-        <Music className="w-6 h-6 sm:w-5 sm:h-5 text-primary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-foreground text-base sm:text-base truncate">{event.artist}</h4>
-        <div className="flex items-center gap-2 text-sm sm:text-sm text-muted-foreground mt-1.5 sm:mt-1">
-          <MapPin className="w-4 h-4 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
-          <span className="truncate">{event.venue}, {event.city}</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2.5 sm:mt-2 text-sm sm:text-sm">
-          <div className="flex items-center gap-2 sm:gap-1.5 text-muted-foreground">
-            <Calendar className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-            <span>{event.dateTime}</span>
-          </div>
-          <div className="flex items-center gap-2 sm:gap-1.5 text-primary font-medium">
-            <Ticket className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-            <span>{event.price}</span>
-          </div>
+// Event card component with expandable description
+const EventCard = ({ event }: { event: { artist: string; venue: string; city: string; dateTime: string; price: string; description?: string; ticketUrl?: string; ticketLabel?: string } }) => {
+  const [expanded, setExpanded] = useState(false);
+  
+  return (
+    <div className="border border-border/30 rounded-lg p-3 sm:p-4 my-2 bg-background/30 hover:border-border/50 transition-colors">
+      <div className="space-y-1.5">
+        <h4 className="font-semibold text-foreground text-base">{event.artist}</h4>
+        <p className="text-sm text-muted-foreground">{event.venue}, {event.city}</p>
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-muted-foreground">{event.dateTime}</span>
+          <span className="text-primary font-medium">{event.price}</span>
         </div>
         {event.description && (
-          <p className="text-sm sm:text-sm text-muted-foreground mt-2.5 sm:mt-2 line-clamp-2">{event.description}</p>
+          <div className="pt-1">
+            {expanded ? (
+              <p className="text-sm text-muted-foreground">{event.description}</p>
+            ) : null}
+            <button 
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors mt-1"
+            >
+              {expanded ? '−' : '+'} {expanded ? 'less' : 'more'}
+            </button>
+          </div>
         )}
         {event.ticketUrl && (
           <a 
             href={event.ticketUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 sm:gap-1.5 text-sm sm:text-sm text-primary hover:underline mt-3 sm:mt-3 font-medium"
+            className="inline-block text-sm text-primary hover:underline pt-1"
           >
-            <ExternalLink className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-            {event.ticketLabel || "Get tickets"}
+            {event.ticketLabel || "tickets →"}
           </a>
         )}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface Message {
   role: "user" | "assistant";
