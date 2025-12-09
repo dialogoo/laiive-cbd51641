@@ -414,7 +414,7 @@ const Chat = () => {
 
   return (
     <div className={cn(
-      "flex flex-col h-screen",
+      "flex flex-col h-[100dvh] overflow-hidden",
       mode === "promoter" ? proStyles.bg : "bg-background"
     )}>
       {/* Header with mode toggle */}
@@ -456,7 +456,7 @@ const Chat = () => {
       </header>
 
       {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 md:p-6">
         <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
           {messages.length === 0 ? null : (
             <>
@@ -546,9 +546,9 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Input area */}
+      {/* Input area - fixed at bottom */}
       <div className={cn(
-        "border-t p-3 sm:p-4",
+        "flex-shrink-0 border-t p-3 sm:p-4 pb-[env(safe-area-inset-bottom,12px)]",
         mode === "promoter" 
           ? `${proStyles.bgElevated} ${proStyles.border}` 
           : "bg-card border-border"
