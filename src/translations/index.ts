@@ -59,7 +59,7 @@ export const translations: Record<Language, Translations> = {
       learnMore: "Learn more about the project →",
       welcomeTitle: "Welcome to laiive 🎵",
       welcomeText: "Your feedback is valuable to us. Tell us how we can help you build a community around your events.",
-      backToUser: "← back to user app",
+      backToUser: "← public app",
     },
     about: {
       title: "About the Project",
@@ -96,7 +96,7 @@ export const translations: Record<Language, Translations> = {
       learnMore: "Más información sobre el proyecto →",
       welcomeTitle: "Bienvenido a laiive 🎵",
       welcomeText: "Tu feedback es valioso para nosotros. Cuéntanos cómo podemos ayudarte a construir una comunidad alrededor de tus eventos.",
-      backToUser: "← volver a la app de usuario",
+      backToUser: "← app pública",
     },
     about: {
       title: "Sobre el Proyecto",
@@ -133,7 +133,7 @@ export const translations: Record<Language, Translations> = {
       learnMore: "Scopri di più sul progetto →",
       welcomeTitle: "Benvenuto su laiive 🎵",
       welcomeText: "Il tuo feedback è prezioso per noi. Raccontaci come possiamo aiutarti a costruire una comunità attorno ai tuoi eventi.",
-      backToUser: "← torna all'app utente",
+      backToUser: "← app pubblica",
     },
     about: {
       title: "Sul Progetto",
@@ -170,7 +170,7 @@ export const translations: Record<Language, Translations> = {
       learnMore: "Més informació sobre el projecte →",
       welcomeTitle: "Benvingut a laiive 🎵",
       welcomeText: "El teu feedback és valuós per a nosaltres. Explica'ns com podem ajudar-te a construir una comunitat al voltant dels teus esdeveniments.",
-      backToUser: "← tornar a l'app d'usuari",
+      backToUser: "← app pública",
     },
     about: {
       title: "Sobre el Projecte",
