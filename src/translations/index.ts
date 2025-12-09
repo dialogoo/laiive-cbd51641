@@ -52,7 +52,7 @@ export const translations: Record<Language, Translations> = {
       placeholder: "Tell me what you're looking for...",
     },
     promoter: {
-      title: "For Promoters & Musicians",
+      title: "Small stages. Big connections.",
       subtitle: "Share your events with thousands of music lovers",
       videoPlaceholder: "Walkthrough video placeholder",
       videoDescription: "Video will be embedded here",
@@ -90,7 +90,7 @@ export const translations: Record<Language, Translations> = {
       placeholder: "Dime qué estás buscando...",
     },
     promoter: {
-      title: "Para Promotores y Músicos",
+      title: "Escenarios pequeños. Grandes conexiones.",
       subtitle: "Comparte tus eventos con miles de amantes de la música",
       videoPlaceholder: "Marcador de video tutorial",
       videoDescription: "El video se incrustará aquí",
@@ -128,7 +128,7 @@ export const translations: Record<Language, Translations> = {
       placeholder: "Dimmi cosa stai cercando...",
     },
     promoter: {
-      title: "Per Promoter e Musicisti",
+      title: "Piccoli palchi. Grandi connessioni.",
       subtitle: "Condividi i tuoi eventi con migliaia di amanti della musica",
       videoPlaceholder: "Segnaposto video tutorial",
       videoDescription: "Il video sarà incorporato qui",
@@ -166,7 +166,7 @@ export const translations: Record<Language, Translations> = {
       placeholder: "Digues-me què estàs buscant...",
     },
     promoter: {
-      title: "Per a Promotors i Músics",
+      title: "Escenaris petits. Grans connexions.",
       subtitle: "Comparteix els teus esdeveniments amb milers d'amants de la música",
       videoPlaceholder: "Marcador de vídeo tutorial",
       videoDescription: "El vídeo s'inserirà aquí",
