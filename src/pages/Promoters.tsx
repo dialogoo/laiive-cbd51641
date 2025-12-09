@@ -34,15 +34,15 @@ const Promoters = () => {
           <h1 className="font-montserrat font-bold text-4xl md:text-5xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             {t.promoter.title}
           </h1>
-          <p className="font-ibm-plex text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t.promoter.subtitle}
+          <p className="font-ibm-plex text-lg text-muted-foreground max-w-2xl mx-auto flex items-center justify-center gap-3 flex-wrap">
+            <span>{t.promoter.subtitle}</span>
+            <button
+              onClick={() => navigate("/promoters/about")}
+              className="font-ibm-plex text-xs text-primary hover:underline"
+            >
+              {t.promoter.moreAboutLaiive}
+            </button>
           </p>
-          <button
-            onClick={() => navigate("/promoters/about")}
-            className="font-ibm-plex text-sm text-primary hover:underline"
-          >
-            {t.promoter.moreAboutLaiive}
-          </button>
         </div>
 
         {/* Video section */}
