@@ -15,7 +15,6 @@ interface EventDetails {
   city: string;
   price?: number | null;
   ticket_url?: string | null;
-  tags?: string[] | null;
 }
 
 interface EventConfirmationFormProps {
@@ -197,25 +196,6 @@ export const EventConfirmationForm = ({
             disabled={isSubmitting}
             className="font-ibm-plex"
           />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="tags">Tags (atmosphere, style, type)</Label>
-          <Input
-            id="tags"
-            placeholder="e.g. punk, rock, indie, intimate, energetic"
-            value={(formData.tags || []).join(", ")}
-            onChange={(e) => {
-              const tagsArray = e.target.value
-                .split(",")
-                .map((t) => t.trim())
-                .filter((t) => t.length > 0);
-              setFormData({ ...formData, tags: tagsArray.length > 0 ? tagsArray : null });
-            }}
-            disabled={isSubmitting}
-            className="font-ibm-plex"
-          />
-          <p className="text-xs text-muted-foreground">Comma-separated keywords describing the event vibe</p>
         </div>
 
         <div className="flex gap-3 pt-4">

@@ -87,11 +87,10 @@ serve(async (req) => {
               venue: { type: "string", description: "Venue name" },
               city: { type: "string", description: "City name" },
               event_date: { type: "string", description: "Event date and time in ISO format" },
-              price: { type: ["number", "null"], description: "Ticket price (null if unknown)" },
+              price: { type: "number", description: "Ticket price" },
               ticket_url: { type: ["string", "null"], description: "Ticket URL (optional)" },
-              tags: { type: "array", items: { type: "string" }, description: "3-5 keywords describing the event atmosphere, style, and type (e.g. punk, intimate, energetic, rock, jazz, electronic, acoustic, outdoor)" },
             },
-            required: ["name", "artist", "venue", "city", "event_date", "tags"],
+            required: ["name", "artist", "venue", "city", "event_date", "price"],
           },
         },
       },
@@ -111,8 +110,8 @@ CRITICAL: Do NOT greet the user or introduce yourself. Do NOT say "Hey!", "Hi!",
 
 Your goal is to collect these details through natural conversation:
 
-Required: event name, artist name, date and time, venue name, city, tags (3-5 keywords about atmosphere/style/type like punk, intimate, energetic, jazz, electronic)
-Optional: event description, ticket URL, ticket price
+Required: event name, artist name, date and time, venue name, city, ticket price
+Optional: event description, ticket URL
 
 Ask for missing details naturally, one or two at a time. Once you have all required information, use the extract_event tool to show the confirmation form.
 

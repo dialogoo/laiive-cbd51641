@@ -24,11 +24,11 @@ const proStyles = {
 
 // Parse event blocks from message content
 const parseEventContent = (content: string) => {
-  // Match event pattern: **Artist**\nTags (dot-separated)\nVenue | Time | Price\nDescription\n[tickets](url)
+  // Match new event pattern: **Artist**\nTagline\nVenue | Time | Price\nDescription\n[tickets](url)
   const eventPattern = /\*\*(.+?)\*\*\n(.+?)\n(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)(?:\n(.+?))?(?:\n\[tickets\]\((.+?)\))?(?=\n\n\*\*|$)/gs;
   const events: Array<{
     artist: string;
-    tags: string;
+    tagline: string;
     venue: string;
     time: string;
     price: string;
@@ -50,7 +50,7 @@ const parseEventContent = (content: string) => {
   while ((match = eventPattern.exec(content)) !== null) {
     events.push({
       artist: match[1]?.trim(),
-      tags: match[2]?.trim(),
+      tagline: match[2]?.trim(),
       venue: match[3]?.trim(),
       time: match[4]?.trim(),
       price: match[5]?.trim(),
@@ -74,7 +74,7 @@ const parseEventContent = (content: string) => {
 };
 
 // Event card component with expandable description
-const EventCard = ({ event }: { event: { artist: string; tags: string; venue: string; time: string; price: string; description?: string; ticketUrl?: string } }) => {
+const EventCard = ({ event }: { event: { artist: string; tagline: string; venue: string; time: string; price: string; description?: string; ticketUrl?: string } }) => {
   const [expanded, setExpanded] = useState(false);
   
   return (
@@ -82,8 +82,8 @@ const EventCard = ({ event }: { event: { artist: string; tags: string; venue: st
       <div className="space-y-1">
         <h4 className="font-semibold text-foreground text-base">{event.artist}</h4>
         <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground/80 flex-1">{event.tags}</p>
-          {event.description && event.description !== event.tags && (
+          <p className="text-sm text-muted-foreground flex-1">{event.tagline}</p>
+          {event.description && event.description !== event.tagline && (
             <button 
               onClick={() => setExpanded(!expanded)}
               className="text-xs text-muted-foreground/70 hover:text-primary transition-colors shrink-0"
@@ -92,7 +92,7 @@ const EventCard = ({ event }: { event: { artist: string; tags: string; venue: st
             </button>
           )}
         </div>
-        {expanded && event.description && event.description !== event.tags && (
+        {expanded && event.description && event.description !== event.tagline && (
           <p className="text-sm text-muted-foreground pt-1">{event.description}</p>
         )}
         <div className="flex items-center gap-3 text-sm pt-1">
