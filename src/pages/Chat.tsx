@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mic, Send, Loader2, MicOff, Calendar, MapPin, Ticket, Music, ExternalLink } from "lucide-react";
+import { Mic, Send, Loader2, MicOff, Calendar, MapPin, Ticket, Music, ExternalLink, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,16 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import DOMPurify from "dompurify";
+
+// Pro mode styling constants
+const proStyles = {
+  bg: "bg-[hsl(var(--pro-bg))]",
+  bgElevated: "bg-[hsl(var(--pro-bg-elevated))]",
+  bgCard: "bg-[hsl(var(--pro-bg-card))]",
+  border: "border-[hsl(var(--pro-border))]",
+  accent: "text-accent",
+  accentBg: "bg-accent/10",
+};
 
 // Parse event blocks from message content
 const parseEventContent = (content: string) => {
@@ -405,24 +415,39 @@ const Chat = () => {
   return (
     <div className={cn(
       "flex flex-col h-screen",
-      mode === "promoter" ? "bg-[hsl(0,0%,12%)]" : "bg-background"
+      mode === "promoter" ? proStyles.bg : "bg-background"
     )}>
       {/* Header with mode toggle */}
       <header className={cn(
-        "border-b border-border p-3 sm:p-4",
-        mode === "promoter" ? "bg-[hsl(0,0%,18%)]" : "bg-card"
+        "border-b p-3 sm:p-4",
+        mode === "promoter" 
+          ? `${proStyles.bgElevated} ${proStyles.border}` 
+          : "bg-card border-border"
       )}>
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2">
             <span className="text-xl sm:text-2xl">🫦</span>
-            <span className="font-montserrat font-bold text-lg sm:text-xl text-primary">laiive</span>
+            <span className={cn(
+              "font-montserrat font-bold text-lg sm:text-xl",
+              mode === "promoter" ? "text-accent" : "text-primary"
+            )}>laiive</span>
+            {mode === "promoter" && (
+              <span className="ml-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-accent/20 text-accent rounded">
+                Pro
+              </span>
+            )}
           </div>
           
           <div className="flex items-center gap-3">
             {/* Mode Link */}
             <button
               onClick={() => navigate("/promoters")}
-              className="font-ibm-plex text-sm sm:text-sm text-muted-foreground hover:text-primary transition-colors"
+              className={cn(
+                "font-ibm-plex text-sm sm:text-sm transition-colors",
+                mode === "promoter" 
+                  ? "text-muted-foreground hover:text-accent" 
+                  : "text-muted-foreground hover:text-primary"
+              )}
             >
               {t.chat.promoterLink}
             </button>
@@ -452,10 +477,10 @@ const Chat = () => {
                         "max-w-[92%] sm:max-w-[85%] rounded-2xl font-ibm-plex text-base sm:text-base",
                         msg.role === "user"
                           ? mode === "promoter"
-                            ? "bg-[hsl(0,0%,22%)] text-foreground border border-[hsl(0,0%,30%)] px-4 py-3 sm:px-4 sm:py-3"
+                            ? `${proStyles.bgCard} text-foreground ${proStyles.border} border px-4 py-3 sm:px-4 sm:py-3`
                             : "bg-muted text-foreground border border-border px-4 py-3 sm:px-4 sm:py-3"
                           : mode === "promoter"
-                          ? "bg-[hsl(0,0%,18%)] text-card-foreground border border-[hsl(0,0%,30%)] px-4 py-3 sm:px-4 sm:py-3"
+                          ? `${proStyles.bgElevated} text-card-foreground ${proStyles.border} border px-4 py-3 sm:px-4 sm:py-3`
                           : parsed?.hasEvents
                           ? "bg-transparent p-0"
                           : "bg-card text-card-foreground border border-border px-4 py-3 sm:px-4 sm:py-3"
@@ -503,12 +528,15 @@ const Chat = () => {
               {isLoading && (
                 <div className="flex justify-start">
                   <div className={cn(
-                    "rounded-2xl px-4 py-3",
+                    "rounded-2xl px-4 py-3 border",
                     mode === "promoter" 
-                      ? "bg-[hsl(0,0%,18%)]"
-                      : "bg-card"
+                      ? `${proStyles.bgElevated} ${proStyles.border}`
+                      : "bg-card border-border"
                   )}>
-                    <div className="w-5 h-5 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
+                    <div className={cn(
+                      "w-5 h-5 border-2 border-muted-foreground/30 rounded-full animate-spin",
+                      mode === "promoter" ? "border-t-accent" : "border-t-primary"
+                    )} />
                   </div>
                 </div>
               )}
@@ -520,8 +548,10 @@ const Chat = () => {
 
       {/* Input area */}
       <div className={cn(
-        "border-t border-border p-3 sm:p-4",
-        mode === "promoter" ? "bg-[hsl(0,0%,18%)]" : "bg-card"
+        "border-t p-3 sm:p-4",
+        mode === "promoter" 
+          ? `${proStyles.bgElevated} ${proStyles.border}` 
+          : "bg-card border-border"
       )}>
         <div className="max-w-4xl mx-auto flex items-center gap-2 sm:gap-3">
           <TooltipProvider>
@@ -532,7 +562,10 @@ const Chat = () => {
                   size="icon"
                   onClick={handleMicClick}
                   className={cn(
-                    "text-muted-foreground hover:text-primary h-10 w-10 sm:h-10 sm:w-10",
+                    "h-10 w-10 sm:h-10 sm:w-10",
+                    mode === "promoter" 
+                      ? "text-muted-foreground hover:text-accent" 
+                      : "text-muted-foreground hover:text-primary",
                     isRecording && "text-destructive animate-pulse"
                   )}
                   disabled={isLoading}
@@ -552,17 +585,22 @@ const Chat = () => {
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
             placeholder={mode === "promoter" ? "Tell me about your event..." : t.chat.placeholder}
             className={cn(
-              "flex-1 border-border font-ibm-plex text-base sm:text-base h-11 sm:h-10",
-              mode === "promoter" ? "bg-[hsl(0,0%,12%)]" : "bg-background"
+              "flex-1 font-ibm-plex text-base sm:text-base h-11 sm:h-10",
+              mode === "promoter" 
+                ? `${proStyles.bgCard} ${proStyles.border} focus-visible:ring-accent` 
+                : "bg-background border-border"
             )}
           />
           
           <Button
             onClick={handleSendMessage}
-            variant="default"
+            variant={mode === "promoter" ? "secondary" : "default"}
             size="icon"
             disabled={isLoading || !message.trim()}
-            className="h-10 w-10 sm:h-10 sm:w-10"
+            className={cn(
+              "h-10 w-10 sm:h-10 sm:w-10",
+              mode === "promoter" && "bg-accent text-accent-foreground hover:bg-accent/90"
+            )}
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </Button>
