@@ -65,6 +65,7 @@ export type Database = {
           longitude: number | null
           name: string
           price: number | null
+          tags: string[] | null
           ticket_url: string | null
           updated_at: string
           venue: string
@@ -80,6 +81,7 @@ export type Database = {
           longitude?: number | null
           name: string
           price?: number | null
+          tags?: string[] | null
           ticket_url?: string | null
           updated_at?: string
           venue: string
@@ -95,6 +97,7 @@ export type Database = {
           longitude?: number | null
           name?: string
           price?: number | null
+          tags?: string[] | null
           ticket_url?: string | null
           updated_at?: string
           venue?: string

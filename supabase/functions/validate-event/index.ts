@@ -76,9 +76,10 @@ Event details:
 - Venue: ${event.venue}
 - City: ${event.city}
 - Date: ${event.event_date}
-- Price: ${event.price || "Free"}
+- Price: ${event.price != null ? event.price : "Unknown"}
 - Ticket URL: ${event.ticket_url || "None"}
 - Description: ${event.description || "None"}
+- Tags: ${event.tags ? event.tags.join(", ") : "None"}
 
 ONLY block if you see CLEAR signs of:
 1. Gibberish or random characters in name/venue
@@ -187,6 +188,7 @@ Response:`;
           price: event.price,
           ticket_url: event.ticket_url,
           event_date: event.event_date,
+          tags: event.tags,
           updated_at: new Date().toISOString()
         })
         .eq("id", existingEvent.id)
