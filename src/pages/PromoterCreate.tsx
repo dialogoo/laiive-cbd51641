@@ -21,6 +21,7 @@ interface EventDetails {
   city: string;
   price?: number | null;
   ticket_url?: string | null;
+  tags?: string[] | null;
 }
 
 const PromoterCreate = () => {
@@ -182,6 +183,7 @@ const PromoterCreate = () => {
           city: eventDetails.city,
           price: eventDetails.price,
           ticket_url: eventDetails.ticket_url,
+          tags: eventDetails.tags,
         },
         session_id: sessionId,
       },

@@ -573,15 +573,15 @@ Default location when not specified: ${isUsingUserCoords ? `coordinates (${locat
                             ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} in ${queryCity}:`
                             : `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''}:`;
                           
-                          const formattedEvents = filteredEvents
+                        const formattedEvents = filteredEvents
                             .map((e) => {
                               const time = new Date(e.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                              const price = e.price ? `€${e.price}` : "Free";
+                              const price = e.price != null && e.price > 0 ? `€${e.price}` : (e.price === 0 ? "Free" : "Price TBA");
                               const ticketLink = e.ticket_url ? `[tickets](${e.ticket_url})` : '';
                               const description = e.description || '';
-                              // Ultra-short tagline: first sentence or first 60 chars
-                              const tagline = description ? (description.split(/[.!?]/)[0]?.slice(0, 60) || description.slice(0, 60)) : '';
-                              return `**${e.artist || e.name}**\n${tagline}\n${e.venue} | ${time} | ${price}\n${description}\n${ticketLink}`;
+                              // Use tags if available, otherwise empty
+                              const tags = e.tags && Array.isArray(e.tags) && e.tags.length > 0 ? e.tags.join(' · ') : '';
+                              return `**${e.artist || e.name}**\n${tags}\n${e.venue} | ${time} | ${price}\n${description}\n${ticketLink}`;
                             })
                             .join("\n\n");
 
