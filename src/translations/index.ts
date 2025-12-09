@@ -47,7 +47,7 @@ export const translations: Record<Language, Translations> = {
   en: {
     chat: {
       welcome: "Hey! 👋 I'm here to help you discover amazing live music events near you. What are you in the mood for today?",
-      promoterLink: "are you a promoter or musician? →",
+      promoterLink: "promoter/musician →",
       placeholder: "Tell me what you're looking for...",
     },
     promoter: {
@@ -84,7 +84,7 @@ export const translations: Record<Language, Translations> = {
   es: {
     chat: {
       welcome: "¡Hola! 👋 Estoy aquí para ayudarte a descubrir increíbles eventos de música en vivo cerca de ti. ¿Qué te apetece hoy?",
-      promoterLink: "¿eres promotor o músico? →",
+      promoterLink: "promotor/músico →",
       placeholder: "Dime qué estás buscando...",
     },
     promoter: {
@@ -121,7 +121,7 @@ export const translations: Record<Language, Translations> = {
   it: {
     chat: {
       welcome: "Ciao! 👋 Sono qui per aiutarti a scoprire fantastici eventi di musica dal vivo vicino a te. Cosa ti va oggi?",
-      promoterLink: "sei un promoter o musicista? →",
+      promoterLink: "promoter/musicista →",
       placeholder: "Dimmi cosa stai cercando...",
     },
     promoter: {
@@ -158,7 +158,7 @@ export const translations: Record<Language, Translations> = {
   ca: {
     chat: {
       welcome: "Hola! 👋 Estic aquí per ajudar-te a descobrir increïbles esdeveniments de música en directe a prop teu. Què t'agradaria avui?",
-      promoterLink: "ets promotor o músic? →",
+      promoterLink: "promotor/músic →",
       placeholder: "Digues-me què estàs buscant...",
     },
     promoter: {
