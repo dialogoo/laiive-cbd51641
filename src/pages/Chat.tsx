@@ -57,38 +57,38 @@ const parseEventContent = (content: string) => {
 
 // Event card component
 const EventCard = ({ event }: { event: { artist: string; venue: string; city: string; dateTime: string; price: string; description?: string; ticketUrl?: string; ticketLabel?: string } }) => (
-  <div className="border border-border/50 rounded-xl p-4 my-2 bg-background/50 backdrop-blur-sm hover:border-primary/30 transition-colors">
-    <div className="flex items-start gap-3">
-      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-        <Music className="w-5 h-5 text-primary" />
+  <div className="border border-border/50 rounded-xl p-4 sm:p-5 my-2 sm:my-3 bg-background/50 backdrop-blur-sm hover:border-primary/30 transition-colors">
+    <div className="flex items-start gap-3 sm:gap-4">
+      <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+        <Music className="w-6 h-6 sm:w-5 sm:h-5 text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-foreground truncate">{event.artist}</h4>
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1">
-          <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+        <h4 className="font-semibold text-foreground text-base sm:text-base truncate">{event.artist}</h4>
+        <div className="flex items-center gap-2 text-sm sm:text-sm text-muted-foreground mt-1.5 sm:mt-1">
+          <MapPin className="w-4 h-4 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
           <span className="truncate">{event.venue}, {event.city}</span>
         </div>
-        <div className="flex items-center gap-4 mt-2 text-sm">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Calendar className="w-3.5 h-3.5" />
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2.5 sm:mt-2 text-sm sm:text-sm">
+          <div className="flex items-center gap-2 sm:gap-1.5 text-muted-foreground">
+            <Calendar className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             <span>{event.dateTime}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-primary font-medium">
-            <Ticket className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2 sm:gap-1.5 text-primary font-medium">
+            <Ticket className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             <span>{event.price}</span>
           </div>
         </div>
         {event.description && (
-          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{event.description}</p>
+          <p className="text-sm sm:text-sm text-muted-foreground mt-2.5 sm:mt-2 line-clamp-2">{event.description}</p>
         )}
         {event.ticketUrl && (
           <a 
             href={event.ticketUrl} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mt-3"
+            className="inline-flex items-center gap-2 sm:gap-1.5 text-sm sm:text-sm text-primary hover:underline mt-3 sm:mt-3 font-medium"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             {event.ticketLabel || "Get tickets"}
           </a>
         )}
@@ -409,20 +409,20 @@ const Chat = () => {
     )}>
       {/* Header with mode toggle */}
       <header className={cn(
-        "border-b border-border p-4",
+        "border-b border-border p-3 sm:p-4",
         mode === "promoter" ? "bg-[hsl(0,0%,18%)]" : "bg-card"
       )}>
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🫦</span>
-            <span className="font-montserrat font-bold text-xl text-primary">laiive</span>
+            <span className="text-xl sm:text-2xl">🫦</span>
+            <span className="font-montserrat font-bold text-lg sm:text-xl text-primary">laiive</span>
           </div>
           
           <div className="flex items-center gap-3">
             {/* Mode Link */}
             <button
               onClick={() => navigate("/promoters")}
-              className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="font-ibm-plex text-sm sm:text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               {t.chat.promoterLink}
             </button>
@@ -431,8 +431,8 @@ const Chat = () => {
       </header>
 
       {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+        <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
           {messages.length === 0 ? null : (
             <>
               {messages.map((msg, idx) => {
@@ -449,16 +449,16 @@ const Chat = () => {
                   >
                     <div
                       className={cn(
-                        "max-w-[85%] rounded-2xl font-ibm-plex",
+                        "max-w-[92%] sm:max-w-[85%] rounded-2xl font-ibm-plex text-base sm:text-base",
                         msg.role === "user"
                           ? mode === "promoter"
-                            ? "bg-[hsl(0,0%,22%)] text-foreground border border-[hsl(0,0%,30%)] px-4 py-3"
-                            : "bg-muted text-foreground border border-border px-4 py-3"
+                            ? "bg-[hsl(0,0%,22%)] text-foreground border border-[hsl(0,0%,30%)] px-4 py-3 sm:px-4 sm:py-3"
+                            : "bg-muted text-foreground border border-border px-4 py-3 sm:px-4 sm:py-3"
                           : mode === "promoter"
-                          ? "bg-[hsl(0,0%,18%)] text-card-foreground border border-[hsl(0,0%,30%)] px-4 py-3"
+                          ? "bg-[hsl(0,0%,18%)] text-card-foreground border border-[hsl(0,0%,30%)] px-4 py-3 sm:px-4 sm:py-3"
                           : parsed?.hasEvents
                           ? "bg-transparent p-0"
-                          : "bg-card text-card-foreground border border-border px-4 py-3"
+                          : "bg-card text-card-foreground border border-border px-4 py-3 sm:px-4 sm:py-3"
                       )}
                     >
                       {parsed?.hasEvents ? (
@@ -467,7 +467,7 @@ const Chat = () => {
                             text.trim() && (
                               <p 
                                 key={`text-${i}`} 
-                                className="whitespace-pre-wrap text-muted-foreground text-sm"
+                                className="whitespace-pre-wrap text-muted-foreground text-base sm:text-sm"
                                 dangerouslySetInnerHTML={{
                                   __html: DOMPurify.sanitize(
                                     text
@@ -520,10 +520,10 @@ const Chat = () => {
 
       {/* Input area */}
       <div className={cn(
-        "border-t border-border p-4",
+        "border-t border-border p-3 sm:p-4",
         mode === "promoter" ? "bg-[hsl(0,0%,18%)]" : "bg-card"
       )}>
-        <div className="max-w-4xl mx-auto flex items-center gap-2">
+        <div className="max-w-4xl mx-auto flex items-center gap-2 sm:gap-3">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -532,12 +532,12 @@ const Chat = () => {
                   size="icon"
                   onClick={handleMicClick}
                   className={cn(
-                    "text-muted-foreground hover:text-primary",
+                    "text-muted-foreground hover:text-primary h-10 w-10 sm:h-10 sm:w-10",
                     isRecording && "text-destructive animate-pulse"
                   )}
                   disabled={isLoading}
                 >
-                  {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                  {isRecording ? <MicOff className="w-5 h-5 sm:w-5 sm:h-5" /> : <Mic className="w-5 h-5 sm:w-5 sm:h-5" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -552,7 +552,7 @@ const Chat = () => {
             onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
             placeholder={mode === "promoter" ? "Tell me about your event..." : t.chat.placeholder}
             className={cn(
-              "flex-1 border-border font-ibm-plex",
+              "flex-1 border-border font-ibm-plex text-base sm:text-base h-11 sm:h-10",
               mode === "promoter" ? "bg-[hsl(0,0%,12%)]" : "bg-background"
             )}
           />
@@ -562,6 +562,7 @@ const Chat = () => {
             variant="default"
             size="icon"
             disabled={isLoading || !message.trim()}
+            className="h-10 w-10 sm:h-10 sm:w-10"
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </Button>
