@@ -243,6 +243,25 @@ serve(async (req) => {
 
   try {
     const { messages, location, searchMode, language = 'en' } = await req.json();
+    
+    // Input validation - limit conversation history and message sizes
+    if (messages && messages.length > 50) {
+      return new Response(
+        JSON.stringify({ error: "Conversation history too long" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Check individual message sizes
+    for (const msg of messages || []) {
+      if (msg.content && msg.content.length > 10000) {
+        return new Response(
+          JSON.stringify({ error: "Message content too long" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+    
     console.log("Chat request:", { searchMode, location, language, messageCount: messages.length });
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
