@@ -24,13 +24,13 @@ const proStyles = {
 
 // Parse event blocks from message content
 const parseEventContent = (content: string) => {
-  // Match event pattern: **Artist** at Venue, City\nDate | Price\nDescription\n[tickets](url)
-  const eventPattern = /\*\*(.+?)\*\*\s+at\s+(.+?),\s*(.+?)\n(.+?)\s*\|\s*(.+?)(?:\n(.+?))?(?:\n\[tickets\]\((.+?)\))?(?=\n\n\*\*|$)/gs;
+  // Match new event pattern: **Artist**\nTagline\nVenue | Time | Price\nDescription\n[tickets](url)
+  const eventPattern = /\*\*(.+?)\*\*\n(.+?)\n(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)(?:\n(.+?))?(?:\n\[tickets\]\((.+?)\))?(?=\n\n\*\*|$)/gs;
   const events: Array<{
     artist: string;
+    tagline: string;
     venue: string;
-    city: string;
-    dateTime: string;
+    time: string;
     price: string;
     description?: string;
     ticketUrl?: string;
@@ -40,8 +40,8 @@ const parseEventContent = (content: string) => {
   let lastIndex = 0;
   const textParts: string[] = [];
   
-  // Get text before first event
-  const firstEventMatch = content.match(/\*\*(.+?)\*\*\s+at\s+/);
+  // Get text before first event (intro sentence)
+  const firstEventMatch = content.match(/\*\*(.+?)\*\*\n/);
   if (firstEventMatch && firstEventMatch.index !== undefined && firstEventMatch.index > 0) {
     textParts.push(content.slice(0, firstEventMatch.index));
     lastIndex = firstEventMatch.index;
@@ -50,9 +50,9 @@ const parseEventContent = (content: string) => {
   while ((match = eventPattern.exec(content)) !== null) {
     events.push({
       artist: match[1]?.trim(),
-      venue: match[2]?.trim(),
-      city: match[3]?.trim(),
-      dateTime: match[4]?.trim(),
+      tagline: match[2]?.trim(),
+      venue: match[3]?.trim(),
+      time: match[4]?.trim(),
       price: match[5]?.trim(),
       description: match[6]?.trim(),
       ticketUrl: match[7]?.trim(),
@@ -74,31 +74,32 @@ const parseEventContent = (content: string) => {
 };
 
 // Event card component with expandable description
-const EventCard = ({ event }: { event: { artist: string; venue: string; city: string; dateTime: string; price: string; description?: string; ticketUrl?: string } }) => {
+const EventCard = ({ event }: { event: { artist: string; tagline: string; venue: string; time: string; price: string; description?: string; ticketUrl?: string } }) => {
   const [expanded, setExpanded] = useState(false);
   
   return (
-    <div className="border border-border/30 rounded-lg p-3 sm:p-4 my-2 bg-background/30 hover:border-border/50 transition-colors">
-      <div className="space-y-1.5">
+    <div className="border border-border/50 rounded-lg p-3 sm:p-4 my-2 bg-card hover:border-primary/30 transition-colors">
+      <div className="space-y-1">
         <h4 className="font-semibold text-foreground text-base">{event.artist}</h4>
-        <p className="text-sm text-muted-foreground">{event.venue}, {event.city}</p>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="text-muted-foreground">{event.dateTime}</span>
-          <span className="text-primary font-medium">{event.price}</span>
-        </div>
-        {event.description && (
-          <div className="pt-1">
-            {expanded ? (
-              <p className="text-sm text-muted-foreground">{event.description}</p>
-            ) : null}
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-muted-foreground flex-1">{event.tagline}</p>
+          {event.description && event.description !== event.tagline && (
             <button 
               onClick={() => setExpanded(!expanded)}
-              className="text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors mt-1"
+              className="text-xs text-muted-foreground/70 hover:text-primary transition-colors shrink-0"
             >
-              {expanded ? '−' : '+'} {expanded ? 'less' : 'more'}
+              {expanded ? '− less' : '+ more'}
             </button>
-          </div>
+          )}
+        </div>
+        {expanded && event.description && event.description !== event.tagline && (
+          <p className="text-sm text-muted-foreground pt-1">{event.description}</p>
         )}
+        <div className="flex items-center gap-3 text-sm pt-1">
+          <span className="text-muted-foreground">{event.venue}</span>
+          <span className="text-muted-foreground">{event.time}</span>
+          <span className="text-primary font-medium">{event.price}</span>
+        </div>
         {event.ticketUrl && (
           <a 
             href={event.ticketUrl} 

@@ -562,21 +562,32 @@ Default location when not specified: ${isUsingUserCoords ? `coordinates (${locat
                         });
 
                         if (filteredEvents.length > 0) {
+                          // Build intro with date/city context
+                          const queryDate = args.startDate ? new Date(args.startDate).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) : '';
+                          const queryCity = args.city || '';
+                          const intro = queryDate && queryCity 
+                            ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} for ${queryDate} in ${queryCity}:`
+                            : queryDate 
+                            ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} for ${queryDate}:`
+                            : queryCity
+                            ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} in ${queryCity}:`
+                            : `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''}:`;
+                          
                           const formattedEvents = filteredEvents
                             .map((e) => {
-                              const date = new Date(e.event_date).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
                               const time = new Date(e.event_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                               const price = e.price ? `€${e.price}` : "Free";
-                              const place = e.city ? `${e.venue}, ${e.city}` : e.venue;
                               const ticketLink = e.ticket_url ? `[tickets](${e.ticket_url})` : '';
                               const description = e.description || '';
-                              return `**${e.artist || e.name}** at ${place}, ${e.city}\n${date} at ${time} | ${price}\n${description}\n${ticketLink}`;
+                              // Ultra-short tagline: first sentence or first 60 chars
+                              const tagline = description ? (description.split(/[.!?]/)[0]?.slice(0, 60) || description.slice(0, 60)) : '';
+                              return `**${e.artist || e.name}**\n${tagline}\n${e.venue} | ${time} | ${price}\n${description}\n${ticketLink}`;
                             })
                             .join("\n\n");
 
                           controller.enqueue(
                             encoder.encode(
-                              `data: ${JSON.stringify({ choices: [{ delta: { content: `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''}:\n\n${formattedEvents}` } }] })}\n\n`
+                              `data: ${JSON.stringify({ choices: [{ delta: { content: `${intro}\n\n${formattedEvents}` } }] })}\n\n`
                             )
                           );
                         } else {
