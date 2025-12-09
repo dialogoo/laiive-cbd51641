@@ -37,6 +37,12 @@ const Promoters = () => {
           <p className="font-ibm-plex text-lg text-muted-foreground max-w-2xl mx-auto">
             {t.promoter.subtitle}
           </p>
+          <button
+            onClick={() => navigate("/promoters/about")}
+            className="font-ibm-plex text-sm text-primary hover:underline"
+          >
+            {t.promoter.moreAboutLaiive}
+          </button>
         </div>
 
         {/* Video section */}
@@ -83,12 +89,6 @@ const Promoters = () => {
                   info@laiive.com
                 </a>
               </p>
-              <button
-                onClick={() => navigate("/promoters/about")}
-                className="font-ibm-plex text-sm text-primary hover:underline"
-              >
-                {t.promoter.learnMore}
-              </button>
             </div>
           </div>
         </Card>

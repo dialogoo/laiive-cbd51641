@@ -15,6 +15,7 @@ export interface Translations {
     videoDescription: string;
     ctaButton: string;
     learnMore: string;
+    moreAboutLaiive: string;
     welcomeTitle: string;
     welcomeText: string;
     backToUser: string;
@@ -57,6 +58,7 @@ export const translations: Record<Language, Translations> = {
       videoDescription: "Video will be embedded here",
       ctaButton: "Push your event now",
       learnMore: "Learn more about the project →",
+      moreAboutLaiive: "more about laiive →",
       welcomeTitle: "Welcome to laiive 🎵",
       welcomeText: "Your feedback is valuable to us. Tell us how we can help you build a community around your events.",
       backToUser: "← public app",
@@ -94,6 +96,7 @@ export const translations: Record<Language, Translations> = {
       videoDescription: "El video se incrustará aquí",
       ctaButton: "Publica tu evento ahora",
       learnMore: "Más información sobre el proyecto →",
+      moreAboutLaiive: "más sobre laiive →",
       welcomeTitle: "Bienvenido a laiive 🎵",
       welcomeText: "Tu feedback es valioso para nosotros. Cuéntanos cómo podemos ayudarte a construir una comunidad alrededor de tus eventos.",
       backToUser: "← app pública",
@@ -131,6 +134,7 @@ export const translations: Record<Language, Translations> = {
       videoDescription: "Il video sarà incorporato qui",
       ctaButton: "Pubblica il tuo evento ora",
       learnMore: "Scopri di più sul progetto →",
+      moreAboutLaiive: "più su laiive →",
       welcomeTitle: "Benvenuto su laiive 🎵",
       welcomeText: "Il tuo feedback è prezioso per noi. Raccontaci come possiamo aiutarti a costruire una comunità attorno ai tuoi eventi.",
       backToUser: "← app pubblica",
@@ -168,6 +172,7 @@ export const translations: Record<Language, Translations> = {
       videoDescription: "El vídeo s'inserirà aquí",
       ctaButton: "Publica el teu esdeveniment ara",
       learnMore: "Més informació sobre el projecte →",
+      moreAboutLaiive: "més sobre laiive →",
       welcomeTitle: "Benvingut a laiive 🎵",
       welcomeText: "El teu feedback és valuós per a nosaltres. Explica'ns com podem ajudar-te a construir una comunitat al voltant dels teus esdeveniments.",
       backToUser: "← app pública",
