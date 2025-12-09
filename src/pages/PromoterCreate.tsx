@@ -467,7 +467,7 @@ const PromoterCreate = () => {
               onClick={() => navigate("/")}
               className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              ← back to user app
+              {t.promoter.backToUser}
             </button>
           </div>
         </div>
