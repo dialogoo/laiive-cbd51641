@@ -57,6 +57,13 @@ All colors MUST be HSL.
 
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Pro/Promoter theme - more corporate, serious feel */
+    --pro-bg: 0 0% 10%;
+    --pro-bg-elevated: 0 0% 14%;
+    --pro-bg-card: 0 0% 12%;
+    --pro-border: 0 0% 22%;
+    --pro-accent: 188 100% 46%; /* Sky Cyan for pro */
   }
 }
 
