@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Mic, Loader2, Camera, MicOff, Plus, X, Upload, LogOut } from "lucide-react";
+import { Send, Mic, Loader2, Camera, MicOff, Plus, X, Upload, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { EventConfirmationForm } from "@/components/EventConfirmationForm";
@@ -36,6 +36,7 @@ const PromoterCreate = () => {
   const [isExtracting, setIsExtracting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [promoterName, setPromoterName] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -53,6 +54,24 @@ const PromoterCreate = () => {
       }
     }
   }, [user, isPromoter, authLoading, navigate]);
+
+  // Fetch promoter profile name
+  useEffect(() => {
+    const fetchPromoterName = async () => {
+      if (user?.id) {
+        const { data } = await supabase
+          .from('promoter_profiles')
+          .select('first_name, last_name')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data) {
+          setPromoterName(`${data.first_name} ${data.last_name}`);
+        }
+      }
+    };
+    fetchPromoterName();
+  }, [user?.id]);
 
   // Detect language from user message
   const detectLanguageFromText = (text: string): string | null => {
@@ -470,29 +489,26 @@ const PromoterCreate = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen bg-[#1a1a1a]">
       {/* Header */}
-      <header className="border-b border-border bg-card p-4">
+      <header className="border-b border-cyan-500/20 bg-[#1a1a1a] p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/promoters")}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🫦</span>
-              <span className="font-montserrat font-bold text-xl text-primary">laiive</span>
-              <span className="font-ibm-plex text-muted-foreground">Create Event</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-foreground">laiive</span>
+            <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
+              PRO
+            </span>
           </div>
           
           <div className="flex items-center gap-3">
+            {promoterName && (
+              <span className="text-sm text-cyan-400 font-medium">
+                {promoterName}
+              </span>
+            )}
             <button
               onClick={() => navigate("/")}
-              className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="font-ibm-plex text-sm text-muted-foreground hover:text-cyan-400 transition-colors"
             >
               {t.promoter.backToUser}
             </button>
