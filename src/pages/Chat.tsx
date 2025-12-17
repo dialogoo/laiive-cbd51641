@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mic, Send, Loader2, MicOff, Briefcase } from "lucide-react";
+import { Mic, Send, Loader2, MicOff, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import DOMPurify from "dompurify";
+import { useAuth } from "@/hooks/useAuth";
+import { QueryCounter, useQueryLimit } from "@/components/QueryCounter";
 
 // Pro mode styling constants
 const proStyles = {
@@ -130,6 +132,8 @@ const Chat = () => {
   const navigate = useNavigate();
   const { t, language, setLanguage } = useTranslation();
   const { sessionId, deviceType, userAgent } = useSession();
+  const { user, session, isLoading: authLoading, signOut } = useAuth();
+  const { canQuery, remaining, incrementCount, isPromoter } = useQueryLimit();
   const [mode, setMode] = useState<"user" | "promoter">("user");
   
   const [message, setMessage] = useState("");
@@ -140,6 +144,13 @@ const Chat = () => {
   const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
   const audioRecorderRef = useRef<AudioRecorder>(new AudioRecorder());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
 
   const handleModeChange = () => {
     const newMode = mode === "user" ? "promoter" : "user";
@@ -203,6 +214,16 @@ const Chat = () => {
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
 
+    // Check query limit for non-promoters
+    if (!canQuery) {
+      toast({
+        title: "Query limit reached",
+        description: "You've used all 5 queries this week. Upgrade to Pro for unlimited access.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Detect language from user message and update if different
     const detected = detectLanguageFromText(message);
     if (detected && detected !== language) {
@@ -216,6 +237,9 @@ const Chat = () => {
     setMessages((prev) => [...prev, userMessage]);
     setMessage("");
     setIsLoading(true);
+    
+    // Increment local query count for free users
+    incrementCount();
 
     // Log user message with validation
     if (sessionId) {
@@ -239,13 +263,25 @@ const Chat = () => {
 
     try {
       const endpoint = mode === "promoter" ? "promoter-create" : "chat";
+      const accessToken = session?.access_token;
+      
+      if (!accessToken) {
+        toast({
+          title: "Session expired",
+          description: "Please sign in again.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+      
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${endpoint}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(
             mode === "promoter"
@@ -260,12 +296,30 @@ const Chat = () => {
       );
 
       if (!response.ok) {
-        if (response.status === 429) {
+        if (response.status === 401) {
           toast({
-            title: "Rate limit exceeded",
-            description: "Please try again later.",
+            title: "Session expired",
+            description: "Please sign in again.",
             variant: "destructive",
           });
+          navigate('/auth');
+          return;
+        }
+        if (response.status === 429) {
+          const errorData = await response.json().catch(() => ({}));
+          if (errorData.queries_remaining === 0) {
+            toast({
+              title: "Weekly limit reached",
+              description: "You've used all 5 queries this week. Upgrade to Pro for unlimited access.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Rate limit exceeded",
+              description: "Please try again later.",
+              variant: "destructive",
+            });
+          }
           return;
         }
         if (response.status === 402) {
@@ -447,6 +501,9 @@ const Chat = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            {/* Query counter for free users */}
+            <QueryCounter />
+            
             {/* Mode Link */}
             <button
               onClick={() => navigate("/promoters")}
@@ -459,6 +516,23 @@ const Chat = () => {
             >
               {t.chat.promoterLink}
             </button>
+            
+            {/* Sign out */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={signOut}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">Sign out</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </header>
