@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Promoters from "./pages/Promoters";
 import PromoterCreate from "./pages/PromoterCreate";
 import PromoterAbout from "./pages/PromoterAbout";
+import PromoterAuth from "./pages/PromoterAuth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/" element={<Chat />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/promoters" element={<Promoters />} />
+              <Route path="/promoters/auth" element={<PromoterAuth />} />
               <Route path="/promoters/create" element={<PromoterCreate />} />
               <Route path="/promoters/about" element={<PromoterAbout />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

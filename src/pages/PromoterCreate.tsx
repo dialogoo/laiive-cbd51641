@@ -41,12 +41,18 @@ const PromoterCreate = () => {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const audioRecorderRef = useRef<AudioRecorder>(new AudioRecorder());
 
-  // Redirect to auth if not logged in
+  // Redirect to promoter auth if not logged in or not a promoter
+  const { isPromoter } = useAuth();
+  
   useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
+    if (!authLoading) {
+      if (!user) {
+        navigate('/promoters/auth');
+      } else if (!isPromoter) {
+        navigate('/promoters/auth');
+      }
     }
-  }, [user, authLoading, navigate]);
+  }, [user, isPromoter, authLoading, navigate]);
 
   // Detect language from user message
   const detectLanguageFromText = (text: string): string | null => {
