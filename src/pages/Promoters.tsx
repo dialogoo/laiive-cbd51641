@@ -3,10 +3,24 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Play } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAuth } from "@/hooks/useAuth";
 
 const Promoters = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user, isPromoter, isLoading } = useAuth();
+
+  const handleCTAClick = () => {
+    if (isLoading) return;
+    
+    if (user && isPromoter) {
+      // Already a promoter, go directly to create
+      navigate("/promoters/create");
+    } else {
+      // Not logged in or not a promoter, go to promoter auth
+      navigate("/promoters/auth");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,10 +81,11 @@ const Promoters = () => {
           <Button
             size="lg"
             variant="default"
-            onClick={() => navigate("/promoters/create")}
+            onClick={handleCTAClick}
+            disabled={isLoading}
             className="text-lg px-8 py-6 h-auto font-montserrat font-bold"
           >
-            {t.promoter.ctaButton}
+            {user && isPromoter ? t.promoter.ctaButton : 'Become a Promoter'}
           </Button>
         </div>
 

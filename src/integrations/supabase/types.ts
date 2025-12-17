@@ -131,6 +131,42 @@ export type Database = {
         }
         Relationships: []
       }
+      promoter_profiles: {
+        Row: {
+          city: string
+          created_at: string
+          first_name: string
+          id: string
+          industry_role: string
+          last_name: string
+          managed_entity: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          first_name: string
+          id?: string
+          industry_role: string
+          last_name: string
+          managed_entity: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          first_name?: string
+          id?: string
+          industry_role?: string
+          last_name?: string
+          managed_entity?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_query_usage: {
         Row: {
           created_at: string
