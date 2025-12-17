@@ -141,7 +141,7 @@ export default function PromoterAuth() {
     }
   };
 
-  const ProfessionalInfoFields = () => (
+  const professionalInfoFields = (
     <>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -331,7 +331,7 @@ export default function PromoterAuth() {
                 <div className="border-t border-cyan-500/20 pt-4 mt-4">
                   <p className="text-sm text-muted-foreground mb-4">Professional Information</p>
                   <div className="space-y-4">
-                    <ProfessionalInfoFields />
+                    {professionalInfoFields}
                   </div>
                 </div>
                 
@@ -363,7 +363,7 @@ export default function PromoterAuth() {
                   </p>
                 </div>
                 
-                <ProfessionalInfoFields />
+                {professionalInfoFields}
                 
                 <Button 
                   type="submit" 
