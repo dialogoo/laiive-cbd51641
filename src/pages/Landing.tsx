@@ -28,7 +28,7 @@ const Landing = () => {
           <Button 
             variant="hero" 
             size="xl"
-            onClick={() => navigate("/chat")}
+            onClick={() => navigate("/auth")}
             className="group"
           >
             <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
@@ -38,7 +38,7 @@ const Landing = () => {
           <Button 
             variant="outline-hero" 
             size="xl"
-            onClick={() => navigate("/chat")}
+            onClick={() => navigate("/auth")}
           >
             Sign in with Google
           </Button>

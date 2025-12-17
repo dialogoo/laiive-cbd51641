@@ -65,6 +65,7 @@ export type Database = {
           longitude: number | null
           name: string
           price: number | null
+          tags: string[] | null
           ticket_url: string | null
           updated_at: string
           venue: string
@@ -80,6 +81,7 @@ export type Database = {
           longitude?: number | null
           name: string
           price?: number | null
+          tags?: string[] | null
           ticket_url?: string | null
           updated_at?: string
           venue: string
@@ -95,9 +97,64 @@ export type Database = {
           longitude?: number | null
           name?: string
           price?: number | null
+          tags?: string[] | null
           ticket_url?: string | null
           updated_at?: string
           venue?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_query_usage: {
+        Row: {
+          created_at: string
+          id: string
+          query_count: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          query_count?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          query_count?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
         }
         Relationships: []
       }
@@ -136,7 +193,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "promoter"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -264,7 +321,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "promoter"],
     },
   },
 } as const

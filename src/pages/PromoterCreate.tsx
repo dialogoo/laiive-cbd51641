@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Mic, Loader2, Camera, MicOff, Plus, X, Upload } from "lucide-react";
+import { ArrowLeft, Send, Mic, Loader2, Camera, MicOff, Plus, X, Upload, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { EventConfirmationForm } from "@/components/EventConfirmationForm";
@@ -11,6 +11,7 @@ import { AudioRecorder } from "@/utils/audioRecorder";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSession } from "@/hooks/useSession";
+import { useAuth } from "@/hooks/useAuth";
 
 interface EventDetails {
   name: string;
@@ -27,6 +28,7 @@ const PromoterCreate = () => {
   const navigate = useNavigate();
   const { language, setLanguage, t } = useTranslation();
   const { sessionId, deviceType, userAgent } = useSession();
+  const { user, session, isLoading: authLoading, signOut } = useAuth();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +40,13 @@ const PromoterCreate = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const audioRecorderRef = useRef<AudioRecorder>(new AudioRecorder());
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
 
   // Detect language from user message
   const detectLanguageFromText = (text: string): string | null => {
@@ -261,13 +270,25 @@ const PromoterCreate = () => {
     }
 
     try {
+      const accessToken = session?.access_token;
+      
+      if (!accessToken) {
+        toast({
+          title: "Session expired",
+          description: "Please sign in again.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+      
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/promoter-create`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
             messages: newMessages,

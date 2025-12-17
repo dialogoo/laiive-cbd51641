@@ -10,6 +10,7 @@ const corsHeaders = {
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT = 30; // requests per minute
 const RATE_WINDOW = 60000; // 1 minute in ms
+const WEEKLY_QUERY_LIMIT = 5; // queries per week for free users
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -32,6 +33,60 @@ function getClientIP(req: Request): string {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
          req.headers.get("x-real-ip") || 
          "unknown";
+}
+
+// Get Monday of current week (UTC)
+function getWeekStart(): string {
+  const now = new Date();
+  const day = now.getUTCDay();
+  const diff = now.getUTCDate() - day + (day === 0 ? -6 : 1);
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), diff));
+  return monday.toISOString().split('T')[0];
+}
+
+// Check if user has promoter role
+async function isPromoter(supabaseClient: any, userId: string): Promise<boolean> {
+  const { data } = await supabaseClient
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'promoter')
+    .maybeSingle();
+  return !!data;
+}
+
+// Check and increment weekly query usage
+async function checkAndIncrementUsage(supabaseClient: any, userId: string): Promise<{ allowed: boolean; remaining: number }> {
+  const weekStart = getWeekStart();
+  
+  // Get current usage
+  const { data: usage } = await supabaseClient
+    .from('user_query_usage')
+    .select('query_count')
+    .eq('user_id', userId)
+    .eq('week_start', weekStart)
+    .maybeSingle();
+  
+  const currentCount = usage?.query_count ?? 0;
+  
+  if (currentCount >= WEEKLY_QUERY_LIMIT) {
+    return { allowed: false, remaining: 0 };
+  }
+  
+  // Increment usage
+  if (usage) {
+    await supabaseClient
+      .from('user_query_usage')
+      .update({ query_count: currentCount + 1 })
+      .eq('user_id', userId)
+      .eq('week_start', weekStart);
+  } else {
+    await supabaseClient
+      .from('user_query_usage')
+      .insert({ user_id: userId, week_start: weekStart, query_count: 1 });
+  }
+  
+  return { allowed: true, remaining: WEEKLY_QUERY_LIMIT - currentCount - 1 };
 }
 
 // Helper function to parse relative dates with time-of-day awareness
@@ -242,6 +297,32 @@ serve(async (req) => {
   }
 
   try {
+    // Verify JWT authentication
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Create auth client to verify user
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+    
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token. Please sign in again." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { messages, location, searchMode, language = 'en' } = await req.json();
     
     // Input validation - limit conversation history and message sizes
@@ -262,7 +343,7 @@ serve(async (req) => {
       }
     }
     
-    console.log("Chat request:", { searchMode, location, language, messageCount: messages.length });
+    console.log("Chat request:", { userId: user.id, searchMode, location, language, messageCount: messages.length });
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -273,6 +354,26 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Check if user is a promoter (unlimited queries)
+    const userIsPromoter = await isPromoter(supabaseClient, user.id);
+    
+    // Check query usage for non-promoters
+    if (!userIsPromoter) {
+      const { allowed, remaining } = await checkAndIncrementUsage(supabaseClient, user.id);
+      
+      if (!allowed) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Weekly query limit reached. Upgrade to Pro for unlimited access.",
+            queries_remaining: 0 
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      console.log(`User ${user.id} queries remaining: ${remaining}`);
+    }
 
     // Get current date/time for context
     const now = new Date();
