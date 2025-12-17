@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mic, Send, Loader2, MicOff, LogOut } from "lucide-react";
+import { Mic, Send, Loader2, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,8 @@ import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/integrations/supabase/client";
 import DOMPurify from "dompurify";
 import { useAuth } from "@/hooks/useAuth";
-import { QueryCounter, useQueryLimit } from "@/components/QueryCounter";
+import { useQueryLimit } from "@/components/QueryCounter";
+import { UserAvatar } from "@/components/UserAvatar";
 
 // Pro mode styling constants
 const proStyles = {
@@ -132,8 +133,8 @@ const Chat = () => {
   const navigate = useNavigate();
   const { t, language, setLanguage } = useTranslation();
   const { sessionId, deviceType, userAgent } = useSession();
-  const { user, session, isLoading: authLoading, signOut } = useAuth();
-  const { canQuery, remaining, incrementCount, isPromoter } = useQueryLimit();
+  const { user, session, isLoading: authLoading } = useAuth();
+  const { canQuery, incrementCount, isPromoter } = useQueryLimit();
   const [mode, setMode] = useState<"user" | "promoter">("user");
   
   const [message, setMessage] = useState("");
@@ -145,12 +146,7 @@ const Chat = () => {
   const audioRecorderRef = useRef<AudioRecorder>(new AudioRecorder());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
+  // No auth redirect - allow anonymous users to view chat
 
   const handleModeChange = () => {
     const newMode = mode === "user" ? "promoter" : "user";
@@ -214,13 +210,27 @@ const Chat = () => {
   const handleSendMessage = async () => {
     if (!message.trim() || isLoading) return;
 
+    // Check if user is logged in
+    if (!user) {
+      // Show in-chat prompt to sign in
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: message },
+        { role: "assistant", content: "Sign in to start discovering live music events 🎵\n\n[Sign in →](/auth)" }
+      ]);
+      setMessage("");
+      return;
+    }
+
     // Check query limit for non-promoters
     if (!canQuery) {
-      toast({
-        title: "Query limit reached",
-        description: "You've used all 5 queries this week. Upgrade to Pro for unlimited access.",
-        variant: "destructive",
-      });
+      // Show in-chat message instead of toast
+      setMessages((prev) => [
+        ...prev,
+        { role: "user", content: message },
+        { role: "assistant", content: "You've used all 5 free queries this week. Upgrade to Pro for unlimited access! 🚀\n\n[Become a Pro →](/promoters)" }
+      ]);
+      setMessage("");
       return;
     }
 
@@ -297,22 +307,21 @@ const Chat = () => {
 
       if (!response.ok) {
         if (response.status === 401) {
-          toast({
-            title: "Session expired",
-            description: "Please sign in again.",
-            variant: "destructive",
-          });
-          navigate('/auth');
+          // Session expired - show in-chat message
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: "Your session has expired. Please sign in again.\n\n[Sign in →](/auth)" }
+          ]);
           return;
         }
         if (response.status === 429) {
           const errorData = await response.json().catch(() => ({}));
           if (errorData.queries_remaining === 0) {
-            toast({
-              title: "Weekly limit reached",
-              description: "You've used all 5 queries this week. Upgrade to Pro for unlimited access.",
-              variant: "destructive",
-            });
+            // Weekly limit - show in-chat message
+            setMessages((prev) => [
+              ...prev,
+              { role: "assistant", content: "You've used all 5 free queries this week. Upgrade to Pro for unlimited access! 🚀\n\n[Become a Pro →](/promoters)" }
+            ]);
           } else {
             toast({
               title: "Rate limit exceeded",
@@ -501,9 +510,6 @@ const Chat = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            {/* Query counter for free users */}
-            <QueryCounter />
-            
             {/* Mode Link */}
             <button
               onClick={() => navigate("/promoters")}
@@ -517,22 +523,8 @@ const Chat = () => {
               {t.chat.promoterLink}
             </button>
             
-            {/* Sign out */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={signOut}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-xs">Sign out</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {/* User avatar / Sign in */}
+            <UserAvatar />
           </div>
         </div>
       </header>
