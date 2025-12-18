@@ -26,7 +26,7 @@ const PromoterAbout = () => {
       <div className="max-w-4xl mx-auto px-6 py-12 space-y-8">
         {/* Hero */}
         <div className="text-center space-y-4">
-          <h1 className="font-montserrat font-bold text-4xl md:text-5xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="font-montserrat font-bold text-4xl md:text-5xl bg-gradient-to-r from-[#FF2AA0] via-[#FF8C00] to-[#FFD500] bg-clip-text text-transparent">
             {t.about.title}
           </h1>
         </div>
@@ -34,7 +34,7 @@ const PromoterAbout = () => {
         {/* Content Cards */}
         <div className="space-y-6">
           <Card className="p-6 bg-card border-border">
-            <h2 className="font-montserrat font-bold text-2xl mb-4">
+            <h2 className="font-montserrat font-bold text-2xl mb-4 text-[#FFD500]">
               {t.about.philosophyTitle}
             </h2>
             <p className="font-ibm-plex text-muted-foreground leading-relaxed">
@@ -43,7 +43,7 @@ const PromoterAbout = () => {
           </Card>
 
           <Card className="p-6 bg-card border-border">
-            <h2 className="font-montserrat font-bold text-2xl mb-4">
+            <h2 className="font-montserrat font-bold text-2xl mb-4 text-[#FF2AA0]">
               {t.about.aiEthicsTitle}
             </h2>
             <p className="font-ibm-plex text-muted-foreground leading-relaxed">
@@ -52,7 +52,7 @@ const PromoterAbout = () => {
           </Card>
 
           <Card className="p-6 bg-card border-border">
-            <h2 className="font-montserrat font-bold text-2xl mb-4">
+            <h2 className="font-montserrat font-bold text-2xl mb-4 text-[#00CFEA]">
               {t.about.smallVenuesTitle}
             </h2>
             <p className="font-ibm-plex text-muted-foreground leading-relaxed">
@@ -61,7 +61,7 @@ const PromoterAbout = () => {
           </Card>
 
           <Card className="p-6 bg-card border-border">
-            <h2 className="font-montserrat font-bold text-2xl mb-4">
+            <h2 className="font-montserrat font-bold text-2xl mb-4 text-[#FF8C00]">
               {t.about.joinTitle}
             </h2>
             <p className="font-ibm-plex text-muted-foreground leading-relaxed">
