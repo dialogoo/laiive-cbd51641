@@ -12,7 +12,7 @@ const PromoterAbout = () => {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-end gap-1 hover:opacity-80 transition-opacity">
             <span className="text-xl sm:text-2xl pb-0.5">🫦</span>
-            <span className="font-montserrat font-bold text-xl sm:text-2xl text-primary">laiive</span>
+            <span className="font-montserrat font-bold text-lg sm:text-xl text-primary">laiive</span>
           </Link>
           <Link to="/promoters" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
             <span className="text-xl font-bold text-foreground">laiive</span>
