@@ -494,14 +494,16 @@ const PromoterCreate = () => {
       {/* Header */}
       <header className="border-b border-cyan-500/20 bg-[#1a1a1a] p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-xl font-bold text-foreground">laiive</span>
-            <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
-              PRO
-            </span>
+          <div className="flex items-end gap-4">
+            <div className="flex items-center gap-1">
+              <span className="text-xl font-bold text-foreground">laiive</span>
+              <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
+                PRO
+              </span>
+            </div>
             <button
               onClick={() => navigate("/")}
-              className="font-ibm-plex text-xs text-muted-foreground hover:text-cyan-400 transition-colors"
+              className="font-ibm-plex text-[10px] text-muted-foreground hover:text-cyan-400 transition-colors pb-0.5"
             >
               go to laiive →
             </button>

@@ -496,21 +496,23 @@ const Chat = () => {
           : "bg-card border-border"
       )}>
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl">🫦</span>
-            <span className={cn(
-              "font-montserrat font-bold text-lg sm:text-xl",
-              mode === "promoter" ? "text-accent" : "text-primary"
-            )}>laiive</span>
-            {mode === "promoter" && (
-              <span className="ml-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-accent/20 text-accent rounded">
-                Pro
-              </span>
-            )}
+          <div className="flex items-end gap-4">
+            <div className="flex items-center gap-1">
+              <span className="text-xl sm:text-2xl">🫦</span>
+              <span className={cn(
+                "font-montserrat font-bold text-lg sm:text-xl",
+                mode === "promoter" ? "text-accent" : "text-primary"
+              )}>laiive</span>
+              {mode === "promoter" && (
+                <span className="ml-0.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-accent/20 text-accent rounded">
+                  Pro
+                </span>
+              )}
+            </div>
             <button
               onClick={() => navigate("/promoters")}
               className={cn(
-                "font-ibm-plex text-xs transition-colors ml-2",
+                "font-ibm-plex text-[10px] transition-colors pb-0.5",
                 mode === "promoter" 
                   ? "text-muted-foreground hover:text-accent" 
                   : "text-muted-foreground hover:text-primary"
