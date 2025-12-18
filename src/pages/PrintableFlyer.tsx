@@ -16,18 +16,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-type ColorTheme = 'fuchsia' | 'cyan' | 'yellow' | 'orange';
+type ColorTheme = 'dark' | 'navy' | 'purple' | 'light';
 
-const colorThemes: Record<ColorTheme, { primary: string; accent: string; hex: string }> = {
-  fuchsia: { primary: '#FF2AA0', accent: '#00CFEA', hex: '#FF2AA0' },
-  cyan: { primary: '#00CFEA', accent: '#FF2AA0', hex: '#00CFEA' },
-  yellow: { primary: '#FFD500', accent: '#FF2AA0', hex: '#FFD500' },
-  orange: { primary: '#FF8C00', accent: '#00CFEA', hex: '#FF8C00' },
+const colorThemes: Record<ColorTheme, { bg: string; primary: string; accent: string; text: string; hex: string }> = {
+  dark: { bg: '#0a0a0a', primary: '#FF2AA0', accent: '#00CFEA', text: '#ffffff', hex: '#FF2AA0' },
+  navy: { bg: '#0a1628', primary: '#00CFEA', accent: '#FFD500', text: '#ffffff', hex: '#00CFEA' },
+  purple: { bg: '#1a0a28', primary: '#FF8C00', accent: '#FF2AA0', text: '#ffffff', hex: '#FF8C00' },
+  light: { bg: '#ffffff', primary: '#FF2AA0', accent: '#0a0a0a', text: '#0a0a0a', hex: '#FFD500' },
 };
 
 const PrintableFlyer = () => {
   const flyerRef = useRef<HTMLDivElement>(null);
-  const [colorTheme, setColorTheme] = useState<ColorTheme>('fuchsia');
+  const [colorTheme, setColorTheme] = useState<ColorTheme>('dark');
 
   const theme = colorThemes[colorTheme];
 
@@ -82,29 +82,47 @@ const PrintableFlyer = () => {
     img.src = svgUrl;
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
+  const handleShare = async (platform?: string) => {
+    const shareUrl = 'https://laiive.com';
+    const shareText = 'Discover live music in your neighborhood with laiive';
+    
+    if (!platform && navigator.share) {
       try {
         await navigator.share({
-          title: 'laiive - Discover live music in your neighborhood',
-          text: 'Discover live music in your neighborhood with laiive',
-          url: 'https://laiive.com',
+          title: 'laiive - Discover live music',
+          text: shareText,
+          url: shareUrl,
         });
+        return;
       } catch (err) {
-        // User cancelled or error
+        // User cancelled
       }
-    } else {
-      // Fallback: copy to clipboard
-      await navigator.clipboard.writeText('https://laiive.com');
-      alert('Link copied to clipboard!');
+    }
+    
+    const shareUrls: Record<string, string> = {
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+      copy: '',
+    };
+    
+    if (platform === 'copy') {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Link copied!');
+      return;
+    }
+    
+    if (platform && shareUrls[platform]) {
+      window.open(shareUrls[platform], '_blank', 'width=600,height=400');
     }
   };
 
   const generateSvg = (width: number, height: number) => `
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 400 600">
-  <rect width="400" height="600" fill="#0a0a0a"/>
+  <rect width="400" height="600" fill="${theme.bg}"/>
   <text x="200" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" fill="${theme.primary}" font-weight="bold">🫦 laiive</text>
-  <text x="200" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="white" font-weight="bold">Discover live music</text>
+  <text x="200" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="${theme.text}" font-weight="bold">Discover live music</text>
   <text x="200" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="${theme.accent}" font-weight="bold">in your neighborhood</text>
   <rect x="100" y="360" width="200" height="200" fill="white" rx="12"/>
   <image x="115" y="375" width="170" height="170" href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https://laiive.com&amp;color=${theme.primary.replace('#', '')}"/>
@@ -157,19 +175,36 @@ const PrintableFlyer = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                size="icon" 
-                variant="outline" 
-                className="border-border"
-                onClick={handleShare}
-              >
-                <Share2 className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Share</TooltipContent>
-          </Tooltip>
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button size="icon" variant="outline" className="border-border">
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Share</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="end" className="bg-card border-border">
+              <DropdownMenuItem onClick={() => handleShare('twitter')}>
+                Twitter / X
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('facebook')}>
+                Facebook
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('whatsapp')}>
+                WhatsApp
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleShare('linkedin')}>
+                LinkedIn
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleShare('copy')}>
+                Copy link
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </TooltipProvider>
       </div>
 
@@ -183,7 +218,8 @@ const PrintableFlyer = () => {
       {/* Flyer Content */}
       <div 
         ref={flyerRef}
-        className="max-w-lg mx-auto bg-[#0a0a0a] p-4 print:p-0 print:max-w-full print:mx-0 relative"
+        className="max-w-lg mx-auto p-4 print:p-0 print:max-w-full print:mx-0 relative"
+        style={{ backgroundColor: theme.bg }}
       >
         {/* Color Theme Selector - 4 balls */}
         <div className="print:hidden absolute top-2 left-1/2 -translate-x-1/2 flex gap-3 z-10">
@@ -191,16 +227,19 @@ const PrintableFlyer = () => {
             <button
               key={key}
               onClick={() => setColorTheme(key)}
-              className={`w-6 h-6 rounded-full transition-all duration-200 hover:scale-110 ${
-                colorTheme === key ? 'ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a] scale-110' : ''
+              className={`w-6 h-6 rounded-full transition-all duration-200 hover:scale-110 border border-white/20 ${
+                colorTheme === key ? 'ring-2 ring-white ring-offset-2 scale-110' : ''
               }`}
-              style={{ backgroundColor: colorThemes[key].hex }}
+              style={{ backgroundColor: colorThemes[key].bg }}
               aria-label={`${key} theme`}
             />
           ))}
         </div>
 
-        <div className="flyer-content bg-[#0a0a0a] text-white aspect-[2/3] flex flex-col items-center justify-between py-12 px-6 print:py-16 print:px-8 border border-border print:border-none">
+        <div 
+          className="flyer-content aspect-[2/3] flex flex-col items-center justify-between py-12 px-6 print:py-16 print:px-8 border border-border print:border-none"
+          style={{ backgroundColor: theme.bg, color: theme.text }}
+        >
           {/* Top Section - Logo */}
           <div className="text-center">
             <div className="flex items-end justify-center gap-2">
