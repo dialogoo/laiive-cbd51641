@@ -16,7 +16,7 @@ import {
 import { ArrowLeft, Loader2, Plus, Building2, Music, Tent, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { EntityFormDialog, EntityType } from '@/components/entities/EntityFormDialog';
+import { EntityFormDialog, EntityType, EntityFormVariant } from '@/components/entities/EntityFormDialog';
 
 type AuthMode = 'login' | 'signup' | 'upgrade';
 
@@ -183,17 +183,14 @@ export default function PromoterAuth() {
   };
 
   const entitySection = (
-    <div className="space-y-2">
-      <Label>Managed Entities (optional)</Label>
-      <p className="text-xs text-muted-foreground mb-3">
-        You can always add or edit this later in Account Settings
-      </p>
-      
-      <div className="flex justify-end mb-2">
+    <div className="space-y-3">
+      <div className="border-t border-cyan-500/20 pt-4 mt-2" />
+      <div className="flex items-center justify-between">
+        <Label>Managed Entities</Label>
         <DropdownMenu open={addMenuOpen} onOpenChange={setAddMenuOpen}>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline" className="gap-1 border-cyan-500/30 hover:border-cyan-500">
-              <Plus className="w-4 h-4" />
+            <Button size="sm" variant="outline" className="gap-1 border-cyan-500/30 hover:border-cyan-500 h-7 px-2">
+              <Plus className="w-3 h-3" />
               Add
             </Button>
           </DropdownMenuTrigger>
@@ -213,6 +210,9 @@ export default function PromoterAuth() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <p className="text-xs text-muted-foreground">
+        You can always add or edit this later in Account Settings
+      </p>
 
       {pendingEntities.length > 0 && (
         <div className="space-y-2">
@@ -494,6 +494,7 @@ export default function PromoterAuth() {
         onOpenChange={setEntityDialogOpen}
         entityType={entityDialogType}
         onSave={handleSaveEntity}
+        variant="pro"
       />
     </div>
   );

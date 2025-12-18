@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 
 export type EntityType = "venue" | "band" | "festival";
+export type EntityFormVariant = "default" | "pro";
 
 interface EntityFormDialogProps {
   open: boolean;
@@ -15,6 +16,7 @@ interface EntityFormDialogProps {
   entity?: any;
   onSave: (data: any) => Promise<void>;
   isLoading?: boolean;
+  variant?: EntityFormVariant;
 }
 
 export const EntityFormDialog = ({
@@ -24,7 +26,15 @@ export const EntityFormDialog = ({
   entity,
   onSave,
   isLoading = false,
+  variant = "default",
 }: EntityFormDialogProps) => {
+  const isPro = variant === "pro";
+  const inputClassName = isPro 
+    ? "bg-background/50 border-cyan-500/30 focus:border-cyan-500" 
+    : "";
+  const buttonClassName = isPro 
+    ? "bg-cyan-500 hover:bg-cyan-600 text-black font-semibold" 
+    : "";
   const [formData, setFormData] = useState<any>({});
 
   useEffect(() => {
@@ -52,7 +62,7 @@ export const EntityFormDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto bg-card">
+      <DialogContent className={`max-w-lg max-h-[80vh] overflow-y-auto bg-card ${isPro ? "border-cyan-500/30" : ""}`}>
         <DialogHeader>
           <DialogTitle className="font-montserrat">{titles[entityType]}</DialogTitle>
         </DialogHeader>
@@ -67,6 +77,7 @@ export const EntityFormDialog = ({
               placeholder={`${entityType.charAt(0).toUpperCase() + entityType.slice(1)} name`}
               required
               maxLength={200}
+              className={inputClassName}
             />
           </div>
 
@@ -81,6 +92,7 @@ export const EntityFormDialog = ({
                   onChange={(e) => updateField("description", e.target.value)}
                   placeholder="Describe the venue..."
                   maxLength={1000}
+                  className={inputClassName}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -92,6 +104,7 @@ export const EntityFormDialog = ({
                     value={formData.capacity || ""}
                     onChange={(e) => updateField("capacity", parseInt(e.target.value) || null)}
                     placeholder="e.g. 500"
+                    className={inputClassName}
                   />
                 </div>
                 <div className="space-y-2">
@@ -102,6 +115,7 @@ export const EntityFormDialog = ({
                     onChange={(e) => updateField("atmosphere", e.target.value)}
                     placeholder="e.g. Intimate, Underground"
                     maxLength={100}
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -113,6 +127,7 @@ export const EntityFormDialog = ({
                   onChange={(e) => updateField("address", e.target.value)}
                   placeholder="Street address"
                   maxLength={200}
+                  className={inputClassName}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -124,6 +139,7 @@ export const EntityFormDialog = ({
                     onChange={(e) => updateField("city", e.target.value)}
                     placeholder="City"
                     maxLength={100}
+                    className={inputClassName}
                   />
                 </div>
                 <div className="space-y-2">
@@ -134,6 +150,7 @@ export const EntityFormDialog = ({
                     onChange={(e) => updateField("location", e.target.value)}
                     placeholder="e.g. Downtown, North"
                     maxLength={100}
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -147,6 +164,7 @@ export const EntityFormDialog = ({
                     onChange={(e) => updateField("contact", e.target.value)}
                     placeholder="contact@venue.com"
                     maxLength={100}
+                    className={inputClassName}
                   />
                 </div>
                 <div className="space-y-2">
@@ -157,6 +175,7 @@ export const EntityFormDialog = ({
                     onChange={(e) => updateField("phone", e.target.value)}
                     placeholder="+34 123 456 789"
                     maxLength={30}
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -169,6 +188,7 @@ export const EntityFormDialog = ({
                   onChange={(e) => updateField("link", e.target.value)}
                   placeholder="https://..."
                   maxLength={500}
+                  className={inputClassName}
                 />
               </div>
             </>
@@ -185,6 +205,7 @@ export const EntityFormDialog = ({
                   onChange={(e) => updateField("description", e.target.value)}
                   placeholder="Describe the band..."
                   maxLength={1000}
+                  className={inputClassName}
                 />
               </div>
               <div className="space-y-2">
@@ -195,6 +216,7 @@ export const EntityFormDialog = ({
                   onChange={(e) => updateField("members", e.target.value)}
                   placeholder="List band members..."
                   maxLength={500}
+                  className={inputClassName}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -208,6 +230,7 @@ export const EntityFormDialog = ({
                     placeholder="e.g. 2015"
                     min={1900}
                     max={new Date().getFullYear()}
+                    className={inputClassName}
                   />
                 </div>
                 <div className="space-y-2">
@@ -218,6 +241,7 @@ export const EntityFormDialog = ({
                     onChange={(e) => updateField("genre", e.target.value)}
                     placeholder="e.g. Indie Rock, Jazz"
                     maxLength={100}
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -229,6 +253,7 @@ export const EntityFormDialog = ({
                   onChange={(e) => updateField("influences", e.target.value)}
                   placeholder="Musical influences..."
                   maxLength={500}
+                  className={inputClassName}
                 />
               </div>
             </>
@@ -245,6 +270,7 @@ export const EntityFormDialog = ({
                   onChange={(e) => updateField("description", e.target.value)}
                   placeholder="Describe the festival..."
                   maxLength={1000}
+                  className={inputClassName}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -258,6 +284,7 @@ export const EntityFormDialog = ({
                     placeholder="e.g. 2010"
                     min={1900}
                     max={new Date().getFullYear()}
+                    className={inputClassName}
                   />
                 </div>
                 <div className="space-y-2">
@@ -268,6 +295,7 @@ export const EntityFormDialog = ({
                     onChange={(e) => updateField("genres", e.target.value)}
                     placeholder="e.g. Electronic, House"
                     maxLength={200}
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -279,6 +307,7 @@ export const EntityFormDialog = ({
                   onChange={(e) => updateField("past_artists", e.target.value)}
                   placeholder="Artists who have performed..."
                   maxLength={1000}
+                  className={inputClassName}
                 />
               </div>
               <div className="space-y-2">
@@ -289,6 +318,7 @@ export const EntityFormDialog = ({
                   onChange={(e) => updateField("address", e.target.value)}
                   placeholder="Festival address"
                   maxLength={200}
+                  className={inputClassName}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -300,6 +330,7 @@ export const EntityFormDialog = ({
                     onChange={(e) => updateField("city", e.target.value)}
                     placeholder="City"
                     maxLength={100}
+                    className={inputClassName}
                   />
                 </div>
                 <div className="space-y-2">
@@ -310,6 +341,7 @@ export const EntityFormDialog = ({
                     onChange={(e) => updateField("location", e.target.value)}
                     placeholder="e.g. Outdoor park"
                     maxLength={100}
+                    className={inputClassName}
                   />
                 </div>
               </div>
@@ -321,11 +353,15 @@ export const EntityFormDialog = ({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className={`flex-1 ${isPro ? "border-cyan-500/30 hover:border-cyan-500" : ""}`}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading || !formData.name?.trim()} className="flex-1">
+            <Button 
+              type="submit" 
+              disabled={isLoading || !formData.name?.trim()} 
+              className={`flex-1 ${buttonClassName}`}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
