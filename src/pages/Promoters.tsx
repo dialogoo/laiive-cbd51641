@@ -23,18 +23,20 @@ const Promoters = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#1a1a1a]">
       {/* Header */}
-      <header className="border-b border-border bg-card p-4">
+      <header className="border-b border-cyan-500/20 bg-[#1a1a1a] p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🫦</span>
-            <span className="font-montserrat font-bold text-xl text-primary">laiive</span>
+            <span className="text-xl font-bold text-foreground">laiive</span>
+            <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
+              PRO
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("/")}
-              className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="font-ibm-plex text-sm text-muted-foreground hover:text-cyan-400 transition-colors"
             >
               {t.promoter.backToUser}
             </button>
@@ -45,14 +47,14 @@ const Promoters = () => {
       <div className="max-w-4xl mx-auto px-6 py-12 space-y-12">
         {/* Hero section */}
         <div className="text-center space-y-4">
-          <h1 className="font-montserrat font-bold text-4xl md:text-5xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="font-montserrat font-bold text-4xl md:text-5xl bg-gradient-to-r from-cyan-400 to-cyan-600 bg-clip-text text-transparent">
             {t.promoter.title}
           </h1>
           <p className="font-ibm-plex text-lg text-muted-foreground max-w-2xl mx-auto flex items-center justify-center gap-3 flex-wrap">
             <span>{t.promoter.subtitle}</span>
             <button
               onClick={() => navigate("/promoters/about")}
-              className="font-ibm-plex text-xs text-primary hover:underline"
+              className="font-ibm-plex text-xs text-cyan-400 hover:underline"
             >
               {t.promoter.moreAboutLaiive}
             </button>
@@ -60,11 +62,11 @@ const Promoters = () => {
         </div>
 
         {/* Video section */}
-        <Card className="p-8 bg-card border-border">
-          <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
+        <Card className="p-8 bg-[#222222] border-cyan-500/20">
+          <div className="aspect-video bg-[#1a1a1a] rounded-lg flex items-center justify-center">
             <div className="text-center space-y-4">
-              <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-                <Play className="w-10 h-10 text-primary" />
+              <div className="w-20 h-20 mx-auto rounded-full bg-cyan-500/10 flex items-center justify-center">
+                <Play className="w-10 h-10 text-cyan-400" />
               </div>
               <p className="font-ibm-plex text-muted-foreground">
                 {t.promoter.videoPlaceholder}
@@ -80,19 +82,18 @@ const Promoters = () => {
         <div className="text-center space-y-4">
           <Button
             size="lg"
-            variant="default"
             onClick={handleCTAClick}
             disabled={isLoading}
-            className="text-lg px-8 py-6 h-auto font-montserrat font-bold"
+            className="text-lg px-8 py-6 h-auto font-montserrat font-bold bg-cyan-500 hover:bg-cyan-600 text-white"
           >
             {user && isPromoter ? t.promoter.ctaButton : 'Become a Promoter'}
           </Button>
         </div>
 
         {/* Welcome block */}
-        <Card className="p-6 bg-card border-border">
+        <Card className="p-6 bg-[#222222] border-cyan-500/20">
           <div className="space-y-4">
-            <h3 className="font-montserrat font-bold text-xl text-center">
+            <h3 className="font-montserrat font-bold text-xl text-center text-foreground">
               {t.promoter.welcomeTitle}
             </h3>
             <p className="font-ibm-plex text-muted-foreground text-center">
@@ -100,7 +101,7 @@ const Promoters = () => {
             </p>
             <div className="text-center space-y-3">
               <p className="font-ibm-plex">
-                <a href="mailto:info@laiive.com" className="text-primary hover:underline">
+                <a href="mailto:info@laiive.com" className="text-cyan-400 hover:underline">
                   info@laiive.com
                 </a>
               </p>
