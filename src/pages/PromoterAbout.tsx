@@ -26,7 +26,7 @@ const PromoterAbout = () => {
       <div className="max-w-4xl mx-auto px-6 py-12 space-y-8">
         {/* Hero */}
         <div className="space-y-4">
-          <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-foreground">
+          <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-[#FF2AA0]">
             {t.about.title}
           </h1>
           <p className="font-ibm-plex text-base md:text-lg font-bold text-[#FF2AA0] leading-relaxed">
