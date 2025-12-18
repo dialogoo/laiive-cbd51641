@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Mic, Loader2, Camera, MicOff, Plus, X, Upload, LogOut } from "lucide-react";
+import { Send, Mic, Loader2, Camera, MicOff, Plus, X, Upload } from "lucide-react";
+import { UserAvatar } from "@/components/UserAvatar";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { EventConfirmationForm } from "@/components/EventConfirmationForm";
@@ -506,13 +507,7 @@ const PromoterCreate = () => {
             </button>
           </div>
           
-          <div className="flex items-center gap-3">
-            {promoterName && (
-              <span className="text-sm text-cyan-400 font-medium">
-                {promoterName}
-              </span>
-            )}
-          </div>
+          <UserAvatar variant="pro" />
         </div>
       </header>
 

@@ -12,11 +12,14 @@ import { cn } from "@/lib/utils";
 
 interface UserAvatarProps {
   className?: string;
+  variant?: "default" | "pro";
 }
 
-export const UserAvatar = ({ className }: UserAvatarProps) => {
+export const UserAvatar = ({ className, variant = "default" }: UserAvatarProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const isPro = variant === "pro";
 
   // Get initials from email
   const getInitials = (email: string) => {
@@ -29,9 +32,12 @@ export const UserAvatar = ({ className }: UserAvatarProps) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate(isPro ? '/promoters/auth' : '/auth')}
               className={cn(
-                "w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors",
+                "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+                isPro 
+                  ? "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 border border-cyan-500/30" 
+                  : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80",
                 className
               )}
             >
@@ -51,7 +57,10 @@ export const UserAvatar = ({ className }: UserAvatarProps) => {
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm hover:bg-primary/90 transition-colors",
+            "w-8 h-8 rounded-full flex items-center justify-center font-medium text-sm transition-colors",
+            isPro 
+              ? "bg-cyan-500 text-white hover:bg-cyan-400 border border-cyan-400/50" 
+              : "bg-primary text-primary-foreground hover:bg-primary/90",
             className
           )}
         >
