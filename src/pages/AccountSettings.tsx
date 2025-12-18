@@ -142,7 +142,7 @@ const AccountSettings = () => {
       const tableName = type === "venue" ? "venues" : type === "band" ? "bands" : "festivals";
       const { error } = await supabase
         .from(tableName)
-        .insert({ ...data, promoter_id: promoterProfileId });
+        .insert({ ...data, promoter_id: promoterProfileId, created_by: user?.id });
 
       if (error) throw error;
       toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} added`);
@@ -160,11 +160,11 @@ const AccountSettings = () => {
 
     try {
       const tableName = type === "venue" ? "venues" : type === "band" ? "bands" : "festivals";
-      const { id: _, type: __, promoter_id, created_at, updated_at, ...updateData } = data;
+      const { id: _, type: __, promoter_id, created_at, updated_at, created_by, ...updateData } = data;
       
       const { error } = await supabase
         .from(tableName)
-        .update(updateData)
+        .update({ ...updateData, modified_by: user?.id })
         .eq("id", id);
 
       if (error) throw error;

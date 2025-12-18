@@ -51,7 +51,7 @@ serve(async (req) => {
   }
 
   try {
-    const { event, session_id } = await req.json();
+    const { event, session_id, user_id } = await req.json();
 
     // Basic validation
     if (!event || !session_id) {
@@ -187,7 +187,8 @@ Response:`;
           price: event.price,
           ticket_url: event.ticket_url,
           event_date: event.event_date,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          modified_by: user_id || null,
         })
         .eq("id", existingEvent.id)
         .select();
@@ -195,10 +196,10 @@ Response:`;
       data = updatedData;
       error = updateError;
     } else {
-      // Insert new event
+      // Insert new event with created_by audit field
       const { data: insertedData, error: insertError } = await supabase
         .from("events")
-        .insert([event])
+        .insert([{ ...event, created_by: user_id || null }])
         .select();
       
       data = insertedData;

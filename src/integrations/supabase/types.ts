@@ -17,11 +17,13 @@ export type Database = {
       bands: {
         Row: {
           created_at: string
+          created_by: string | null
           description: string | null
           genre: string | null
           id: string
           influences: string | null
           members: string | null
+          modified_by: string | null
           name: string
           promoter_id: string
           updated_at: string
@@ -29,11 +31,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
           genre?: string | null
           id?: string
           influences?: string | null
           members?: string | null
+          modified_by?: string | null
           name: string
           promoter_id: string
           updated_at?: string
@@ -41,11 +45,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           description?: string | null
           genre?: string | null
           id?: string
           influences?: string | null
           members?: string | null
+          modified_by?: string | null
           name?: string
           promoter_id?: string
           updated_at?: string
@@ -105,11 +111,13 @@ export type Database = {
           artist: string | null
           city: string
           created_at: string
+          created_by: string | null
           description: string | null
           event_date: string
           id: string
           latitude: number | null
           longitude: number | null
+          modified_by: string | null
           name: string
           price: number | null
           tags: string[] | null
@@ -121,11 +129,13 @@ export type Database = {
           artist?: string | null
           city: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           event_date: string
           id?: string
           latitude?: number | null
           longitude?: number | null
+          modified_by?: string | null
           name: string
           price?: number | null
           tags?: string[] | null
@@ -137,11 +147,13 @@ export type Database = {
           artist?: string | null
           city?: string
           created_at?: string
+          created_by?: string | null
           description?: string | null
           event_date?: string
           id?: string
           latitude?: number | null
           longitude?: number | null
+          modified_by?: string | null
           name?: string
           price?: number | null
           tags?: string[] | null
@@ -156,11 +168,13 @@ export type Database = {
           address: string | null
           city: string | null
           created_at: string
+          created_by: string | null
           description: string | null
           first_edition: number | null
           genres: string | null
           id: string
           location: string | null
+          modified_by: string | null
           name: string
           past_artists: string | null
           promoter_id: string
@@ -170,11 +184,13 @@ export type Database = {
           address?: string | null
           city?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           first_edition?: number | null
           genres?: string | null
           id?: string
           location?: string | null
+          modified_by?: string | null
           name: string
           past_artists?: string | null
           promoter_id: string
@@ -184,11 +200,13 @@ export type Database = {
           address?: string | null
           city?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           first_edition?: number | null
           genres?: string | null
           id?: string
           location?: string | null
+          modified_by?: string | null
           name?: string
           past_artists?: string | null
           promoter_id?: string
@@ -323,10 +341,12 @@ export type Database = {
           city: string | null
           contact: string | null
           created_at: string
+          created_by: string | null
           description: string | null
           id: string
           link: string | null
           location: string | null
+          modified_by: string | null
           name: string
           phone: string | null
           promoter_id: string
@@ -339,10 +359,12 @@ export type Database = {
           city?: string | null
           contact?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           link?: string | null
           location?: string | null
+          modified_by?: string | null
           name: string
           phone?: string | null
           promoter_id: string
@@ -355,10 +377,12 @@ export type Database = {
           city?: string | null
           contact?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           id?: string
           link?: string | null
           location?: string | null
+          modified_by?: string | null
           name?: string
           phone?: string | null
           promoter_id?: string
