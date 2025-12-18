@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
     const body = await req.json();
-    const { email, password, firstName, lastName, city, industryRole, upgrade } = body;
+    const { email, password, firstName, lastName, city, industryRole, upgrade, entityType, entityName } = body;
 
     // Validate required fields
     if (!firstName || !lastName || !city || !industryRole) {
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
     }
 
     // Insert promoter profile
-    const { error: profileError } = await supabaseAdmin
+    const { data: profileData, error: profileError } = await supabaseAdmin
       .from('promoter_profiles')
       .insert({
         user_id: userId,
@@ -112,7 +112,9 @@ Deno.serve(async (req) => {
         last_name: lastName,
         city,
         industry_role: industryRole,
-      });
+      })
+      .select('id')
+      .single();
 
     if (profileError) {
       console.error('Profile error:', profileError);
@@ -125,6 +127,8 @@ Deno.serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const promoterProfileId = profileData.id;
 
     // Assign promoter role
     const { error: roleError } = await supabaseAdmin
@@ -145,6 +149,24 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Failed to assign promoter role' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Optional: Create initial entity if provided
+    if (entityType && entityName) {
+      const tableName = entityType === 'venue' ? 'venues' : entityType === 'band' ? 'bands' : 'festivals';
+      const { error: entityError } = await supabaseAdmin
+        .from(tableName)
+        .insert({
+          promoter_id: promoterProfileId,
+          name: entityName,
+        });
+
+      if (entityError) {
+        console.error('Entity creation error (non-fatal):', entityError);
+        // Don't fail the whole signup, just log it
+      } else {
+        console.log(`Created ${entityType} "${entityName}" for promoter ${promoterProfileId}`);
+      }
     }
 
     console.log(`Promoter account ${upgrade ? 'upgraded' : 'created'} for user ${userId}`);

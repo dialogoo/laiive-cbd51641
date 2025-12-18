@@ -39,6 +39,10 @@ export default function PromoterAuth() {
   const [lastName, setLastName] = useState('');
   const [city, setCity] = useState('');
   const [industryRole, setIndustryRole] = useState('');
+  
+  // Optional entity fields
+  const [entityType, setEntityType] = useState<'venue' | 'band' | 'festival' | ''>('');
+  const [entityName, setEntityName] = useState('');
 
   // Determine mode based on auth state
   useEffect(() => {
@@ -89,6 +93,8 @@ export default function PromoterAuth() {
           lastName,
           city,
           industryRole,
+          entityType: entityType || undefined,
+          entityName: entityName || undefined,
         },
       });
       
@@ -122,6 +128,8 @@ export default function PromoterAuth() {
           lastName,
           city,
           industryRole,
+          entityType: entityType || undefined,
+          entityName: entityName || undefined,
         },
       });
       
@@ -192,7 +200,43 @@ export default function PromoterAuth() {
           </SelectContent>
         </Select>
       </div>
-      
+
+      {/* Optional Entity Section */}
+      <div className="border-t border-cyan-500/20 pt-4 mt-4">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-muted-foreground">Add a venue, band, or festival (optional)</p>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          You can always add or edit this later in Account Settings
+        </p>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="entityType">Type</Label>
+            <Select value={entityType} onValueChange={(v) => setEntityType(v as typeof entityType)}>
+              <SelectTrigger className="bg-background/50 border-cyan-500/30 focus:border-cyan-500">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="venue">Venue</SelectItem>
+                <SelectItem value="band">Band</SelectItem>
+                <SelectItem value="festival">Festival</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="entityName">Name</Label>
+            <Input
+              id="entityName"
+              value={entityName}
+              onChange={(e) => setEntityName(e.target.value)}
+              placeholder={entityType ? `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} name` : 'Name'}
+              className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+              disabled={!entityType}
+            />
+          </div>
+        </div>
+      </div>
     </>
   );
 
