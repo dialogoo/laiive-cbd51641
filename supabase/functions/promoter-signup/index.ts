@@ -164,6 +164,7 @@ Deno.serve(async (req) => {
           .insert({
             ...data,
             promoter_id: promoterProfileId,
+            created_by: userId,
           });
 
         if (entityError) {

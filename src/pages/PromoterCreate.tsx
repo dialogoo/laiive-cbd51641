@@ -219,6 +219,7 @@ const PromoterCreate = () => {
           ticket_url: eventDetails.ticket_url,
         },
         session_id: sessionId,
+        user_id: user?.id,
       },
     });
 
