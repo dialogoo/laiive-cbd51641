@@ -55,12 +55,12 @@ export const EventConfirmationForm = ({
   // Success state
   if (isSuccess) {
     return (
-      <Card className="p-8 border-border bg-card text-center">
+      <Card className="p-8 border-cyan-500/30 bg-card text-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
-            <PartyPopper className="w-8 h-8 text-primary" />
+          <div className="w-16 h-16 rounded-full bg-cyan-500/20 flex items-center justify-center">
+            <PartyPopper className="w-8 h-8 text-cyan-400" />
           </div>
-          <h3 className="text-xl font-semibold font-montserrat text-primary">
+          <h3 className="text-xl font-semibold font-montserrat text-cyan-400">
             Event Published!
           </h3>
           <p className="text-muted-foreground font-ibm-plex max-w-sm">
@@ -68,7 +68,7 @@ export const EventConfirmationForm = ({
           </p>
           <Button 
             onClick={onCancel} 
-            className="mt-4"
+            className="mt-4 bg-cyan-500 hover:bg-cyan-600 text-white"
             size="lg"
           >
             Add Another Event
@@ -78,10 +78,12 @@ export const EventConfirmationForm = ({
     );
   }
 
+  const inputClassName = "font-ibm-plex focus-visible:ring-cyan-500 focus-visible:border-cyan-500";
+
   return (
-    <Card className="p-6 border-border bg-card">
+    <Card className="p-6 border-cyan-500/30 bg-card">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold font-montserrat">Confirm Event Details</h3>
+        <h3 className="text-lg font-semibold font-montserrat text-cyan-400">Confirm Event Details</h3>
         <Button variant="ghost" size="icon" onClick={onCancel} disabled={isSubmitting}>
           <X className="w-4 h-4" />
         </Button>
@@ -100,7 +102,7 @@ export const EventConfirmationForm = ({
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
             disabled={isSubmitting}
-            className="font-ibm-plex"
+            className={inputClassName}
           />
         </div>
 
@@ -112,7 +114,7 @@ export const EventConfirmationForm = ({
             onChange={(e) => setFormData({ ...formData, artist: e.target.value })}
             required
             disabled={isSubmitting}
-            className="font-ibm-plex"
+            className={inputClassName}
           />
         </div>
 
@@ -123,7 +125,7 @@ export const EventConfirmationForm = ({
             value={formData.description || ""}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             disabled={isSubmitting}
-            className="font-ibm-plex"
+            className="font-ibm-plex focus-visible:ring-cyan-500 focus-visible:border-cyan-500"
             rows={3}
           />
         </div>
@@ -137,7 +139,7 @@ export const EventConfirmationForm = ({
             onChange={(e) => setFormData({ ...formData, event_date: new Date(e.target.value).toISOString() })}
             required
             disabled={isSubmitting}
-            className="font-ibm-plex"
+            className={inputClassName}
           />
         </div>
 
@@ -149,7 +151,7 @@ export const EventConfirmationForm = ({
             onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
             required
             disabled={isSubmitting}
-            className="font-ibm-plex"
+            className={inputClassName}
           />
         </div>
 
@@ -161,7 +163,7 @@ export const EventConfirmationForm = ({
             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
             required
             disabled={isSubmitting}
-            className="font-ibm-plex"
+            className={inputClassName}
           />
         </div>
 
@@ -182,7 +184,7 @@ export const EventConfirmationForm = ({
               }
             }}
             disabled={isSubmitting}
-            className="font-ibm-plex"
+            className={inputClassName}
           />
         </div>
 
@@ -194,12 +196,12 @@ export const EventConfirmationForm = ({
             value={formData.ticket_url || ""}
             onChange={(e) => setFormData({ ...formData, ticket_url: e.target.value })}
             disabled={isSubmitting}
-            className="font-ibm-plex"
+            className={inputClassName}
           />
         </div>
 
         <div className="flex gap-3 pt-4">
-          <Button type="submit" className="flex-1" size="lg" disabled={isSubmitting}>
+          <Button type="submit" className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white" size="lg" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -212,7 +214,7 @@ export const EventConfirmationForm = ({
               </>
             )}
           </Button>
-          <Button type="button" variant="outline" onClick={onCancel} size="lg" disabled={isSubmitting}>
+          <Button type="button" variant="outline" onClick={onCancel} size="lg" disabled={isSubmitting} className="border-cyan-500/30 hover:bg-cyan-500/10">
             Cancel
           </Button>
         </div>
