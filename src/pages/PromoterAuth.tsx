@@ -259,7 +259,7 @@ export default function PromoterAuth() {
             onChange={(e) => setFirstName(e.target.value)}
             placeholder="John"
             required
-            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30"
           />
         </div>
         <div className="space-y-2">
@@ -270,7 +270,7 @@ export default function PromoterAuth() {
             onChange={(e) => setLastName(e.target.value)}
             placeholder="Doe"
             required
-            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30"
           />
         </div>
       </div>
@@ -284,7 +284,7 @@ export default function PromoterAuth() {
             onChange={(e) => setCity(e.target.value)}
             placeholder="Barcelona"
             required
-            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30"
           />
         </div>
         <div className="space-y-2">
@@ -295,7 +295,7 @@ export default function PromoterAuth() {
             onChange={(e) => setCountry(e.target.value)}
             placeholder="Spain"
             required
-            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30"
           />
         </div>
       </div>
@@ -303,7 +303,7 @@ export default function PromoterAuth() {
       <div className="space-y-2">
         <Label htmlFor="industryRole">Your Role in the Industry</Label>
         <Select value={industryRole} onValueChange={setIndustryRole}>
-          <SelectTrigger className="bg-background/50 border-cyan-500/30 focus:border-cyan-500">
+          <SelectTrigger className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30">
             <SelectValue placeholder="Select your role" />
           </SelectTrigger>
           <SelectContent>
@@ -375,7 +375,7 @@ export default function PromoterAuth() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     required
-                    className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+                    className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30"
                   />
                 </div>
                 <div className="space-y-2">
@@ -387,7 +387,7 @@ export default function PromoterAuth() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+                    className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30"
                   />
                 </div>
                 <Button 
@@ -421,7 +421,7 @@ export default function PromoterAuth() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     required
-                    className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+                    className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30"
                   />
                 </div>
                 <div className="space-y-2">
@@ -434,7 +434,7 @@ export default function PromoterAuth() {
                     placeholder="••••••••"
                     required
                     minLength={6}
-                    className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+                    className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30"
                   />
                 </div>
                 
