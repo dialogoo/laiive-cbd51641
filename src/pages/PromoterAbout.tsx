@@ -1,10 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const PromoterAbout = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
 
   return (
@@ -12,18 +10,17 @@ const PromoterAbout = () => {
       {/* Header */}
       <header className="border-b border-border bg-card p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🫦</span>
-            <span className="font-montserrat font-bold text-xl text-primary">laiive</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate("/promoters")}
-              className="font-ibm-plex text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              {t.about.back}
-            </button>
-          </div>
+          <Link to="/" className="flex items-end gap-1 hover:opacity-80 transition-opacity">
+            <span className="text-xl sm:text-2xl pb-0.5">🫦</span>
+            <span className="font-montserrat font-bold text-xl sm:text-2xl text-primary">laiive</span>
+          </Link>
+          <Link to="/promoters" className="flex items-end gap-1 hover:opacity-80 transition-opacity">
+            <span className="text-xl sm:text-2xl pb-0.5">🫦</span>
+            <span className="font-montserrat font-bold text-xl sm:text-2xl text-accent">laiive</span>
+            <span className="ml-0.5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-accent/20 text-accent rounded mb-1">
+              Pro
+            </span>
+          </Link>
         </div>
       </header>
 
@@ -72,17 +69,6 @@ const PromoterAbout = () => {
               {t.about.joinText}
             </p>
           </Card>
-        </div>
-
-        {/* CTA */}
-        <div className="text-center pt-8">
-          <Button
-            size="lg"
-            onClick={() => navigate("/promoters/create")}
-            className="font-montserrat font-bold"
-          >
-            {t.promoter.ctaButton}
-          </Button>
         </div>
       </div>
     </div>
