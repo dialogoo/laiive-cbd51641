@@ -89,11 +89,239 @@ async function checkAndIncrementUsage(supabaseClient: any, userId: string): Prom
   return { allowed: true, remaining: WEEKLY_QUERY_LIMIT - currentCount - 1 };
 }
 
+// ============= CONVERSATION INTELLIGENCE LAYER =============
+
+interface EventSignature {
+  id: string;
+  artist: string;
+  venue: string;
+  name: string;
+}
+
+interface ConversationContext {
+  shownEvents: EventSignature[];
+  lastQueryParams: {
+    city?: string;
+    startDate?: string;
+    endDate?: string;
+    artist?: string;
+    venue?: string;
+  };
+}
+
+// Classify user intent based on message content
+type UserIntent = "navigate" | "modify_query" | "new_query";
+
+function classifyUserIntent(currentMessage: string, previousMessages: any[]): UserIntent {
+  const msg = currentMessage.toLowerCase().trim();
+  
+  // Navigation patterns - user wants to explore already shown results
+  const navigationPatterns = [
+    /^(tell me more|more about|details|what about the|show me the|describe)/i,
+    /^(first|second|third|fourth|fifth|next|previous|last|other)/i,
+    /^(which one|any of them|that one|this one)/i,
+  ];
+  
+  for (const pattern of navigationPatterns) {
+    if (pattern.test(msg)) {
+      return "navigate";
+    }
+  }
+  
+  // Modify query patterns - user wants same type of search with different parameters
+  const modifyPatterns = [
+    /^(and|what about|how about|or)\s+(tomorrow|today|tonight|this|next|the day after|yesterday)/i,
+    /^(and|what about|how about)\s+(in|at|near)\s+/i,
+    /^(tomorrow|today|tonight|this weekend|next week|the day after)/i,
+    /^(in|at)\s+[A-Z]/i,
+    /^(y\s+|e\s+|i\s+)?(mañana|domani|demà)/i, // Spanish/Italian/Catalan "tomorrow"
+    /^(and|e|y|i)\s*\?$/i, // Just "and?" or similar
+  ];
+  
+  for (const pattern of modifyPatterns) {
+    if (pattern.test(msg)) {
+      // Check if there was a previous search (has assistant messages with events)
+      const hasRecentSearch = previousMessages.some(m => 
+        m.role === 'assistant' && 
+        (m.content?.includes('I found') || m.content?.includes('Ho trovato') || m.content?.includes('Encontré'))
+      );
+      if (hasRecentSearch) {
+        return "modify_query";
+      }
+    }
+  }
+  
+  // Default to new query
+  return "new_query";
+}
+
+// Extract shown events from conversation history
+function extractShownEventsFromHistory(messages: any[]): EventSignature[] {
+  const shownEvents: EventSignature[] = [];
+  
+  for (const msg of messages) {
+    if (msg.role === 'assistant' && msg.content) {
+      // Parse event blocks - look for **Artist Name** pattern
+      const eventMatches = msg.content.matchAll(/\*\*([^*]+)\*\*\n([^\n]+)\n([^|]+)\|/g);
+      for (const match of eventMatches) {
+        const artist = match[1]?.trim() || '';
+        const taglineOrVenue = match[2]?.trim() || '';
+        const venueMatch = match[3]?.trim() || '';
+        
+        if (artist) {
+          shownEvents.push({
+            id: `${artist}-${venueMatch}`.toLowerCase().replace(/\s+/g, '-'),
+            artist,
+            venue: venueMatch,
+            name: artist
+          });
+        }
+      }
+    }
+  }
+  
+  return shownEvents;
+}
+
+// Extract last query parameters from conversation
+function extractLastQueryParams(messages: any[]): ConversationContext['lastQueryParams'] {
+  // Look at the last few assistant messages for date/city context
+  const recentAssistant = messages.filter(m => m.role === 'assistant').slice(-2);
+  
+  for (const msg of recentAssistant) {
+    if (msg.content) {
+      // Extract date from "for [Day], [Month] [Date]" pattern
+      const dateMatch = msg.content.match(/for\s+(\w+),?\s+(\w+\.?\s+\d+)/i);
+      // Extract city from "in [City]" pattern
+      const cityMatch = msg.content.match(/in\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/);
+      
+      if (dateMatch || cityMatch) {
+        return {
+          city: cityMatch?.[1],
+          // We don't extract exact dates here, the AI will handle date progression
+        };
+      }
+    }
+  }
+  
+  return {};
+}
+
+// Detect recurring events between previous and new results
+function detectRecurringEvents(
+  newEvents: any[], 
+  previousEvents: EventSignature[]
+): { recurring: any[]; brandNew: any[] } {
+  const previousSignatures = new Set(
+    previousEvents.map(e => `${e.artist?.toLowerCase()}-${e.venue?.toLowerCase()}`)
+  );
+  
+  const recurring: any[] = [];
+  const brandNew: any[] = [];
+  
+  for (const event of newEvents) {
+    const signature = `${(event.artist || event.name || '')?.toLowerCase()}-${event.venue?.toLowerCase()}`;
+    if (previousSignatures.has(signature)) {
+      recurring.push(event);
+    } else {
+      brandNew.push(event);
+    }
+  }
+  
+  return { recurring, brandNew };
+}
+
+// Generate context-aware intro based on recurring event analysis
+function generateContextAwareIntro(
+  filteredEvents: any[],
+  recurring: any[],
+  brandNew: any[],
+  queryDate: string,
+  queryCity: string,
+  intent: UserIntent,
+  language: string
+): string {
+  const count = filteredEvents.length;
+  const eventWord = count === 1 ? 'event' : 'events';
+  
+  // Language-specific templates
+  const templates: Record<string, Record<string, string>> = {
+    en: {
+      allRecurring: recurring.length === 1 
+        ? `The ${recurring[0].artist || recurring[0].name} event continues`
+        : `The same ${count} events continue`,
+      allNew: `I found ${count} new ${eventWord}`,
+      mixed: `I found ${brandNew.length} new ${eventWord}, plus ${recurring.length} continuing`,
+      standard: `I found ${count} ${eventWord}`,
+    },
+    es: {
+      allRecurring: recurring.length === 1 
+        ? `El evento de ${recurring[0].artist || recurring[0].name} continúa`
+        : `Los mismos ${count} eventos continúan`,
+      allNew: `Encontré ${count} ${count === 1 ? 'evento nuevo' : 'eventos nuevos'}`,
+      mixed: `Encontré ${brandNew.length} ${brandNew.length === 1 ? 'evento nuevo' : 'eventos nuevos'}, más ${recurring.length} que continúan`,
+      standard: `Encontré ${count} ${count === 1 ? 'evento' : 'eventos'}`,
+    },
+    it: {
+      allRecurring: recurring.length === 1 
+        ? `L'evento ${recurring[0].artist || recurring[0].name} continua`
+        : `Gli stessi ${count} eventi continuano`,
+      allNew: `Ho trovato ${count} ${count === 1 ? 'nuovo evento' : 'nuovi eventi'}`,
+      mixed: `Ho trovato ${brandNew.length} ${brandNew.length === 1 ? 'nuovo evento' : 'nuovi eventi'}, più ${recurring.length} che continuano`,
+      standard: `Ho trovato ${count} ${count === 1 ? 'evento' : 'eventi'}`,
+    },
+    ca: {
+      allRecurring: recurring.length === 1 
+        ? `L'esdeveniment de ${recurring[0].artist || recurring[0].name} continua`
+        : `Els mateixos ${count} esdeveniments continuen`,
+      allNew: `He trobat ${count} ${count === 1 ? 'nou esdeveniment' : 'nous esdeveniments'}`,
+      mixed: `He trobat ${brandNew.length} ${brandNew.length === 1 ? 'nou esdeveniment' : 'nous esdeveniments'}, més ${recurring.length} que continuen`,
+      standard: `He trobat ${count} ${count === 1 ? 'esdeveniment' : 'esdeveniments'}`,
+    }
+  };
+  
+  const t = templates[language] || templates.en;
+  
+  let intro: string;
+  
+  // Only use context-aware intros for modify_query intent
+  if (intent === "modify_query" && (recurring.length > 0 || brandNew.length > 0)) {
+    if (recurring.length === count && recurring.length > 0) {
+      // All events are recurring
+      intro = t.allRecurring;
+    } else if (brandNew.length === count) {
+      // All events are new
+      intro = t.allNew;
+    } else if (recurring.length > 0 && brandNew.length > 0) {
+      // Mix of recurring and new
+      intro = t.mixed;
+    } else {
+      intro = t.standard;
+    }
+  } else {
+    intro = t.standard;
+  }
+  
+  // Add date/city context
+  if (queryDate && queryCity) {
+    intro += ` ${language === 'en' ? 'for' : language === 'es' ? 'para' : language === 'it' ? 'per' : 'per'} ${queryDate} ${language === 'en' ? 'in' : language === 'es' ? 'en' : language === 'it' ? 'a' : 'a'} ${queryCity}:`;
+  } else if (queryDate) {
+    intro += ` ${language === 'en' ? 'for' : language === 'es' ? 'para' : language === 'it' ? 'per' : 'per'} ${queryDate}:`;
+  } else if (queryCity) {
+    intro += ` ${language === 'en' ? 'in' : language === 'es' ? 'en' : language === 'it' ? 'a' : 'a'} ${queryCity}:`;
+  } else {
+    intro += ':';
+  }
+  
+  return intro;
+}
+
+// ============= END CONVERSATION INTELLIGENCE =============
+
 // Helper function to parse relative dates with time-of-day awareness
 function parseRelativeDate(expression: string, referenceDate: Date): { start: string; end: string; timeContext?: string } {
   const expr = expression.toLowerCase().trim();
   const ref = new Date(referenceDate);
-  const currentHour = ref.getHours();
   
   // Extract time-of-day context
   let timeContext = "";
@@ -225,9 +453,6 @@ async function searchWebEvents(query: string, filters: any): Promise<any[]> {
       console.log("Web search completed, found content length:", html.length);
       
       // Extract event information using regex patterns
-      // Look for text blocks that mention concerts, venues, dates, and prices
-      
-      // Pattern for extracting artist/venue combinations
       const titlePattern = /<h3[^>]*>(.*?)<\/h3>/gi;
       const titles = [];
       let match;
@@ -244,7 +469,7 @@ async function searchWebEvents(query: string, filters: any): Promise<any[]> {
         }
       }
       
-      // Look for price patterns (€, EUR, $, USD)
+      // Look for price patterns
       const pricePattern = /(?:€|EUR|&#8364;)\s*(\d+(?:[.,]\d{2})?)|(?:\$|USD)\s*(\d+(?:[.,]\d{2})?)/gi;
       const prices = [];
       while ((match = pricePattern.exec(html)) !== null) {
@@ -259,7 +484,7 @@ async function searchWebEvents(query: string, filters: any): Promise<any[]> {
       }
       
       // Create event objects from extracted data
-      const maxEvents = Math.min(titles.length, 5); // Limit to 5 events
+      const maxEvents = Math.min(titles.length, 5);
       for (let i = 0; i < maxEvents; i++) {
         if (titles[i]) {
           results.push({
@@ -325,7 +550,7 @@ serve(async (req) => {
 
     const { messages, location, searchMode, language = 'en' } = await req.json();
     
-    // Input validation - limit conversation history and message sizes
+    // Input validation
     if (messages && messages.length > 50) {
       return new Response(
         JSON.stringify({ error: "Conversation history too long" }),
@@ -333,7 +558,6 @@ serve(async (req) => {
       );
     }
     
-    // Check individual message sizes
     for (const msg of messages || []) {
       if (msg.content && msg.content.length > 10000) {
         return new Response(
@@ -343,7 +567,29 @@ serve(async (req) => {
       }
     }
     
-    console.log("Chat request:", { userId: user.id, searchMode, location, language, messageCount: messages.length });
+    // ============= CONVERSATION CONTEXT ANALYSIS =============
+    const lastUserMessage = messages[messages.length - 1]?.content || "";
+    const previousMessages = messages.slice(0, -1);
+    
+    // Classify user intent
+    const userIntent = classifyUserIntent(lastUserMessage, previousMessages);
+    console.log("User intent classified as:", userIntent);
+    
+    // Extract conversation context
+    const shownEvents = extractShownEventsFromHistory(previousMessages);
+    const lastQueryParams = extractLastQueryParams(previousMessages);
+    
+    console.log("Chat request:", { 
+      userId: user.id, 
+      searchMode, 
+      location, 
+      language, 
+      messageCount: messages.length,
+      userIntent,
+      shownEventsCount: shownEvents.length,
+      lastQueryParams
+    });
+    // ============= END CONTEXT ANALYSIS =============
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -380,7 +626,7 @@ serve(async (req) => {
     const currentDate = now.toISOString().split('T')[0];
     const currentTime = now.toTimeString().split(' ')[0];
 
-    // Define single search tool based on mode
+    // Define search tool based on mode
     const tools: any[] = [];
 
     if (searchMode === "internet") {
@@ -424,14 +670,12 @@ serve(async (req) => {
       });
     }
 
-    // Get the last user message to parse location and date context
-    const lastUserMessage = messages[messages.length - 1]?.content || "";
+    // Parse location and date context
     const locationParse = parseLocationPhrase(lastUserMessage, location);
     const dateParse = parseRelativeDate(lastUserMessage, now);
     
     const locationInfo = location ? `User location: ${location.city || 'Unknown'} (${location.latitude}, ${location.longitude})` : "No location";
     
-    // Build smart defaults based on parsing
     const defaultLocation = locationParse.city || location?.city || "nearby";
     const isUsingUserCoords = locationParse.useUserLocation && !locationParse.city;
 
@@ -443,11 +687,23 @@ serve(async (req) => {
     };
     const userLanguage = languageMap[language] || 'English';
 
+    // Build conversation context for the system prompt
+    const conversationContextBlock = shownEvents.length > 0 ? `
+CONVERSATION CONTEXT:
+- Previously shown events: ${shownEvents.map(e => e.artist || e.name).join(', ')}
+- Last search: ${lastQueryParams.city ? `in ${lastQueryParams.city}` : 'nearby'}
+- User intent: ${userIntent}
+${userIntent === 'modify_query' ? '- The user is asking a follow-up question about a different date/location. Acknowledge if you find the same events continuing.' : ''}
+${userIntent === 'navigate' ? '- The user wants to know more about previously shown events. Reference them by name.' : ''}
+` : '';
+
     const systemPrompt = `You help users find live music events. IMPORTANT: Always respond in ${userLanguage}. Today is ${currentDate} at ${currentTime}. ${locationInfo}.
 
 CRITICAL: Do NOT greet the user or introduce yourself. Do NOT say "Hey!", "Hi!", "Ciao!", "Hello!" or any welcome message. Just wait for the user's query and respond directly to what they ask. Never start with introductions or explanations of what you can do.
 
 ${searchMode === "database" ? "Use query_database_events to search the laiive database." : "Use search_internet_events to search the web."}
+
+${conversationContextBlock}
 
 NATURAL LANGUAGE UNDERSTANDING:
 When users say phrases like:
@@ -459,6 +715,11 @@ When users say phrases like:
 - "when is [artist/group] playing" → artist: [artist name], startDate: today (or omit if asking in general)
 - "concerts at [venue]" → venue: [venue name]
 - "where is [artist] playing" → artist: [artist name]
+
+FOLLOW-UP QUERIES (when user says "and tomorrow?", "what about Saturday?", etc.):
+- Keep the SAME city from the previous query unless user specifies a new one
+- Update only the date parameter
+- If user says "and?" or similar with no specifics, assume they mean the next day
 
 TIME OF DAY CONTEXT:
 - "tonight", "this evening" = today after 18:00
@@ -663,16 +924,31 @@ Default location when not specified: ${isUsingUserCoords ? `coordinates (${locat
                         });
 
                         if (filteredEvents.length > 0) {
-                          // Build intro with date/city context
-                          const queryDate = args.startDate ? new Date(args.startDate).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) : '';
+                          // ============= CONTEXT-AWARE RESPONSE GENERATION =============
+                          const { recurring, brandNew } = detectRecurringEvents(filteredEvents, shownEvents);
+                          
+                          // Build date string for display
+                          const queryDate = args.startDate 
+                            ? new Date(args.startDate).toLocaleDateString(
+                                language === 'es' ? 'es-ES' : language === 'it' ? 'it-IT' : language === 'ca' ? 'ca-ES' : 'en-US', 
+                                { weekday: 'long', month: 'short', day: 'numeric' }
+                              ) 
+                            : '';
                           const queryCity = args.city || '';
-                          const intro = queryDate && queryCity 
-                            ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} for ${queryDate} in ${queryCity}:`
-                            : queryDate 
-                            ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} for ${queryDate}:`
-                            : queryCity
-                            ? `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''} in ${queryCity}:`
-                            : `I found ${filteredEvents.length} event${filteredEvents.length > 1 ? 's' : ''}:`;
+                          
+                          // Generate context-aware intro
+                          const intro = generateContextAwareIntro(
+                            filteredEvents,
+                            recurring,
+                            brandNew,
+                            queryDate,
+                            queryCity,
+                            userIntent,
+                            language
+                          );
+                          
+                          console.log(`Response context: ${recurring.length} recurring, ${brandNew.length} new, intent: ${userIntent}`);
+                          // ============= END CONTEXT-AWARE GENERATION =============
                           
                           const formattedEvents = filteredEvents
                             .map((e) => {
@@ -730,7 +1006,7 @@ Default location when not specified: ${isUsingUserCoords ? `coordinates (${locat
                         console.error("Web search error:", searchError);
                         controller.enqueue(
                           encoder.encode(
-                            `data: ${JSON.stringify({ choices: [{ delta: { content: `⚠️ I encountered an issue searching the web. Please try the laiive database search instead.` } }] })}\n\n`
+                            `data: ${JSON.stringify({ choices: [{ delta: { content: `I encountered an issue searching the web. Please try the laiive database search instead.` } }] })}\n\n`
                           )
                         );
                       }
