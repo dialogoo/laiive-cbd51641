@@ -39,7 +39,6 @@ export default function PromoterAuth() {
   const [lastName, setLastName] = useState('');
   const [city, setCity] = useState('');
   const [industryRole, setIndustryRole] = useState('');
-  const [managedEntity, setManagedEntity] = useState('');
 
   // Determine mode based on auth state
   useEffect(() => {
@@ -74,7 +73,7 @@ export default function PromoterAuth() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!firstName || !lastName || !city || !industryRole || !managedEntity) {
+    if (!firstName || !lastName || !city || !industryRole) {
       toast.error('Please fill in all professional information');
       return;
     }
@@ -90,7 +89,6 @@ export default function PromoterAuth() {
           lastName,
           city,
           industryRole,
-          managedEntity,
         },
       });
       
@@ -109,7 +107,7 @@ export default function PromoterAuth() {
   const handleUpgrade = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!firstName || !lastName || !city || !industryRole || !managedEntity) {
+    if (!firstName || !lastName || !city || !industryRole) {
       toast.error('Please fill in all professional information');
       return;
     }
@@ -124,7 +122,6 @@ export default function PromoterAuth() {
           lastName,
           city,
           industryRole,
-          managedEntity,
         },
       });
       
@@ -196,17 +193,6 @@ export default function PromoterAuth() {
         </Select>
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="managedEntity">What do you manage?</Label>
-        <Input
-          id="managedEntity"
-          value={managedEntity}
-          onChange={(e) => setManagedEntity(e.target.value)}
-          placeholder="Venue name, band name, event series..."
-          required
-          className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
-        />
-      </div>
     </>
   );
 
