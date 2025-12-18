@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       bands: {
         Row: {
+          country: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -30,6 +31,7 @@ export type Database = {
           year_of_formation: number | null
         }
         Insert: {
+          country?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -44,6 +46,7 @@ export type Database = {
           year_of_formation?: number | null
         }
         Update: {
+          country?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -167,6 +170,7 @@ export type Database = {
         Row: {
           address: string | null
           city: string | null
+          country: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -183,6 +187,7 @@ export type Database = {
         Insert: {
           address?: string | null
           city?: string | null
+          country?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -199,6 +204,7 @@ export type Database = {
         Update: {
           address?: string | null
           city?: string | null
+          country?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -340,6 +346,7 @@ export type Database = {
           capacity: number | null
           city: string | null
           contact: string | null
+          country: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -358,6 +365,7 @@ export type Database = {
           capacity?: number | null
           city?: string | null
           contact?: string | null
+          country?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -376,6 +384,7 @@ export type Database = {
           capacity?: number | null
           city?: string | null
           contact?: string | null
+          country?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null

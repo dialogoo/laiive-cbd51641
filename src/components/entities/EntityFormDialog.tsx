@@ -143,12 +143,12 @@ export const EntityFormDialog = ({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location/Area</Label>
+                  <Label htmlFor="country">Country</Label>
                   <Input
-                    id="location"
-                    value={formData.location || ""}
-                    onChange={(e) => updateField("location", e.target.value)}
-                    placeholder="e.g. Downtown, North"
+                    id="country"
+                    value={formData.country || ""}
+                    onChange={(e) => updateField("country", e.target.value)}
+                    placeholder="e.g. Spain, Italy"
                     maxLength={100}
                     className={inputClassName}
                   />
@@ -334,12 +334,12 @@ export const EntityFormDialog = ({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location/Area</Label>
+                  <Label htmlFor="country">Country</Label>
                   <Input
-                    id="location"
-                    value={formData.location || ""}
-                    onChange={(e) => updateField("location", e.target.value)}
-                    placeholder="e.g. Outdoor park"
+                    id="country"
+                    value={formData.country || ""}
+                    onChange={(e) => updateField("country", e.target.value)}
+                    placeholder="e.g. Spain, Italy"
                     maxLength={100}
                     className={inputClassName}
                   />
