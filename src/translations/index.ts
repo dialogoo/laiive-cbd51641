@@ -65,8 +65,8 @@ export const translations: Record<Language, Translations> = {
       backToUser: "← public app",
     },
     about: {
-      title: "Laiive is not a social network.",
-      subtitle: "It is an enabler of decentralized community networks built around live music and cultural events.",
+      title: "Laiive is not a social network!!!",
+      subtitle: "Quite the opposite, laiive is an enabler of decentralized community networks built around live music and cultural events.",
       philosophyTitle: "Our Philosophy",
       philosophyText: "Laiive is not a social network. It enables social networks around live cultural events. We believe live music is the heartbeat of local communities. Small venues, emerging artists, and independent promoters deserve the same visibility as major events. Our platform connects passionate music lovers with authentic live experiences, making it easier to discover what's happening in your neighborhood.",
       aiEthicsTitle: "AI Ethics Layer",
@@ -104,8 +104,8 @@ export const translations: Record<Language, Translations> = {
       backToUser: "← app pública",
     },
     about: {
-      title: "Laiive no es una red social.",
-      subtitle: "Es un habilitador de redes comunitarias descentralizadas construidas alrededor de la música en vivo y eventos culturales.",
+      title: "Laiive no es una red social!!!",
+      subtitle: "Todo lo contrario, laiive es un habilitador de redes comunitarias descentralizadas construidas alrededor de la música en vivo y eventos culturales.",
       philosophyTitle: "Nuestra Filosofía",
       philosophyText: "Laiive no es una red social. Permite crear redes sociales alrededor de eventos culturales en vivo. Creemos que la música en vivo es el corazón de las comunidades locales. Los lugares pequeños, artistas emergentes y promotores independientes merecen la misma visibilidad que los grandes eventos. Nuestra plataforma conecta amantes apasionados de la música con experiencias auténticas en vivo.",
       aiEthicsTitle: "Capa de Ética de IA",
@@ -143,8 +143,8 @@ export const translations: Record<Language, Translations> = {
       backToUser: "← app pubblica",
     },
     about: {
-      title: "Laiive non è un social network.",
-      subtitle: "È un abilitatore di reti comunitarie decentralizzate costruite attorno alla musica dal vivo e agli eventi culturali.",
+      title: "Laiive non è un social network!!!",
+      subtitle: "Anzi, al contrario, laiive è un abilitatore di reti comunitarie decentralizzate costruite attorno alla musica dal vivo e agli eventi culturali.",
       philosophyTitle: "La Nostra Filosofia",
       philosophyText: "Laiive non è un social network. Abilita reti sociali attorno a eventi culturali dal vivo. Crediamo che la musica dal vivo sia il battito del cuore delle comunità locali. I piccoli locali, gli artisti emergenti e i promoter indipendenti meritano la stessa visibilità dei grandi eventi. La nostra piattaforma connette gli amanti appassionati della musica con esperienze autentiche dal vivo.",
       aiEthicsTitle: "Livello di Etica dell'IA",
@@ -182,8 +182,8 @@ export const translations: Record<Language, Translations> = {
       backToUser: "← app pública",
     },
     about: {
-      title: "Laiive no és una xarxa social.",
-      subtitle: "És un habilitador de xarxes comunitàries descentralitzades construïdes al voltant de la música en directe i esdeveniments culturals.",
+      title: "Laiive no és una xarxa social!!!",
+      subtitle: "Ben al contrari, laiive és un habilitador de xarxes comunitàries descentralitzades construïdes al voltant de la música en directe i esdeveniments culturals.",
       philosophyTitle: "La Nostra Filosofia",
       philosophyText: "Laiive no és una xarxa social. Permet crear xarxes socials al voltant d'esdeveniments culturals en directe. Creiem que la música en directe és el cor de les comunitats locals. Els llocs petits, artistes emergents i promotors independents mereixen la mateixa visibilitat que els grans esdeveniments. La nostra plataforma connecta amants apassionats de la música amb experiències autèntiques en directe.",
       aiEthicsTitle: "Capa d'Ètica d'IA",
