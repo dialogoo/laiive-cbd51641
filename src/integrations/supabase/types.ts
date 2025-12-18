@@ -239,7 +239,6 @@ export type Database = {
           id: string
           industry_role: string
           last_name: string
-          managed_entity: string
           updated_at: string
           user_id: string
         }
@@ -250,7 +249,6 @@ export type Database = {
           id?: string
           industry_role: string
           last_name: string
-          managed_entity: string
           updated_at?: string
           user_id: string
         }
@@ -261,7 +259,6 @@ export type Database = {
           id?: string
           industry_role?: string
           last_name?: string
-          managed_entity?: string
           updated_at?: string
           user_id?: string
         }

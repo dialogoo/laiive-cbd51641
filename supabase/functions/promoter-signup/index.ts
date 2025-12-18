@@ -17,10 +17,10 @@ Deno.serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
     const body = await req.json();
-    const { email, password, firstName, lastName, city, industryRole, managedEntity, upgrade } = body;
+    const { email, password, firstName, lastName, city, industryRole, upgrade } = body;
 
     // Validate required fields
-    if (!firstName || !lastName || !city || !industryRole || !managedEntity) {
+    if (!firstName || !lastName || !city || !industryRole) {
       return new Response(
         JSON.stringify({ error: 'All professional information fields are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -112,7 +112,6 @@ Deno.serve(async (req) => {
         last_name: lastName,
         city,
         industry_role: industryRole,
-        managed_entity: managedEntity,
       });
 
     if (profileError) {
