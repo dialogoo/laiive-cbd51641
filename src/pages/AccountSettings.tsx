@@ -33,6 +33,7 @@ const AccountSettings = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
   const [industryRole, setIndustryRole] = useState("");
   const [promoterProfileId, setPromoterProfileId] = useState<string | null>(null);
   
@@ -92,7 +93,7 @@ const AccountSettings = () => {
     try {
       const { data, error } = await supabase
         .from("promoter_profiles")
-        .select("id, first_name, last_name, city, industry_role")
+        .select("id, first_name, last_name, city, country, industry_role")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -102,6 +103,7 @@ const AccountSettings = () => {
         setFirstName(data.first_name || "");
         setLastName(data.last_name || "");
         setCity(data.city || "");
+        setCountry(data.country || "");
         setIndustryRole(data.industry_role || "");
       }
     } catch (error) {
@@ -209,7 +211,7 @@ const AccountSettings = () => {
 
       // Update promoter profile if applicable
       if (isPromoter) {
-        if (!firstName || !lastName || !city || !industryRole) {
+        if (!firstName || !lastName || !city || !country || !industryRole) {
           toast.error("Please fill in all professional information");
           setIsSaving(false);
           return;
@@ -221,6 +223,7 @@ const AccountSettings = () => {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
             city: city.trim(),
+            country: country.trim(),
             industry_role: industryRole,
           })
           .eq("user_id", user.id);
@@ -330,16 +333,30 @@ const AccountSettings = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Your city"
-                  maxLength={100}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Your city"
+                    maxLength={100}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Input
+                    id="country"
+                    type="text"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    placeholder="Your country"
+                    maxLength={100}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
