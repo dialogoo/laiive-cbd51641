@@ -507,14 +507,10 @@ const Chat = () => {
                 Pro
               </span>
             )}
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {/* Mode Link */}
             <button
               onClick={() => navigate("/promoters")}
               className={cn(
-                "font-ibm-plex text-xs transition-colors",
+                "font-ibm-plex text-xs transition-colors ml-2",
                 mode === "promoter" 
                   ? "text-muted-foreground hover:text-accent" 
                   : "text-muted-foreground hover:text-primary"
@@ -522,10 +518,9 @@ const Chat = () => {
             >
               go to laiive.pro →
             </button>
-            
-            {/* User avatar / Sign in */}
-            <UserAvatar />
           </div>
+          
+          <UserAvatar />
         </div>
       </header>
 

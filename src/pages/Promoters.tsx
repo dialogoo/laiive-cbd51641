@@ -40,7 +40,7 @@ const Promoters = () => {
               go to laiive →
             </button>
           </div>
-          <UserAvatar />
+          <UserAvatar variant="pro" />
         </div>
       </header>
 
