@@ -29,7 +29,7 @@ const PromoterAbout = () => {
           <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-foreground">
             {t.about.title}
           </h1>
-          <p className="font-ibm-plex text-base md:text-lg font-bold text-foreground leading-relaxed">
+          <p className="font-ibm-plex text-base md:text-lg font-bold text-[#FF2AA0] leading-relaxed">
             {t.about.subtitle}
           </p>
         </div>
