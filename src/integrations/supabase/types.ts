@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      bands: {
+        Row: {
+          created_at: string
+          description: string | null
+          genre: string | null
+          id: string
+          influences: string | null
+          members: string | null
+          name: string
+          promoter_id: string
+          updated_at: string
+          year_of_formation: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          genre?: string | null
+          id?: string
+          influences?: string | null
+          members?: string | null
+          name: string
+          promoter_id: string
+          updated_at?: string
+          year_of_formation?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          genre?: string | null
+          id?: string
+          influences?: string | null
+          members?: string | null
+          name?: string
+          promoter_id?: string
+          updated_at?: string
+          year_of_formation?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bands_promoter_id_fkey"
+            columns: ["promoter_id"]
+            isOneToOne: false
+            referencedRelation: "promoter_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           conversation_type: string
@@ -103,6 +150,59 @@ export type Database = {
           venue?: string
         }
         Relationships: []
+      }
+      festivals: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          description: string | null
+          first_edition: number | null
+          genres: string | null
+          id: string
+          location: string | null
+          name: string
+          past_artists: string | null
+          promoter_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          first_edition?: number | null
+          genres?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          past_artists?: string | null
+          promoter_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          first_edition?: number | null
+          genres?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          past_artists?: string | null
+          promoter_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festivals_promoter_id_fkey"
+            columns: ["promoter_id"]
+            isOneToOne: false
+            referencedRelation: "promoter_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -214,6 +314,65 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      venues: {
+        Row: {
+          address: string | null
+          atmosphere: string | null
+          capacity: number | null
+          city: string | null
+          contact: string | null
+          created_at: string
+          description: string | null
+          id: string
+          link: string | null
+          location: string | null
+          name: string
+          phone: string | null
+          promoter_id: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          atmosphere?: string | null
+          capacity?: number | null
+          city?: string | null
+          contact?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          link?: string | null
+          location?: string | null
+          name: string
+          phone?: string | null
+          promoter_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          atmosphere?: string | null
+          capacity?: number | null
+          city?: string | null
+          contact?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          link?: string | null
+          location?: string | null
+          name?: string
+          phone?: string | null
+          promoter_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venues_promoter_id_fkey"
+            columns: ["promoter_id"]
+            isOneToOne: false
+            referencedRelation: "promoter_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { EntityList } from "@/components/entities/EntityList";
+import { EntityType } from "@/components/entities/EntityFormDialog";
 
 const industryRoles = [
   { value: 'promoter', label: 'Event Promoter' },
@@ -32,10 +34,16 @@ const AccountSettings = () => {
   const [lastName, setLastName] = useState("");
   const [city, setCity] = useState("");
   const [industryRole, setIndustryRole] = useState("");
-  const [managedEntity, setManagedEntity] = useState("");
+  const [promoterProfileId, setPromoterProfileId] = useState<string | null>(null);
+  
+  // Entities
+  const [venues, setVenues] = useState<any[]>([]);
+  const [bands, setBands] = useState<any[]>([]);
+  const [festivals, setFestivals] = useState<any[]>([]);
   
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isEntityLoading, setIsEntityLoading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -51,6 +59,12 @@ const AccountSettings = () => {
       }
     }
   }, [user, authLoading, isPromoter, navigate]);
+
+  useEffect(() => {
+    if (promoterProfileId) {
+      fetchEntities();
+    }
+  }, [promoterProfileId]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -78,20 +92,105 @@ const AccountSettings = () => {
     try {
       const { data, error } = await supabase
         .from("promoter_profiles")
-        .select("first_name, last_name, city, industry_role, managed_entity")
+        .select("id, first_name, last_name, city, industry_role")
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (error) throw error;
       if (data) {
+        setPromoterProfileId(data.id);
         setFirstName(data.first_name || "");
         setLastName(data.last_name || "");
         setCity(data.city || "");
         setIndustryRole(data.industry_role || "");
-        setManagedEntity(data.managed_entity || "");
       }
     } catch (error) {
       console.error("Error fetching promoter profile:", error);
+    }
+  };
+
+  const fetchEntities = async () => {
+    if (!promoterProfileId) return;
+
+    try {
+      const [venuesRes, bandsRes, festivalsRes] = await Promise.all([
+        supabase.from("venues").select("*").eq("promoter_id", promoterProfileId),
+        supabase.from("bands").select("*").eq("promoter_id", promoterProfileId),
+        supabase.from("festivals").select("*").eq("promoter_id", promoterProfileId),
+      ]);
+
+      if (venuesRes.error) throw venuesRes.error;
+      if (bandsRes.error) throw bandsRes.error;
+      if (festivalsRes.error) throw festivalsRes.error;
+
+      setVenues(venuesRes.data || []);
+      setBands(bandsRes.data || []);
+      setFestivals(festivalsRes.data || []);
+    } catch (error) {
+      console.error("Error fetching entities:", error);
+      toast.error("Failed to load entities");
+    }
+  };
+
+  const handleAddEntity = async (type: EntityType, data: any) => {
+    if (!promoterProfileId) return;
+    setIsEntityLoading(true);
+
+    try {
+      const tableName = type === "venue" ? "venues" : type === "band" ? "bands" : "festivals";
+      const { error } = await supabase
+        .from(tableName)
+        .insert({ ...data, promoter_id: promoterProfileId });
+
+      if (error) throw error;
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} added`);
+      await fetchEntities();
+    } catch (error) {
+      console.error(`Error adding ${type}:`, error);
+      toast.error(`Failed to add ${type}`);
+    } finally {
+      setIsEntityLoading(false);
+    }
+  };
+
+  const handleUpdateEntity = async (type: EntityType, id: string, data: any) => {
+    setIsEntityLoading(true);
+
+    try {
+      const tableName = type === "venue" ? "venues" : type === "band" ? "bands" : "festivals";
+      const { id: _, type: __, promoter_id, created_at, updated_at, ...updateData } = data;
+      
+      const { error } = await supabase
+        .from(tableName)
+        .update(updateData)
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} updated`);
+      await fetchEntities();
+    } catch (error) {
+      console.error(`Error updating ${type}:`, error);
+      toast.error(`Failed to update ${type}`);
+    } finally {
+      setIsEntityLoading(false);
+    }
+  };
+
+  const handleDeleteEntity = async (type: EntityType, id: string) => {
+    setIsEntityLoading(true);
+
+    try {
+      const tableName = type === "venue" ? "venues" : type === "band" ? "bands" : "festivals";
+      const { error } = await supabase.from(tableName).delete().eq("id", id);
+
+      if (error) throw error;
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted`);
+      await fetchEntities();
+    } catch (error) {
+      console.error(`Error deleting ${type}:`, error);
+      toast.error(`Failed to delete ${type}`);
+    } finally {
+      setIsEntityLoading(false);
     }
   };
 
@@ -110,7 +209,7 @@ const AccountSettings = () => {
 
       // Update promoter profile if applicable
       if (isPromoter) {
-        if (!firstName || !lastName || !city || !industryRole || !managedEntity) {
+        if (!firstName || !lastName || !city || !industryRole) {
           toast.error("Please fill in all professional information");
           setIsSaving(false);
           return;
@@ -123,7 +222,6 @@ const AccountSettings = () => {
             last_name: lastName.trim(),
             city: city.trim(),
             industry_role: industryRole,
-            managed_entity: managedEntity.trim(),
           })
           .eq("user_id", user.id);
 
@@ -197,80 +295,81 @@ const AccountSettings = () => {
 
         {/* Promoter Info Card - Only shown for promoters */}
         {isPromoter && (
-          <Card className="p-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <h2 className="font-montserrat font-bold text-lg">Professional Information</h2>
-              <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
-                PRO
-              </span>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <>
+            <Card className="p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <h2 className="font-montserrat font-bold text-lg">Professional Information</h2>
+                <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
+                  PRO
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="First name"
+                    maxLength={50}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Last name"
+                    maxLength={50}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="city">City</Label>
                 <Input
-                  id="firstName"
+                  id="city"
                   type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="First name"
-                  maxLength={50}
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Your city"
+                  maxLength={100}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Last name"
-                  maxLength={50}
-                />
+                <Label htmlFor="industryRole">Industry Role</Label>
+                <Select value={industryRole} onValueChange={setIndustryRole}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {industryRoles.map((role) => (
+                      <SelectItem key={role.value} value={role.value}>
+                        {role.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
+            </Card>
 
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="Your city"
-                maxLength={100}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="industryRole">Industry Role</Label>
-              <Select value={industryRole} onValueChange={setIndustryRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {industryRoles.map((role) => (
-                    <SelectItem key={role.value} value={role.value}>
-                      {role.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="managedEntity">Venue / Band / Event Name</Label>
-              <Input
-                id="managedEntity"
-                type="text"
-                value={managedEntity}
-                onChange={(e) => setManagedEntity(e.target.value)}
-                placeholder="Name of venue, band, or event you manage"
-                maxLength={200}
-              />
-            </div>
-          </Card>
+            {/* Entity Management */}
+            <EntityList
+              venues={venues}
+              bands={bands}
+              festivals={festivals}
+              onAddEntity={handleAddEntity}
+              onUpdateEntity={handleUpdateEntity}
+              onDeleteEntity={handleDeleteEntity}
+              isLoading={isEntityLoading}
+            />
+          </>
         )}
 
         <Button
