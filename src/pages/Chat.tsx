@@ -514,13 +514,13 @@ const Chat = () => {
             <button
               onClick={() => navigate("/promoters")}
               className={cn(
-                "font-ibm-plex text-sm sm:text-sm transition-colors",
+                "font-ibm-plex text-xs transition-colors",
                 mode === "promoter" 
                   ? "text-muted-foreground hover:text-accent" 
                   : "text-muted-foreground hover:text-primary"
               )}
             >
-              {t.chat.promoterLink}
+              go to laiive.pro →
             </button>
             
             {/* User avatar / Sign in */}
