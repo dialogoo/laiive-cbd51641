@@ -29,7 +29,7 @@ const PromoterAbout = () => {
           <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-foreground">
             {t.about.title}
           </h1>
-          <p className="font-ibm-plex text-muted-foreground leading-relaxed">
+          <p className="font-ibm-plex text-lg md:text-xl text-muted-foreground leading-relaxed">
             {t.about.subtitle}
           </p>
         </div>
@@ -64,7 +64,7 @@ const PromoterAbout = () => {
           </Card>
 
           <Card className="p-6 bg-card border-border">
-            <h2 className="font-montserrat font-bold text-2xl mb-4 text-[#FF8C00]">
+            <h2 className="font-montserrat font-bold text-2xl mb-4 text-[#E72828]">
               {t.about.joinTitle}
             </h2>
             <p className="font-ibm-plex text-muted-foreground leading-relaxed">
