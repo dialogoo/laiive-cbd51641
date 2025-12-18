@@ -12,6 +12,7 @@ import Promoters from "./pages/Promoters";
 import PromoterCreate from "./pages/PromoterCreate";
 import PromoterAbout from "./pages/PromoterAbout";
 import PromoterAuth from "./pages/PromoterAuth";
+import PrintableFlyer from "./pages/PrintableFlyer";
 import AccountSettings from "./pages/AccountSettings";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/promoters/auth" element={<PromoterAuth />} />
               <Route path="/promoters/create" element={<PromoterCreate />} />
               <Route path="/promoters/about" element={<PromoterAbout />} />
+              <Route path="/printable-flyer" element={<PrintableFlyer />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

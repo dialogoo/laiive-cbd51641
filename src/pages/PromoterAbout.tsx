@@ -80,7 +80,7 @@ const PromoterAbout = () => {
               <li>
                 {t.about.joinStep3}{" "}
                 <a 
-                  href="/flyer.pdf" 
+                  href="/printable-flyer" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-[#00CFEA] underline hover:text-[#00CFEA]/80 transition-colors"
