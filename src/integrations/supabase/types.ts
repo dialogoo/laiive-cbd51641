@@ -234,6 +234,7 @@ export type Database = {
       promoter_profiles: {
         Row: {
           city: string
+          country: string | null
           created_at: string
           first_name: string
           id: string
@@ -244,6 +245,7 @@ export type Database = {
         }
         Insert: {
           city: string
+          country?: string | null
           created_at?: string
           first_name: string
           id?: string
@@ -254,6 +256,7 @@ export type Database = {
         }
         Update: {
           city?: string
+          country?: string | null
           created_at?: string
           first_name?: string
           id?: string

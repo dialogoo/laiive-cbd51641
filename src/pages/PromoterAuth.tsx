@@ -56,6 +56,7 @@ export default function PromoterAuth() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [city, setCity] = useState('');
+  const [country, setCountry] = useState('');
   const [industryRole, setIndustryRole] = useState('');
   
   // Entity management
@@ -112,7 +113,7 @@ export default function PromoterAuth() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!firstName || !lastName || !city || !industryRole) {
+    if (!firstName || !lastName || !city || !country || !industryRole) {
       toast.error('Please fill in all professional information');
       return;
     }
@@ -127,6 +128,7 @@ export default function PromoterAuth() {
           firstName,
           lastName,
           city,
+          country,
           industryRole,
           entities: pendingEntities.length > 0 ? pendingEntities : undefined,
         },
@@ -147,7 +149,7 @@ export default function PromoterAuth() {
   const handleUpgrade = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!firstName || !lastName || !city || !industryRole) {
+    if (!firstName || !lastName || !city || !country || !industryRole) {
       toast.error('Please fill in all professional information');
       return;
     }
@@ -161,6 +163,7 @@ export default function PromoterAuth() {
           firstName,
           lastName,
           city,
+          country,
           industryRole,
           entities: pendingEntities.length > 0 ? pendingEntities : undefined,
         },
@@ -180,9 +183,13 @@ export default function PromoterAuth() {
   };
 
   const entitySection = (
-    <div className="border-t border-cyan-500/20 pt-4 mt-4">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-sm text-muted-foreground">Managed Entities (optional)</p>
+    <div className="space-y-2">
+      <Label>Managed Entities (optional)</Label>
+      <p className="text-xs text-muted-foreground mb-3">
+        You can always add or edit this later in Account Settings
+      </p>
+      
+      <div className="flex justify-end mb-2">
         <DropdownMenu open={addMenuOpen} onOpenChange={setAddMenuOpen}>
           <DropdownMenuTrigger asChild>
             <Button size="sm" variant="outline" className="gap-1 border-cyan-500/30 hover:border-cyan-500">
@@ -206,9 +213,6 @@ export default function PromoterAuth() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <p className="text-xs text-muted-foreground mb-3">
-        You can always add or edit this later in Account Settings
-      </p>
 
       {pendingEntities.length > 0 && (
         <div className="space-y-2">
@@ -271,16 +275,29 @@ export default function PromoterAuth() {
         </div>
       </div>
       
-      <div className="space-y-2">
-        <Label htmlFor="city">City</Label>
-        <Input
-          id="city"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="Barcelona"
-          required
-          className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="city">City</Label>
+          <Input
+            id="city"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="Barcelona"
+            required
+            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="country">Country</Label>
+          <Input
+            id="country"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            placeholder="Spain"
+            required
+            className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
+          />
+        </div>
       </div>
       
       <div className="space-y-2">
