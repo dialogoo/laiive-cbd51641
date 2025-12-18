@@ -25,10 +25,13 @@ const PromoterAbout = () => {
 
       <div className="max-w-4xl mx-auto px-6 py-12 space-y-8">
         {/* Hero */}
-        <div className="text-center space-y-4">
-          <h1 className="font-montserrat font-bold text-4xl md:text-5xl bg-gradient-to-r from-[#FF2AA0] via-[#FF8C00] to-[#FFD500] bg-clip-text text-transparent">
+        <div className="space-y-4">
+          <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-foreground">
             {t.about.title}
           </h1>
+          <p className="font-ibm-plex text-muted-foreground leading-relaxed">
+            {t.about.subtitle}
+          </p>
         </div>
 
         {/* Content Cards */}
