@@ -64,12 +64,32 @@ const PromoterAbout = () => {
           </Card>
 
           <Card className="p-6 bg-card border-border">
-            <h2 className="font-montserrat font-bold text-2xl mb-4 text-[#FF2AA0]">
+            <h2 className="font-montserrat font-bold text-2xl mb-4 text-[#00CFEA]">
               {t.about.joinTitle}
             </h2>
-            <p className="font-ibm-plex text-muted-foreground leading-relaxed">
+            <p className="font-ibm-plex text-muted-foreground leading-relaxed mb-6">
               {t.about.joinText}
             </p>
+            
+            <h3 className="font-montserrat font-bold text-lg mb-4 text-foreground">
+              {t.about.joinInstructionsTitle}
+            </h3>
+            <ol className="font-ibm-plex text-muted-foreground leading-relaxed space-y-3 list-decimal list-inside">
+              <li>{t.about.joinStep1}</li>
+              <li>{t.about.joinStep2}</li>
+              <li>
+                {t.about.joinStep3}{" "}
+                <a 
+                  href="/flyer.pdf" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[#00CFEA] underline hover:text-[#00CFEA]/80 transition-colors"
+                >
+                  {t.about.joinStep3Link}
+                </a>{" "}
+                {t.about.joinStep4}
+              </li>
+            </ol>
           </Card>
         </div>
 
