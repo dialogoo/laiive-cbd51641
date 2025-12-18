@@ -30,7 +30,7 @@ export const EntityFormDialog = ({
 }: EntityFormDialogProps) => {
   const isPro = variant === "pro";
   const inputClassName = isPro 
-    ? "bg-background/50 border-cyan-500/30 focus:border-cyan-500" 
+    ? "bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30" 
     : "";
   const buttonClassName = isPro 
     ? "bg-cyan-500 hover:bg-cyan-600 text-black font-semibold" 
