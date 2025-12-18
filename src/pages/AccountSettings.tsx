@@ -131,6 +131,7 @@ const AccountSettings = () => {
       }
 
       toast.success("Profile updated successfully");
+      navigate("/");
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
@@ -153,7 +154,7 @@ const AccountSettings = () => {
       <header className="border-b border-border bg-card p-4">
         <div className="max-w-2xl mx-auto flex items-center gap-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/")}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
