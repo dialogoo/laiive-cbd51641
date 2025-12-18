@@ -64,7 +64,7 @@ export const translations: Record<Language, Translations> = {
       backToUser: "← public app",
     },
     about: {
-      title: "About the Project",
+      title: "About laiive",
       philosophyTitle: "Our Philosophy",
       philosophyText: "We believe live music is the heartbeat of local communities. Small venues, emerging artists, and independent promoters deserve the same visibility as major events. Our platform connects passionate music lovers with authentic live experiences, making it easier to discover what's happening in your neighborhood.",
       aiEthicsTitle: "AI Ethics Layer",
@@ -102,7 +102,7 @@ export const translations: Record<Language, Translations> = {
       backToUser: "← app pública",
     },
     about: {
-      title: "Sobre el Proyecto",
+      title: "Sobre laiive",
       philosophyTitle: "Nuestra Filosofía",
       philosophyText: "Creemos que la música en vivo es el corazón de las comunidades locales. Los lugares pequeños, artistas emergentes y promotores independientes merecen la misma visibilidad que los grandes eventos. Nuestra plataforma conecta amantes apasionados de la música con experiencias auténticas en vivo, facilitando descubrir qué está pasando en tu barrio.",
       aiEthicsTitle: "Capa de Ética de IA",
@@ -140,7 +140,7 @@ export const translations: Record<Language, Translations> = {
       backToUser: "← app pubblica",
     },
     about: {
-      title: "Sul Progetto",
+      title: "Su laiive",
       philosophyTitle: "La Nostra Filosofia",
       philosophyText: "Crediamo che la musica dal vivo sia il battito del cuore delle comunità locali. I piccoli locali, gli artisti emergenti e i promoter indipendenti meritano la stessa visibilità dei grandi eventi. La nostra piattaforma connette gli amanti appassionati della musica con esperienze autentiche dal vivo, rendendo più facile scoprire cosa succede nel tuo quartiere.",
       aiEthicsTitle: "Livello di Etica dell'IA",
@@ -178,7 +178,7 @@ export const translations: Record<Language, Translations> = {
       backToUser: "← app pública",
     },
     about: {
-      title: "Sobre el Projecte",
+      title: "Sobre laiive",
       philosophyTitle: "La Nostra Filosofia",
       philosophyText: "Creiem que la música en directe és el cor de les comunitats locals. Els llocs petits, artistes emergents i promotors independents mereixen la mateixa visibilitat que els grans esdeveniments. La nostra plataforma connecta amants apassionats de la música amb experiències autèntiques en directe, facilitant descobrir què passa al teu barri.",
       aiEthicsTitle: "Capa d'Ètica d'IA",
