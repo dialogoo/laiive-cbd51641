@@ -12,6 +12,7 @@ import Promoters from "./pages/Promoters";
 import PromoterCreate from "./pages/PromoterCreate";
 import PromoterAbout from "./pages/PromoterAbout";
 import PromoterAuth from "./pages/PromoterAuth";
+import AccountSettings from "./pages/AccountSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Chat />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/account/settings" element={<AccountSettings />} />
               <Route path="/promoters" element={<Promoters />} />
               <Route path="/promoters/auth" element={<PromoterAuth />} />
               <Route path="/promoters/create" element={<PromoterCreate />} />
