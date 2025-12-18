@@ -35,14 +35,14 @@ export const UserAvatar = ({ className, variant = "default" }: UserAvatarProps) 
             <button
               onClick={() => navigate(isPro ? '/promoters/auth' : '/auth')}
               className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+                "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
                 isPro 
                   ? "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 border border-cyan-500/30" 
                   : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80",
                 className
               )}
             >
-              <User className="w-4 h-4" />
+              <User className="w-5 h-5" />
             </button>
           </TooltipTrigger>
           <TooltipContent>
@@ -58,7 +58,7 @@ export const UserAvatar = ({ className, variant = "default" }: UserAvatarProps) 
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "w-8 h-8 rounded-full flex items-center justify-center font-medium text-sm transition-colors",
+            "w-10 h-10 rounded-lg flex items-center justify-center font-medium text-sm transition-colors",
             isPro 
               ? "bg-cyan-500 text-white hover:bg-cyan-400 border border-cyan-400/50" 
               : "bg-primary text-primary-foreground hover:bg-primary/90",
