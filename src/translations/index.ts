@@ -32,6 +32,12 @@ export interface Translations {
     smallVenuesText: string;
     joinTitle: string;
     joinText: string;
+    joinInstructionsTitle: string;
+    joinStep1: string;
+    joinStep2: string;
+    joinStep3: string;
+    joinStep3Link: string;
+    joinStep4: string;
     back: string;
   };
   // Language selector
@@ -75,6 +81,12 @@ export const translations: Record<Language, Translations> = {
       smallVenuesText: "Small venues are where legends are born. They're where communities gather, where new sounds emerge, and where music stays real. But they often struggle with visibility and marketing. We're building tools to amplify their voice without changing their soul. By making event discovery smarter and more accessible, we help keep local music scenes alive and thriving.",
       joinTitle: "Join the Movement",
       joinText: "As an early partner, you're helping us shape the future of live music discovery. Your feedback, your events, and your community make this platform what it is. Together, we're creating something that puts people and music first—not algorithms and advertising.",
+      joinInstructionsTitle: "Instructions to change the world:",
+      joinStep1: "If you are a musician, a promoter, a venue owner or an event organizer... do your pro account (it's free forever).",
+      joinStep2: "Upload your events",
+      joinStep3: "Spread the word, tell your friends, colleagues, print",
+      joinStep3Link: "this",
+      joinStep4: "and paste it to your local door, your car, your guitar, your battery. Enjoy!!! Use it, and go to a good concert!!",
       back: "← back",
     },
     language: {
@@ -114,6 +126,12 @@ export const translations: Record<Language, Translations> = {
       smallVenuesText: "Los lugares pequeños son donde nacen las leyendas. Son donde las comunidades se reúnen, donde emergen nuevos sonidos y donde la música se mantiene real. Pero a menudo luchan con visibilidad y marketing. Estamos construyendo herramientas para amplificar su voz sin cambiar su alma. Al hacer el descubrimiento de eventos más inteligente y accesible, ayudamos a mantener vivas las escenas musicales locales.",
       joinTitle: "Únete al Movimiento",
       joinText: "Como socio fundador, estás ayudándonos a dar forma al futuro del descubrimiento de música en vivo. Tu feedback, tus eventos y tu comunidad hacen que esta plataforma sea lo que es. Juntos, estamos creando algo que pone a las personas y la música primero, no algoritmos y publicidad.",
+      joinInstructionsTitle: "Instrucciones para cambiar el mundo:",
+      joinStep1: "Si eres músico, promotor, dueño de un local o organizador de eventos... crea tu cuenta pro (es gratis para siempre).",
+      joinStep2: "Sube tus eventos",
+      joinStep3: "Corre la voz, cuéntaselo a tus amigos, colegas, imprime",
+      joinStep3Link: "esto",
+      joinStep4: "y pégalo en tu puerta local, tu coche, tu guitarra, tu batería. ¡¡¡Disfruta!!! Úsalo, ¡y ve a un buen concierto!!",
       back: "← atrás",
     },
     language: {
@@ -153,6 +171,12 @@ export const translations: Record<Language, Translations> = {
       smallVenuesText: "I piccoli locali sono dove nascono le leggende. Sono dove le comunità si riuniscono, dove emergono nuovi suoni e dove la musica rimane vera. Ma spesso lottano con visibilità e marketing. Stiamo costruendo strumenti per amplificare la loro voce senza cambiare la loro anima. Rendendo la scoperta di eventi più intelligente e accessibile, aiutiamo a mantenere vive le scene musicali locali.",
       joinTitle: "Unisciti al Movimento",
       joinText: "Come partner iniziale, stai aiutandoci a plasmare il futuro della scoperta di musica dal vivo. Il tuo feedback, i tuoi eventi e la tua comunità rendono questa piattaforma ciò che è. Insieme, stiamo creando qualcosa che mette le persone e la musica al primo posto, non algoritmi e pubblicità.",
+      joinInstructionsTitle: "Istruzioni per cambiare il mondo:",
+      joinStep1: "Se sei un musicista, un promoter, un proprietario di locale o un organizzatore di eventi... fai il tuo account pro (è gratis per sempre).",
+      joinStep2: "Carica i tuoi eventi",
+      joinStep3: "Spargi la voce, dillo ai tuoi amici, colleghi, stampa",
+      joinStep3Link: "questo",
+      joinStep4: "e attaccalo alla tua porta locale, alla tua macchina, alla tua chitarra, alla tua batteria. Divertiti!!! Usalo, e vai a un bel concerto!!",
       back: "← indietro",
     },
     language: {
@@ -192,6 +216,12 @@ export const translations: Record<Language, Translations> = {
       smallVenuesText: "Els llocs petits són on neixen les llegendes. Són on les comunitats es reuneixen, on emergeixen nous sons i on la música es manté real. Però sovint lluiten amb visibilitat i màrqueting. Estem construint eines per amplificar la seva veu sense canviar la seva ànima. Fent el descobriment d'esdeveniments més intel·ligent i accessible, ajudem a mantenir vives les escenes musicals locals.",
       joinTitle: "Uneix-te al Moviment",
       joinText: "Com a soci fundador, estàs ajudant-nos a donar forma al futur del descobriment de música en directe. El teu feedback, els teus esdeveniments i la teva comunitat fan que aquesta plataforma sigui el que és. Junts, estem creant alguna cosa que posa les persones i la música primer, no algorismes i publicitat.",
+      joinInstructionsTitle: "Instruccions per canviar el món:",
+      joinStep1: "Si ets músic, promotor, propietari d'un local o organitzador d'esdeveniments... fes el teu compte pro (és gratis per sempre).",
+      joinStep2: "Puja els teus esdeveniments",
+      joinStep3: "Escampa la veu, explica-ho als teus amics, col·legues, imprimeix",
+      joinStep3Link: "això",
+      joinStep4: "i enganxa-ho a la teva porta local, el teu cotxe, la teva guitarra, la teva bateria. Gaudeix!!! Utilitza-ho, i vés a un bon concert!!",
       back: "← enrere",
     },
     language: {
