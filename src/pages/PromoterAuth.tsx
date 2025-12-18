@@ -7,11 +7,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ArrowLeft, Loader2, Plus, Building2, Music, Tent, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { EntityFormDialog, EntityType } from '@/components/entities/EntityFormDialog';
 
 type AuthMode = 'login' | 'signup' | 'upgrade';
+
+interface PendingEntity {
+  type: EntityType;
+  data: any;
+}
 
 const industryRoles = [
   { value: 'promoter', label: 'Event Promoter' },
@@ -21,6 +33,12 @@ const industryRoles = [
   { value: 'musician', label: 'Musician / Band Member' },
   { value: 'other', label: 'Other' },
 ];
+
+const typeConfig = {
+  venue: { icon: Building2, label: "Venue", color: "text-cyan-400 bg-cyan-500/20 border-cyan-500/30" },
+  band: { icon: Music, label: "Band", color: "text-fuchsia-400 bg-fuchsia-500/20 border-fuchsia-500/30" },
+  festival: { icon: Tent, label: "Festival", color: "text-yellow-400 bg-yellow-500/20 border-yellow-500/30" },
+};
 
 export default function PromoterAuth() {
   const navigate = useNavigate();
@@ -40,9 +58,11 @@ export default function PromoterAuth() {
   const [city, setCity] = useState('');
   const [industryRole, setIndustryRole] = useState('');
   
-  // Optional entity fields
-  const [entityType, setEntityType] = useState<'venue' | 'band' | 'festival' | ''>('');
-  const [entityName, setEntityName] = useState('');
+  // Entity management
+  const [pendingEntities, setPendingEntities] = useState<PendingEntity[]>([]);
+  const [entityDialogOpen, setEntityDialogOpen] = useState(false);
+  const [entityDialogType, setEntityDialogType] = useState<EntityType>('venue');
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
 
   // Determine mode based on auth state
   useEffect(() => {
@@ -56,6 +76,21 @@ export default function PromoterAuth() {
       }
     }
   }, [user, isPromoter, authLoading, navigate]);
+
+  const handleAddEntity = (type: EntityType) => {
+    setEntityDialogType(type);
+    setEntityDialogOpen(true);
+    setAddMenuOpen(false);
+  };
+
+  const handleSaveEntity = async (data: any) => {
+    setPendingEntities(prev => [...prev, { type: entityDialogType, data }]);
+    setEntityDialogOpen(false);
+  };
+
+  const handleRemoveEntity = (index: number) => {
+    setPendingEntities(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,8 +128,7 @@ export default function PromoterAuth() {
           lastName,
           city,
           industryRole,
-          entityType: entityType || undefined,
-          entityName: entityName || undefined,
+          entities: pendingEntities.length > 0 ? pendingEntities : undefined,
         },
       });
       
@@ -128,8 +162,7 @@ export default function PromoterAuth() {
           lastName,
           city,
           industryRole,
-          entityType: entityType || undefined,
-          entityName: entityName || undefined,
+          entities: pendingEntities.length > 0 ? pendingEntities : undefined,
         },
       });
       
@@ -145,6 +178,71 @@ export default function PromoterAuth() {
       setIsLoading(false);
     }
   };
+
+  const entitySection = (
+    <div className="border-t border-cyan-500/20 pt-4 mt-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm text-muted-foreground">Managed Entities (optional)</p>
+        <DropdownMenu open={addMenuOpen} onOpenChange={setAddMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline" className="gap-1 border-cyan-500/30 hover:border-cyan-500">
+              <Plus className="w-4 h-4" />
+              Add
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-card border-border">
+            <DropdownMenuItem onClick={() => handleAddEntity("venue")} className="gap-2">
+              <Building2 className="w-4 h-4 text-cyan-400" />
+              Venue
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleAddEntity("band")} className="gap-2">
+              <Music className="w-4 h-4 text-fuchsia-400" />
+              Band
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleAddEntity("festival")} className="gap-2">
+              <Tent className="w-4 h-4 text-yellow-400" />
+              Festival
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <p className="text-xs text-muted-foreground mb-3">
+        You can always add or edit this later in Account Settings
+      </p>
+
+      {pendingEntities.length > 0 && (
+        <div className="space-y-2">
+          {pendingEntities.map((entity, index) => {
+            const config = typeConfig[entity.type];
+            const Icon = config.icon;
+            return (
+              <div
+                key={index}
+                className="flex items-center justify-between p-2 rounded-lg bg-muted/50 border border-border/50"
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${config.color} flex items-center gap-1`}>
+                    <Icon className="w-3 h-3" />
+                    {config.label}
+                  </span>
+                  <span className="text-sm font-medium">{entity.data.name}</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => handleRemoveEntity(index)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 
   const professionalInfoFields = (
     <>
@@ -201,42 +299,7 @@ export default function PromoterAuth() {
         </Select>
       </div>
 
-      {/* Optional Entity Section */}
-      <div className="border-t border-cyan-500/20 pt-4 mt-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm text-muted-foreground">Add a venue, band, or festival (optional)</p>
-        </div>
-        <p className="text-xs text-muted-foreground mb-4">
-          You can always add or edit this later in Account Settings
-        </p>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="entityType">Type</Label>
-            <Select value={entityType} onValueChange={(v) => setEntityType(v as typeof entityType)}>
-              <SelectTrigger className="bg-background/50 border-cyan-500/30 focus:border-cyan-500">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="venue">Venue</SelectItem>
-                <SelectItem value="band">Band</SelectItem>
-                <SelectItem value="festival">Festival</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="entityName">Name</Label>
-            <Input
-              id="entityName"
-              value={entityName}
-              onChange={(e) => setEntityName(e.target.value)}
-              placeholder={entityType ? `${entityType.charAt(0).toUpperCase() + entityType.slice(1)} name` : 'Name'}
-              className="bg-background/50 border-cyan-500/30 focus:border-cyan-500"
-              disabled={!entityType}
-            />
-          </div>
-        </div>
-      </div>
+      {entitySection}
     </>
   );
 
@@ -407,6 +470,14 @@ export default function PromoterAuth() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Entity Form Dialog */}
+      <EntityFormDialog
+        open={entityDialogOpen}
+        onOpenChange={setEntityDialogOpen}
+        entityType={entityDialogType}
+        onSave={handleSaveEntity}
+      />
     </div>
   );
 }
