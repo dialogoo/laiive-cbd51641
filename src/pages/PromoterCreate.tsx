@@ -668,7 +668,7 @@ const PromoterCreate = () => {
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder={t.promoterCreate.placeholder}
-              className="flex-1 bg-background border-border font-ibm-plex"
+              className="flex-1 bg-background border-border font-ibm-plex focus-visible:ring-cyan-500 focus-visible:border-cyan-500"
               disabled={extractedEvent !== null}
             />
             
