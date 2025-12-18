@@ -82,7 +82,7 @@ const Promoters = () => {
             disabled={isLoading}
             className="text-lg px-8 py-6 h-auto font-montserrat font-bold bg-cyan-500 hover:bg-cyan-600 text-white"
           >
-            {user && isPromoter ? t.promoter.ctaButton : 'Become a Promoter'}
+            {t.promoter.ctaButton}
           </Button>
         </div>
 
