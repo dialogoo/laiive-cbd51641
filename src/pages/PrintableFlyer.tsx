@@ -16,18 +16,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-type ColorTheme = 'dark' | 'navy' | 'purple' | 'light';
+type ColorTheme = 'fuchsia' | 'cyan' | 'yellow' | 'orange';
 
-const colorThemes: Record<ColorTheme, { bg: string; primary: string; accent: string; text: string; hex: string }> = {
-  dark: { bg: '#0a0a0a', primary: '#FF2AA0', accent: '#00CFEA', text: '#ffffff', hex: '#FF2AA0' },
-  navy: { bg: '#0a1628', primary: '#00CFEA', accent: '#FFD500', text: '#ffffff', hex: '#00CFEA' },
-  purple: { bg: '#1a0a28', primary: '#FF8C00', accent: '#FF2AA0', text: '#ffffff', hex: '#FF8C00' },
-  light: { bg: '#ffffff', primary: '#FF2AA0', accent: '#0a0a0a', text: '#0a0a0a', hex: '#FFD500' },
+const colorThemes: Record<ColorTheme, { bg: string; primary: string; accent: string; text: string; selectorBg: string }> = {
+  fuchsia: { bg: '#0a0a0a', primary: '#FF2AA0', accent: '#00CFEA', text: '#ffffff', selectorBg: '#FF2AA0' },
+  cyan: { bg: '#0a0a0a', primary: '#00CFEA', accent: '#FF2AA0', text: '#ffffff', selectorBg: '#00CFEA' },
+  yellow: { bg: '#0a0a0a', primary: '#FFD500', accent: '#FF8C00', text: '#ffffff', selectorBg: '#FFD500' },
+  orange: { bg: '#0a0a0a', primary: '#FF8C00', accent: '#FFD500', text: '#ffffff', selectorBg: '#FF8C00' },
 };
 
 const PrintableFlyer = () => {
   const flyerRef = useRef<HTMLDivElement>(null);
-  const [colorTheme, setColorTheme] = useState<ColorTheme>('dark');
+  const [colorTheme, setColorTheme] = useState<ColorTheme>('fuchsia');
 
   const theme = colorThemes[colorTheme];
 
@@ -125,11 +125,11 @@ const PrintableFlyer = () => {
   <text x="200" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="${theme.text}" font-weight="bold">Discover live music</text>
   <text x="200" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="${theme.accent}" font-weight="bold">in your neighborhood</text>
   <rect x="100" y="360" width="200" height="200" fill="white" rx="12"/>
-  <image x="115" y="375" width="170" height="170" href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https://laiive.com&amp;color=${theme.primary.replace('#', '')}"/>
+  <image x="115" y="375" width="170" height="170" href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https://laiive.com&amp;color=000000"/>
   <text x="200" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="${theme.primary}" font-weight="bold">laiive.com</text>
 </svg>`;
 
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://laiive.com&color=${theme.primary.replace('#', '')}`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://laiive.com&color=000000`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -230,7 +230,7 @@ const PrintableFlyer = () => {
               className={`w-6 h-6 rounded-full transition-all duration-200 hover:scale-110 border border-white/20 ${
                 colorTheme === key ? 'ring-2 ring-white ring-offset-2 scale-110' : ''
               }`}
-              style={{ backgroundColor: colorThemes[key].bg }}
+              style={{ backgroundColor: colorThemes[key].selectorBg }}
               aria-label={`${key} theme`}
             />
           ))}
