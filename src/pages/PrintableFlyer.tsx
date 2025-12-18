@@ -9,8 +9,8 @@ const PrintableFlyer = () => {
     window.print();
   };
 
-  // QR code pointing to the promoters page
-  const qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://laiive.com/promoters";
+  // QR code pointing to laiive.com
+  const qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://laiive.com";
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,15 +35,12 @@ const PrintableFlyer = () => {
         className="max-w-md mx-auto bg-[#0a0a0a] p-8 print:p-0 print:max-w-full print:mx-0"
       >
         <div className="bg-[#0a0a0a] text-white aspect-[3/4] flex flex-col items-center justify-between p-8 print:p-12 border border-border print:border-none">
-          {/* Top Section - Logo & Tagline */}
-          <div className="text-center space-y-4">
+          {/* Top Section - Logo */}
+          <div className="text-center">
             <div className="flex items-end justify-center gap-1">
               <span className="text-4xl pb-0.5">🫦</span>
               <span className="font-montserrat font-bold text-4xl text-[#FF2AA0]">laiive</span>
             </div>
-            <p className="font-ibm-plex text-lg text-gray-300">
-              Small stages. Big connections.
-            </p>
           </div>
 
           {/* Middle Section - Main Message */}
@@ -53,10 +50,6 @@ const PrintableFlyer = () => {
               <br />
               <span className="text-[#00CFEA]">in your neighborhood</span>
             </h1>
-            
-            <p className="font-ibm-plex text-gray-400 text-sm max-w-[280px]">
-              Connecting music lovers with local concerts, small venues, and emerging artists.
-            </p>
           </div>
 
           {/* QR Code Section */}
@@ -68,9 +61,6 @@ const PrintableFlyer = () => {
                 className="w-32 h-32 md:w-40 md:h-40"
               />
             </div>
-            <p className="font-ibm-plex text-sm text-gray-400">
-              Scan to join the movement
-            </p>
             <p className="font-montserrat font-bold text-[#FF2AA0] text-lg">
               laiive.com
             </p>
