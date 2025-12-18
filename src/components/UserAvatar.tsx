@@ -1,10 +1,11 @@
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -67,9 +68,14 @@ export const UserAvatar = ({ className, variant = "default" }: UserAvatarProps) 
           {getInitials(user.email || 'U')}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-48 bg-card border-border">
         <DropdownMenuItem className="text-xs text-muted-foreground cursor-default">
           {user.email}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => navigate('/account/settings')}>
+          <Settings className="w-4 h-4 mr-2" />
+          Account settings
         </DropdownMenuItem>
         <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
           <LogOut className="w-4 h-4 mr-2" />
