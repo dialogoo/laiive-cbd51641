@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Play } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuth } from "@/hooks/useAuth";
+import { UserAvatar } from "@/components/UserAvatar";
 
 const Promoters = () => {
   const navigate = useNavigate();
@@ -27,20 +28,19 @@ const Promoters = () => {
       {/* Header */}
       <header className="border-b border-cyan-500/20 bg-[#1a1a1a] p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span className="text-xl font-bold text-foreground">laiive</span>
             <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
               PRO
             </span>
-          </div>
-          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate("/")}
-              className="font-ibm-plex text-sm text-muted-foreground hover:text-cyan-400 transition-colors"
+              className="font-ibm-plex text-xs text-muted-foreground hover:text-cyan-400 transition-colors"
             >
-              {t.promoter.backToUser}
+              go to laiive →
             </button>
           </div>
+          <UserAvatar />
         </div>
       </header>
 
@@ -50,14 +50,8 @@ const Promoters = () => {
           <h1 className="font-montserrat font-bold text-4xl md:text-5xl bg-gradient-to-r from-cyan-400 to-cyan-600 bg-clip-text text-transparent">
             {t.promoter.title}
           </h1>
-          <p className="font-ibm-plex text-lg text-muted-foreground max-w-2xl mx-auto flex items-center justify-center gap-3 flex-wrap">
-            <span>{t.promoter.subtitle}</span>
-            <button
-              onClick={() => navigate("/promoters/about")}
-              className="font-ibm-plex text-xs text-cyan-400 hover:underline"
-            >
-              {t.promoter.moreAboutLaiive}
-            </button>
+          <p className="font-ibm-plex text-lg text-muted-foreground max-w-2xl mx-auto">
+            {t.promoter.subtitle}
           </p>
         </div>
 
@@ -90,24 +84,19 @@ const Promoters = () => {
           </Button>
         </div>
 
-        {/* Welcome block */}
-        <Card className="p-6 bg-[#222222] border-cyan-500/20">
-          <div className="space-y-4">
-            <h3 className="font-montserrat font-bold text-xl text-center text-foreground">
-              {t.promoter.welcomeTitle}
-            </h3>
-            <p className="font-ibm-plex text-muted-foreground text-center">
-              {t.promoter.welcomeText}
-            </p>
-            <div className="text-center space-y-3">
-              <p className="font-ibm-plex">
-                <a href="mailto:info@laiive.com" className="text-cyan-400 hover:underline">
-                  info@laiive.com
-                </a>
-              </p>
-            </div>
-          </div>
-        </Card>
+        {/* Contact */}
+        <div className="text-center space-y-2">
+          <a href="mailto:info@laiive.com" className="font-ibm-plex text-sm text-cyan-400 hover:underline">
+            info@laiive.com
+          </a>
+          <span className="text-muted-foreground mx-2">·</span>
+          <button
+            onClick={() => navigate("/promoters/about")}
+            className="font-ibm-plex text-sm text-muted-foreground hover:text-cyan-400 transition-colors"
+          >
+            more about laiive →
+          </button>
+        </div>
       </div>
     </div>
   );
