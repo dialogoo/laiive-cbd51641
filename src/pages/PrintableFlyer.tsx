@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, ChevronDown } from "lucide-react";
+import { Printer, Download, Share2, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,47 +9,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+type ColorTheme = 'fuchsia' | 'cyan' | 'yellow' | 'orange';
+
+const colorThemes: Record<ColorTheme, { primary: string; accent: string; hex: string }> = {
+  fuchsia: { primary: '#FF2AA0', accent: '#00CFEA', hex: '#FF2AA0' },
+  cyan: { primary: '#00CFEA', accent: '#FF2AA0', hex: '#00CFEA' },
+  yellow: { primary: '#FFD500', accent: '#FF2AA0', hex: '#FFD500' },
+  orange: { primary: '#FF8C00', accent: '#00CFEA', hex: '#FF8C00' },
+};
 
 const PrintableFlyer = () => {
   const flyerRef = useRef<HTMLDivElement>(null);
-  const [pageSize, setPageSize] = useState<'A4' | 'A5' | 'Letter'>('A5');
+  const [colorTheme, setColorTheme] = useState<ColorTheme>('fuchsia');
 
-  const handlePrint = (size: 'A4' | 'A5' | 'Letter') => {
-    setPageSize(size);
-    setTimeout(() => window.print(), 100);
+  const theme = colorThemes[colorTheme];
+
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleDownload = async (format: 'png' | 'jpg' | 'svg') => {
-    if (!flyerRef.current) return;
-
-    const flyer = flyerRef.current.querySelector('.flyer-content') as HTMLElement;
-    if (!flyer) return;
-
-    // Create canvas from the flyer
-    const canvas = document.createElement('canvas');
-    const scale = 2; // Higher resolution
-    canvas.width = flyer.offsetWidth * scale;
-    canvas.height = flyer.offsetHeight * scale;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Draw background
-    ctx.fillStyle = '#0a0a0a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // For simple download, we'll use a different approach - create an SVG or use the print CSS
+    const svgContent = generateSvg(format === 'svg' ? 400 : 800, format === 'svg' ? 600 : 1200);
+    
     if (format === 'svg') {
-      // Create SVG version
-      const svgContent = `
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="533" viewBox="0 0 400 533">
-  <rect width="400" height="533" fill="#0a0a0a"/>
-  <text x="200" y="60" text-anchor="middle" font-family="sans-serif" font-size="32" fill="#FF2AA0" font-weight="bold">🫦 laiive</text>
-  <text x="200" y="240" text-anchor="middle" font-family="sans-serif" font-size="24" fill="white" font-weight="bold">Discover live music</text>
-  <text x="200" y="280" text-anchor="middle" font-family="sans-serif" font-size="24" fill="#00CFEA" font-weight="bold">in your neighborhood</text>
-  <rect x="130" y="340" width="140" height="140" fill="white" rx="8"/>
-  <image x="140" y="350" width="120" height="120" href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https://laiive.com"/>
-  <text x="200" y="510" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#FF2AA0" font-weight="bold">laiive.com</text>
-</svg>`;
       const blob = new Blob([svgContent], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -60,22 +49,13 @@ const PrintableFlyer = () => {
       return;
     }
 
-    // For PNG/JPG, use html2canvas approach with a simple workaround
-    // Since we can't use html2canvas, we'll create a data URL from the SVG
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 1200;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    
-    const svgContent = `
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1066" viewBox="0 0 400 533">
-  <rect width="400" height="533" fill="#0a0a0a"/>
-  <text x="200" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="#FF2AA0" font-weight="bold">🫦 laiive</text>
-  <text x="200" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="white" font-weight="bold">Discover live music</text>
-  <text x="200" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#00CFEA" font-weight="bold">in your neighborhood</text>
-  <rect x="130" y="340" width="140" height="140" fill="white" rx="8"/>
-  <text x="200" y="510" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#FF2AA0" font-weight="bold">laiive.com</text>
-  <text x="200" y="530" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#666">Free for musicians • Free for venues • Free for music lovers</text>
-</svg>`;
-    
     const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
     const svgUrl = URL.createObjectURL(svgBlob);
     
@@ -102,57 +82,95 @@ const PrintableFlyer = () => {
     img.src = svgUrl;
   };
 
-  // QR code pointing to laiive.com
-  const qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://laiive.com";
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'laiive - Discover live music in your neighborhood',
+          text: 'Discover live music in your neighborhood with laiive',
+          url: 'https://laiive.com',
+        });
+      } catch (err) {
+        // User cancelled or error
+      }
+    } else {
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText('https://laiive.com');
+      alert('Link copied to clipboard!');
+    }
+  };
+
+  const generateSvg = (width: number, height: number) => `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 400 600">
+  <rect width="400" height="600" fill="#0a0a0a"/>
+  <text x="200" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" fill="${theme.primary}" font-weight="bold">🫦 laiive</text>
+  <text x="200" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="white" font-weight="bold">Discover live music</text>
+  <text x="200" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="${theme.accent}" font-weight="bold">in your neighborhood</text>
+  <rect x="100" y="360" width="200" height="200" fill="white" rx="12"/>
+  <image x="115" y="375" width="170" height="170" href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https://laiive.com&amp;color=${theme.primary.replace('#', '')}"/>
+  <text x="200" y="595" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="${theme.primary}" font-weight="bold">laiive.com</text>
+</svg>`;
+
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://laiive.com&color=${theme.primary.replace('#', '')}`;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Print Controls - Hidden when printing */}
       <div className="print:hidden fixed top-4 right-4 flex gap-2 z-50">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Printer className="w-4 h-4 mr-2" />
-              Print
-              <ChevronDown className="w-4 h-4 ml-1" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-card border-border">
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Paper Size</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => handlePrint('A4')}>
-              A4 (210 × 297 mm)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handlePrint('A5')}>
-              A5 (148 × 210 mm)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handlePrint('Letter')}>
-              Letter (8.5 × 11 in)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                size="icon" 
+                className="bg-primary hover:bg-primary/90"
+                onClick={handlePrint}
+              >
+                <Printer className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Print</TooltipContent>
+          </Tooltip>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="border-border">
-              <Download className="w-4 h-4 mr-2" />
-              Download
-              <ChevronDown className="w-4 h-4 ml-1" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-card border-border">
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Format</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => handleDownload('png')}>
-              PNG (High Quality)
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDownload('jpg')}>
-              JPG (Smaller File)
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleDownload('svg')}>
-              SVG (Vector)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button size="icon" variant="outline" className="border-border">
+                    <Download className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Download</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="end" className="bg-card border-border">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Format</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleDownload('png')}>
+                PNG (High Quality)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDownload('jpg')}>
+                JPG (Smaller File)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleDownload('svg')}>
+                SVG (Vector)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                size="icon" 
+                variant="outline" 
+                className="border-border"
+                onClick={handleShare}
+              >
+                <Share2 className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Share</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Back link - Hidden when printing */}
@@ -165,54 +183,70 @@ const PrintableFlyer = () => {
       {/* Flyer Content */}
       <div 
         ref={flyerRef}
-        className="max-w-md mx-auto bg-[#0a0a0a] p-8 print:p-0 print:max-w-full print:mx-0"
+        className="max-w-lg mx-auto bg-[#0a0a0a] p-4 print:p-0 print:max-w-full print:mx-0 relative"
       >
-        <div className="flyer-content bg-[#0a0a0a] text-white aspect-[3/4] flex flex-col items-center justify-between p-8 print:p-12 border border-border print:border-none">
+        {/* Color Theme Selector - 4 balls */}
+        <div className="print:hidden absolute top-2 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+          {(Object.keys(colorThemes) as ColorTheme[]).map((key) => (
+            <button
+              key={key}
+              onClick={() => setColorTheme(key)}
+              className={`w-6 h-6 rounded-full transition-all duration-200 hover:scale-110 ${
+                colorTheme === key ? 'ring-2 ring-white ring-offset-2 ring-offset-[#0a0a0a] scale-110' : ''
+              }`}
+              style={{ backgroundColor: colorThemes[key].hex }}
+              aria-label={`${key} theme`}
+            />
+          ))}
+        </div>
+
+        <div className="flyer-content bg-[#0a0a0a] text-white aspect-[2/3] flex flex-col items-center justify-between py-12 px-6 print:py-16 print:px-8 border border-border print:border-none">
           {/* Top Section - Logo */}
           <div className="text-center">
-            <div className="flex items-end justify-center gap-1">
-              <span className="text-4xl pb-0.5">🫦</span>
-              <span className="font-montserrat font-bold text-4xl text-[#FF2AA0]">laiive</span>
+            <div className="flex items-end justify-center gap-2">
+              <span className="text-6xl pb-1">🫦</span>
+              <span 
+                className="font-montserrat font-bold text-6xl"
+                style={{ color: theme.primary }}
+              >
+                laiive
+              </span>
             </div>
           </div>
 
           {/* Middle Section - Main Message */}
-          <div className="text-center space-y-6 flex-1 flex flex-col justify-center">
-            <h1 className="font-montserrat font-bold text-2xl md:text-3xl leading-tight">
+          <div className="text-center space-y-2 flex-1 flex flex-col justify-center">
+            <h1 className="font-montserrat font-bold text-4xl md:text-5xl leading-tight">
               Discover live music
               <br />
-              <span className="text-[#00CFEA]">in your neighborhood</span>
+              <span style={{ color: theme.accent }}>in your neighborhood</span>
             </h1>
           </div>
 
           {/* QR Code Section */}
           <div className="text-center space-y-4">
-            <div className="bg-white p-3 rounded-lg inline-block">
+            <div className="bg-white p-4 rounded-xl inline-block">
               <img 
                 src={qrCodeUrl} 
                 alt="Scan to visit laiive" 
-                className="w-32 h-32 md:w-40 md:h-40"
+                className="w-44 h-44 md:w-52 md:h-52"
               />
             </div>
-            <p className="font-montserrat font-bold text-[#FF2AA0] text-lg">
+            <p 
+              className="font-montserrat font-bold text-2xl"
+              style={{ color: theme.primary }}
+            >
               laiive.com
-            </p>
-          </div>
-
-          {/* Bottom - Call to Action */}
-          <div className="text-center mt-6">
-            <p className="font-ibm-plex text-xs text-gray-500">
-              Free for musicians • Free for venues • Free for music lovers
             </p>
           </div>
         </div>
       </div>
 
-      {/* Print Styles - Dynamic based on selected size */}
+      {/* Print Styles */}
       <style>{`
         @media print {
           @page {
-            size: ${pageSize === 'A4' ? 'A4' : pageSize === 'A5' ? 'A5' : 'letter'} portrait;
+            size: A4 portrait;
             margin: 0;
           }
           body {
@@ -221,6 +255,12 @@ const PrintableFlyer = () => {
           }
           .print\\:hidden {
             display: none !important;
+          }
+          .flyer-content {
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            aspect-ratio: auto;
           }
         }
       `}</style>
