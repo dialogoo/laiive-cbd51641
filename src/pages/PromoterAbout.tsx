@@ -71,23 +71,32 @@ const PromoterAbout = () => {
               {t.about.joinText}
             </p>
             
-            <h3 className="font-montserrat font-bold text-lg mb-4 text-foreground">
+            <h3 className="font-montserrat font-bold text-base mb-4 text-[#00CFEA]">
               {t.about.joinInstructionsTitle}
             </h3>
-            <ol className="font-ibm-plex text-muted-foreground leading-relaxed space-y-3 list-decimal list-inside">
-              <li>{t.about.joinStep1}</li>
-              <li>{t.about.joinStep2}</li>
-              <li>
-                {t.about.joinStep3}{" "}
-                <a 
-                  href="/printable-flyer" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-[#00CFEA] underline hover:text-[#00CFEA]/80 transition-colors"
-                >
-                  {t.about.joinStep3Link}
-                </a>{" "}
-                {t.about.joinStep4}
+            <ol className="font-ibm-plex text-muted-foreground leading-relaxed space-y-3">
+              <li className="flex gap-2">
+                <span className="text-[#00CFEA] font-bold">1.</span>
+                <span>{t.about.joinStep1}</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-[#00CFEA] font-bold">2.</span>
+                <span>{t.about.joinStep2}</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-[#00CFEA] font-bold">3.</span>
+                <span>
+                  {t.about.joinStep3}{" "}
+                  <a 
+                    href="/printable-flyer" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[#00CFEA] underline hover:text-[#00CFEA]/80 transition-colors"
+                  >
+                    {t.about.joinStep3Link}
+                  </a>{" "}
+                  {t.about.joinStep4}
+                </span>
               </li>
             </ol>
           </Card>
