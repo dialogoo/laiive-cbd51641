@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
     const body = await req.json();
-    const { email, password, firstName, lastName, city, industryRole, upgrade, entityType, entityName } = body;
+    const { email, password, firstName, lastName, city, industryRole, upgrade, entities } = body;
 
     // Validate required fields
     if (!firstName || !lastName || !city || !industryRole) {
@@ -151,21 +151,26 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Optional: Create initial entity if provided
-    if (entityType && entityName) {
-      const tableName = entityType === 'venue' ? 'venues' : entityType === 'band' ? 'bands' : 'festivals';
-      const { error: entityError } = await supabaseAdmin
-        .from(tableName)
-        .insert({
-          promoter_id: promoterProfileId,
-          name: entityName,
-        });
+    // Optional: Create initial entities if provided
+    if (entities && Array.isArray(entities) && entities.length > 0) {
+      for (const entity of entities) {
+        const { type, data } = entity;
+        if (!type || !data?.name) continue;
 
-      if (entityError) {
-        console.error('Entity creation error (non-fatal):', entityError);
-        // Don't fail the whole signup, just log it
-      } else {
-        console.log(`Created ${entityType} "${entityName}" for promoter ${promoterProfileId}`);
+        const tableName = type === 'venue' ? 'venues' : type === 'band' ? 'bands' : 'festivals';
+        const { error: entityError } = await supabaseAdmin
+          .from(tableName)
+          .insert({
+            ...data,
+            promoter_id: promoterProfileId,
+          });
+
+        if (entityError) {
+          console.error(`Entity creation error for ${type} (non-fatal):`, entityError);
+          // Don't fail the whole signup, just log it
+        } else {
+          console.log(`Created ${type} "${data.name}" for promoter ${promoterProfileId}`);
+        }
       }
     }
 
