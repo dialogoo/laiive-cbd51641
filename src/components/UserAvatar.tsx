@@ -58,7 +58,7 @@ export const UserAvatar = ({ className, variant = "default" }: UserAvatarProps) 
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            "w-10 h-10 rounded-lg flex items-center justify-center font-medium text-sm transition-colors",
+            "w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg transition-colors",
             isPro 
               ? "bg-cyan-500 text-white hover:bg-cyan-400 border border-cyan-400/50" 
               : "bg-primary text-primary-foreground hover:bg-primary/90",
