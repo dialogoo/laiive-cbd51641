@@ -500,7 +500,7 @@ const Chat = () => {
             <div className="flex items-end gap-1">
               <span className="text-xl sm:text-2xl pb-0.5">🫦</span>
               <span className={cn(
-                "font-montserrat font-bold text-xl sm:text-2xl",
+                "font-montserrat font-bold text-lg sm:text-xl",
                 mode === "promoter" ? "text-accent" : "text-primary"
               )}>laiive</span>
               {mode === "promoter" && (
