@@ -97,7 +97,7 @@ export default function Auth() {
         </button>
         <button
           onClick={() => navigate("/promoters")}
-          className="font-ibm-plex text-xs text-muted-foreground hover:text-cyan transition-colors"
+          className="font-ibm-plex text-xs text-muted-foreground hover:text-accent transition-colors"
         >
           laiive.pro
         </button>
