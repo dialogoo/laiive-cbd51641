@@ -515,10 +515,10 @@ const Chat = () => {
                 "font-ibm-plex text-[10px] transition-colors pb-0.5",
                 mode === "promoter" 
                   ? "text-muted-foreground hover:text-accent" 
-                  : "text-muted-foreground hover:text-primary"
+                  : "text-muted-foreground hover:text-cyan"
               )}
             >
-              go to laiive.pro →
+              laiive.pro
             </button>
           </div>
           

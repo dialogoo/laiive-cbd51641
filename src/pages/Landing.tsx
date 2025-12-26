@@ -16,9 +16,9 @@ const Landing = () => {
         <div className="absolute top-4 right-4">
           <button
             onClick={() => navigate("/promoters")}
-            className="font-ibm-plex text-xs text-muted-foreground hover:text-primary transition-colors"
+            className="font-ibm-plex text-xs text-muted-foreground hover:text-cyan transition-colors"
           >
-            go to laiive.pro →
+            laiive.pro
           </button>
         </div>
         
