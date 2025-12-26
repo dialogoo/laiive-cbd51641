@@ -345,7 +345,13 @@ export default function PromoterAuth() {
             PRO
           </span>
         </div>
-        <div className="w-16" /> {/* Spacer for centering */}
+        <button
+          onClick={() => navigate("/")}
+          className="font-ibm-plex text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5"
+        >
+          <span className="text-[10px]">🫦</span>
+          <span>laiive</span>
+        </button>
       </header>
 
       {/* Main Content */}

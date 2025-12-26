@@ -87,13 +87,19 @@ export default function Auth() {
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
       {/* Header */}
-      <header className="p-4">
+      <header className="p-4 flex items-center justify-between">
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
+        </button>
+        <button
+          onClick={() => navigate("/promoters")}
+          className="font-ibm-plex text-xs text-muted-foreground hover:text-cyan transition-colors"
+        >
+          laiive.pro
         </button>
       </header>
 

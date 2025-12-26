@@ -37,9 +37,10 @@ const Promoters = () => {
             </div>
             <button
               onClick={() => navigate("/")}
-              className="font-ibm-plex text-[10px] text-muted-foreground hover:text-cyan-400 transition-colors pb-0.5"
+              className="font-ibm-plex text-[10px] text-muted-foreground hover:text-primary transition-colors pb-0.5 flex items-center gap-0.5"
             >
-              go to laiive →
+              <span className="text-[10px]">🫦</span>
+              <span>laiive</span>
             </button>
           </div>
           <UserAvatar variant="pro" />
