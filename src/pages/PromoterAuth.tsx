@@ -341,7 +341,7 @@ export default function PromoterAuth() {
         </button>
         <div className="flex items-center gap-2">
           <span className="text-xl font-bold text-foreground">laiive</span>
-          <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
+          <span className="text-xs px-2 py-0.5 bg-accent/20 text-accent rounded-full border border-accent/30">
             PRO
           </span>
         </div>
@@ -356,7 +356,7 @@ export default function PromoterAuth() {
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-background/50 border-cyan-500/30">
+        <Card className="w-full max-w-md bg-background/50 border-accent/30">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">
               {mode === 'login' && 'Promoter Login'}
@@ -393,12 +393,12 @@ export default function PromoterAuth() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="bg-background/50 border-cyan-500/30 focus:border-cyan-500 focus-visible:ring-cyan-500/30"
+                    className="bg-background/50 border-accent/30 focus:border-accent focus-visible:ring-accent/30"
                   />
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-semibold"
+                  className="w-full bg-accent hover:bg-cyan-600 text-accent-foreground font-semibold"
                   disabled={isLoading}
                 >
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign In'}
@@ -453,7 +453,7 @@ export default function PromoterAuth() {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-semibold"
+                  className="w-full bg-accent hover:bg-cyan-600 text-accent-foreground font-semibold"
                   disabled={isLoading}
                 >
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Promoter Account'}
@@ -483,7 +483,7 @@ export default function PromoterAuth() {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-semibold"
+                  className="w-full bg-accent hover:bg-cyan-600 text-accent-foreground font-semibold"
                   disabled={isLoading}
                 >
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Upgrade to Pro'}

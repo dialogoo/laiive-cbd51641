@@ -26,12 +26,12 @@ const Promoters = () => {
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
       {/* Header */}
-      <header className="border-b border-cyan-500/20 bg-[#1a1a1a] p-4">
+      <header className="border-b border-accent/20 bg-[hsl(var(--pro-bg))] p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-end gap-4">
             <div className="flex items-center gap-1">
               <span className="text-xl font-bold text-foreground">laiive</span>
-              <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
+              <span className="text-xs px-2 py-0.5 bg-accent/20 text-accent rounded-full border border-accent/30">
                 PRO
               </span>
             </div>
@@ -59,7 +59,7 @@ const Promoters = () => {
         </div>
 
         {/* Video section */}
-        <Card className="p-8 bg-[#222222] border-cyan-500/20">
+        <Card className="p-8 bg-[hsl(var(--pro-bg-card))] border-accent/20">
           <div className="aspect-video bg-[#1a1a1a] rounded-lg flex items-center justify-center">
             <div className="text-center space-y-4">
               <div className="w-20 h-20 mx-auto rounded-full bg-cyan-500/10 flex items-center justify-center">
@@ -81,7 +81,7 @@ const Promoters = () => {
             size="lg"
             onClick={handleCTAClick}
             disabled={isLoading}
-            className="text-lg px-8 py-6 h-auto font-montserrat font-bold bg-cyan-500 hover:bg-cyan-600 text-white"
+            className="text-lg px-8 py-6 h-auto font-montserrat font-bold bg-accent hover:bg-cyan-600 text-accent-foreground"
           >
             {t.promoter.ctaButton}
           </Button>
