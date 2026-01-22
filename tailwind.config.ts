@@ -48,7 +48,12 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         orange: "hsl(var(--orange))",
-        cyan: "hsl(var(--accent))", // Sky Cyan brand color
+        cyan: {
+          DEFAULT: "hsl(var(--accent))",
+          400: "hsl(188 100% 52%)", // Lighter cyan
+          500: "hsl(var(--accent))", // Sky Cyan brand color #00CFEA
+          600: "hsl(188 100% 38%)", // Darker cyan
+        },
       },
       backgroundImage: {
         'gradient-vibrant': 'var(--gradient-vibrant)',

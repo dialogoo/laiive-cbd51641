@@ -491,14 +491,14 @@ const PromoterCreate = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#1a1a1a]">
+    <div className="flex flex-col h-screen bg-[hsl(var(--pro-bg))]">
       {/* Header */}
-      <header className="border-b border-cyan-500/20 bg-[#1a1a1a] p-4">
+      <header className="border-b border-accent/20 bg-[hsl(var(--pro-bg))] p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-end gap-4">
             <div className="flex items-center gap-1">
               <span className="text-xl font-bold text-foreground">laiive</span>
-              <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
+              <span className="text-xs px-2 py-0.5 bg-accent/20 text-accent rounded-full border border-accent/30">
                 PRO
               </span>
             </div>
@@ -669,7 +669,7 @@ const PromoterCreate = () => {
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder={t.promoterCreate.placeholder}
-              className="flex-1 bg-background border-border font-ibm-plex focus-visible:ring-cyan-500 focus-visible:border-cyan-500"
+              className="flex-1 bg-background border-border font-ibm-plex focus-visible:ring-accent focus-visible:border-accent"
               disabled={extractedEvent !== null}
             />
             
@@ -677,7 +677,7 @@ const PromoterCreate = () => {
               onClick={handleSendMessage}
               size="icon"
               disabled={isLoading || !message.trim() || extractedEvent !== null}
-              className="bg-cyan-500 hover:bg-cyan-600 text-white"
+              className="bg-accent hover:bg-cyan-600 text-accent-foreground"
             >
               {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </Button>

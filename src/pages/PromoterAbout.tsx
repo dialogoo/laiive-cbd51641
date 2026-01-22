@@ -8,7 +8,7 @@ const PromoterAbout = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-cyan-500/20 bg-[#1a1a1a] p-4">
+      <header className="border-b border-accent/20 bg-[hsl(var(--pro-bg))] p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-end gap-1 hover:opacity-80 transition-opacity">
             <span className="text-xl sm:text-2xl pb-0.5">🫦</span>
@@ -16,7 +16,7 @@ const PromoterAbout = () => {
           </Link>
           <Link to="/promoters" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
             <span className="text-xl font-bold text-foreground">laiive</span>
-            <span className="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
+            <span className="text-xs px-2 py-0.5 bg-accent/20 text-accent rounded-full border border-accent/30">
               PRO
             </span>
           </Link>
@@ -64,34 +64,34 @@ const PromoterAbout = () => {
           </Card>
 
           <Card className="p-6 bg-card border-border">
-            <h2 className="font-montserrat font-bold text-2xl mb-4 text-[#00CFEA]">
+            <h2 className="font-montserrat font-bold text-2xl mb-4 text-accent">
               {t.about.joinTitle}
             </h2>
             <p className="font-ibm-plex text-muted-foreground leading-relaxed mb-6">
               {t.about.joinText}
             </p>
             
-            <h3 className="font-montserrat font-bold text-base mb-4 text-[#00CFEA]">
+            <h3 className="font-montserrat font-bold text-base mb-4 text-accent">
               {t.about.joinInstructionsTitle}
             </h3>
             <ol className="font-ibm-plex text-muted-foreground leading-relaxed space-y-3">
               <li className="flex gap-2">
-                <span className="text-[#00CFEA] font-bold">1.</span>
+                <span className="text-accent font-bold">1.</span>
                 <span>{t.about.joinStep1}</span>
               </li>
               <li className="flex gap-2">
-                <span className="text-[#00CFEA] font-bold">2.</span>
+                <span className="text-accent font-bold">2.</span>
                 <span>{t.about.joinStep2}</span>
               </li>
               <li className="flex gap-2">
-                <span className="text-[#00CFEA] font-bold">3.</span>
+                <span className="text-accent font-bold">3.</span>
                 <span>
                   {t.about.joinStep3}{" "}
                   <a 
                     href="/printable-flyer" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[#00CFEA] underline hover:text-[#00CFEA]/80 transition-colors"
+                    className="text-accent underline hover:text-accent/80 transition-colors"
                   >
                     {t.about.joinStep3Link}
                   </a>{" "}
